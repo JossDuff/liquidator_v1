@@ -1,17 +1,22 @@
+// The main entry point of your application. 
+// This is where you initialize and run your liquidator bot.
 mod liquidator;
-use crate::liquidator::liquidator_contract;
+mod api;
+mod models;
+mod utils;
+
 
 fn main() {
     println!("Hello, world!");
     start_bot();
     update_positions();
     watch_positions();
-    liquidator_contract::liquidate_position();
+    liquidator::liquidate_position();
 }
 
 fn start_bot() {
     println!("Bot is starting up");
-    liquidator_contract::create_contract();
+    liquidator::create_contract();
 }
 
 fn update_positions() {

@@ -1,3 +1,6 @@
+# The configuration file for your Rust package. 
+# It defines your project's dependencies, version, and other metadata.
+
 [package]
 name = "liquidator_v1"
 version = "0.1.0"
