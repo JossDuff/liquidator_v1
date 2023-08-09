@@ -1,1 +1,0 @@
-// Solidity test script(s) that interact with your deployed contract and verify its behavior.
