@@ -9,6 +9,7 @@ my_liquidator_bot/
 │   ├── api.rs             # API communication logic
 │   ├── models.rs          # Data models and structures
 │   ├── utils.rs           # Utility functions
+│   ├── lib.rs             # Library crate
 ├── contracts/
 │   ├── YourContract.sol   # Solidity source code for your custom contract
 ├── tests/
