@@ -1,22 +1,26 @@
 # liquidator_v1
 
-my_liquidator_bot/
+# Roadmap
 
-<pre>
-├── src/
-│   ├── main.rs            # Main entry point
-│   ├── liquidator.rs      # Liquidator logic implementation
-│   ├── api.rs             # API communication logic
-│   ├── models.rs          # Data models and structures
-│   ├── utils.rs           # Utility functions
-│   ├── lib.rs             # Library crate
-├── contracts/
-│   ├── YourContract.sol   # Solidity source code for your custom contract
-├── tests/
-│   ├── rust_tests.rs      # Rust unit tests
-│   ├── contract_tests/    # Solidity tests (using Hardhat)
-│       ├── contract_test.ts # Solidity test script(s)
-├── deployments/
-│   ├── hardhat-config.ts  # Hardhat configuration file
-├── Cargo.toml             # Rust package configuration
-</pre>
+## Phase 1: Start
+- extremely basic liquidator
+- API call and flash swap
+
+## Phase 2: Scale
+- store positions in a database
+- batching RPC calls (multicall)
+- Confirm the fastest way to get chain data: API, theGraph, or custom indexer
+
+## Phase 2: Spread
+- script to deploy onto any lending protocol and fork
+- target small lending protocols with not much competition
+
+## Phase 3: Slaughter
+- suit up to be competive on large lending protocols
+- my own ethereum/OP/ARB/etc nodes
+- private flashbot mempool submitting transactions directly to miners
+    - https://docs.flashbots.net/
+
+
+# Sources
+ - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452
