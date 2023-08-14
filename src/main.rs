@@ -4,10 +4,11 @@
 // to import each dependency individually.
 
 //use bigdecimal::{BigDecimal, ToPrimitive};
-use core::borrow;
+//use core::borrow;
 use ethers::{
     contract::{abigen, Contract, EthEvent},
-    core::types::{Address, Filter, H160, H256, U256},
+    core::types::{Address, Filter, H160, H256, U256, U64},
+    //prelude::*,
     providers::{Middleware, Provider, StreamExt, Ws},
 };
 use eyre::Result;
@@ -50,17 +51,48 @@ async fn main() -> eyre::Result<()> {
     println!("chain id: {}", chain_id);
     println!("block number: {}", block_number);
 
-    let mut stream = client2.subscribe_blocks().await?.take(1);
-    while let Some(block) = stream.next().await {
-        println!(
-            "Ts: {:?}, block number: {} -> {:?}",
-            block.timestamp,
-            block.number.unwrap(),
-            block.hash.unwrap()
-        );
-    }
+    let mut last_block: U64 = U64::from(1000);
+    // reproduction of yield-liquidator
+    let watcher = client2.clone();
+    let mut on_block = watcher
+        .watch_blocks()
+        .await
+        //.map_err(ContractError::MiddlewareError)?
+        .expect("Fucky wucky on watcher on_block") // TODO: this is a bandaid
+        .stream();
 
-    //println!("Done");
+    while on_block.next().await.is_some() {
+        let block_number = client2.get_block_number().await?;
+        //.map_err(ContractError::MiddlewareError)?;
+
+        // let span = debug_span!("eloop", block = %block_number);
+        // let _enter = span.enter();
+
+        // run the logic for this block
+        //on_block(block_number).await?;
+        println!("{}", block_number);
+
+        // update our last block
+        last_block = block_number;
+
+        // Log once every 10 blocks
+        // if let Some(file) = file.take() {
+        //     self.log(file);
+        // }
+    }
 
     Ok(())
 }
+
+//  let new_users = self
+//             .controller
+//             .borrowed_filter()
+//             .from_block(from_block)
+//             .to_block(to_block)
+//             .query()
+//             .await?
+//             .into_iter()
+//             .map(|log| log.user)
+//             .collect::<Vec<_>>();
+
+//         let all_users = crate::merge(new_users, &self.borrowers);
