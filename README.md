@@ -10,7 +10,9 @@
 
 ## Phase 1: Start
 - extremely basic liquidator
-- API call and flash swap
+- troll chain since protocol creation and find market enter/exits
+    - start a process for present and past blocks
+- save active accounts in database
 
 ## Phase 2: Scale
 - tokio for waiting for I/O interactions, rayon for speeding up computations

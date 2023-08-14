@@ -12,6 +12,8 @@ use ethers::{
     providers::{Middleware, Provider, StreamExt, Ws},
 };
 use eyre::Result;
+mod reader;
+use crate::reader::Reader;
 use std::{collections::HashMap, sync::Arc};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
@@ -26,18 +28,19 @@ abigen!(
     ]"#,
 );
 
-struct borrowerInfo {
-    todo: String,
-}
-
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    let mut borrowers: HashMap<String, borrowerInfo> = HashMap::new();
-
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client = Arc::new(provider);
-    let client2 = client.clone();
+    let mut reader = Reader::new(client.clone())
+        .await
+        .expect("Fucky wucky on Reader::new");
+    reader
+        .read_present_blocks()
+        .await // TODO: how can I await this later
+        .expect("Fucky wucky on reader.read_present_blocks()");
 
+    // below doesn't run because read_present_block is infinite.  Just for example
     let chain_id = client.get_chainid().await?;
     let block_number = client.get_block_number().await?;
     //let tx_pool_content = client.txpool_content().await?;
@@ -51,48 +54,5 @@ async fn main() -> eyre::Result<()> {
     println!("chain id: {}", chain_id);
     println!("block number: {}", block_number);
 
-    let mut last_block: U64 = U64::from(1000);
-    // reproduction of yield-liquidator
-    let watcher = client2.clone();
-    let mut on_block = watcher
-        .watch_blocks()
-        .await
-        //.map_err(ContractError::MiddlewareError)?
-        .expect("Fucky wucky on watcher on_block") // TODO: this is a bandaid
-        .stream();
-
-    while on_block.next().await.is_some() {
-        let block_number = client2.get_block_number().await?;
-        //.map_err(ContractError::MiddlewareError)?;
-
-        // let span = debug_span!("eloop", block = %block_number);
-        // let _enter = span.enter();
-
-        // run the logic for this block
-        //on_block(block_number).await?;
-        println!("{}", block_number);
-
-        // update our last block
-        last_block = block_number;
-
-        // Log once every 10 blocks
-        // if let Some(file) = file.take() {
-        //     self.log(file);
-        // }
-    }
-
     Ok(())
 }
-
-//  let new_users = self
-//             .controller
-//             .borrowed_filter()
-//             .from_block(from_block)
-//             .to_block(to_block)
-//             .query()
-//             .await?
-//             .into_iter()
-//             .map(|log| log.user)
-//             .collect::<Vec<_>>();
-
-//         let all_users = crate::merge(new_users, &self.borrowers);
