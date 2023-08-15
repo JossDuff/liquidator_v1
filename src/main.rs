@@ -10,6 +10,7 @@ use ethers::{
     core::types::{Address, Filter, Topic, H160, H256, U256, U64},
     prelude::*,
     providers::{Middleware, Provider, StreamExt, Ws},
+    types::spoof::Account,
 };
 use eyre::Result;
 // Include the generated bindings
@@ -40,11 +41,14 @@ async fn main() -> eyre::Result<()> {
     let address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller = Comptroller::new(address, client);
 
+    let mut accounts: Vec<Address> = Vec::new();
+
     read_past_market_entered(
         TEMP_COMPTROLLER_CREATION_BLOCK,
         TEMP_CURRENT_BLOCK,
-        10000,
+        20000,
         comptroller,
+        &mut accounts,
     )
     .await?;
 
@@ -56,12 +60,16 @@ async fn read_past_market_entered(
     end_block: u64,
     step_size: u64,
     comptroller: Comptroller<Provider<Ws>>,
+    accounts: &mut Vec<Address>,
 ) -> eyre::Result<()> {
     if start_block >= end_block {
         return Ok(());
     }
 
+    let mut highest_len = 0;
+
     // try the query
+    // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
     for i in (start_block..end_block).step_by(step_size as usize) {
         let logs = comptroller
             .market_entered_filter()
@@ -78,14 +86,27 @@ async fn read_past_market_entered(
             Ok(logs) => {
                 let len = logs.len();
                 if len > 0 {
+                    if logs.len() > highest_len {
+                        highest_len = logs.len();
+                    }
                     println!("{}%  logs length: {}", progress, logs.len());
+                }
+                for log in logs {
+                    let account: Address = Address::from(log.account);
+                    if !accounts.contains(&account) {
+                        accounts.push(account);
+                    }
                 }
             }
             Err(err) => {
+                // TODO: resolve
                 println!("FUCKED");
             }
         }
     }
+
+    println!("\nFinal size of accounts: {}", accounts.len());
+    println!("Largest amount in one query: {}", highest_len);
 
     Ok(())
 }
