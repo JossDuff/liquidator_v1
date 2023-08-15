@@ -8,3 +8,5 @@ abigen!(
         event MarketExited(address cToken, address account)
     ]"#,
 );
+
+// event CompReceivableUpdated(address indexed user, uint oldCompReceivable, uint newCompReceivable)

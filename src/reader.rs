@@ -1,4 +1,4 @@
-use crate::comptroller_interface::{comptroller, Comptroller, ComptrollerEvents};
+use crate::comptroller_interface::{comptroller, Comptroller};
 use ethers::abi::Events;
 use ethers::prelude::*;
 use ethers::{

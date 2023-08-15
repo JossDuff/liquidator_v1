@@ -30,6 +30,34 @@ async fn main() -> eyre::Result<()> {
     let address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller = Comptroller::new(address, client);
 
+    // get all past MarketEntered and MarketExited events
+    // let events = comptroller
+    // .events()
+    // .from_block(17800000)
+    // .to_block(17915375)
+    // .query()
+    // .await?;
+    //
+    //print each field from the events
+    // for event in events.iter() {
+    // match event {
+    // ComptrollerEvents::MarketEnteredFilter(f) => {
+    // println!(
+    // "MarketEntered: borrower: {borrower}, c_token: {c_token}",
+    // borrower = f.0,
+    // c_token = f.1
+    // );
+    // }
+    // ComptrollerEvents::MarketExitedFilter(f) => {
+    // println!(
+    // "MarketExited: borrower: {borrower}, c_token: {c_token}",
+    // borrower = f.0,
+    // c_token = f.1
+    // );
+    // }
+    // }
+    // }
+
     // let mut reader = Reader::new(client2.clone(), comptroller)
     //     .await
     //     .expect("Fucky wucky on Reader::new");
@@ -53,20 +81,37 @@ async fn main() -> eyre::Result<()> {
 
     // let filter = Filter::new()
     //     .address(COMPTROLLER_ETH_MAINNET.parse::<Address>()?)
-    //     .topic0(vec![Topic::EventSignature(
-    //         "MarketEntered(address,address)".to_owned(),
-    //     )])
-    //     .from_block(15000000)
+    //     .events()
+    //     .from_block(17000000)
     //     .to_block(17915375);
 
-    // let logs = client2.get_logs(&filter).await?;
-
-    // for log in logs.iter() {
-    //     println!("{:?}", log);
-    //     // let c_token = Address::from(log.topics[1]);
-    //     // let borrower = Address::from(log.topics[2]);
-    //     // println!("{borrower} entered market for cToken {c_token}");
+    // The event we want to get
+    // #[derive(Clone, Debug, EthEvent)]
+    // struct MarketEntered {
+    //     #[ethevent(indexed)]
+    //     c_token: Address,
+    //     #[ethevent(indexed)]
+    //     account: Address,
     // }
+
+    println!("Getting logs");
+    let logs: Vec<ComptrollerEvents> = comptroller
+        .events()
+        .from_block(17000000)
+        .to_block(17915375)
+        .query()
+        .await?;
+
+    println!("Got something.  Going to print");
+
+    for log in logs.iter() {
+        println!("{:?}", log);
+        // let c_token = Address::from(log.topics[1]);
+        // let borrower = Address::from(log.topics[2]);
+        // println!("{borrower} entered market for cToken {c_token}");
+    }
+
+    println!("All printed");
 
     // let market_entered_signature = Event::new("MarketEntered(address,address)").unwrap();
     // let market_exited_signature = Event::new("MarketExited(address,address)").unwrap();
