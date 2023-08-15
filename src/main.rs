@@ -23,6 +23,9 @@ use std::{collections::HashMap, sync::Arc};
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 
+const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
+const TEMP_CURRENT_BLOCK: u64 = 17915375;
+
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     // generating stuff
@@ -37,21 +40,52 @@ async fn main() -> eyre::Result<()> {
     let address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller = Comptroller::new(address, client);
 
-    println!("Getting logs");
-    let logs = comptroller
-        .market_entered_filter()
-        .from_block(17910000)
-        .to_block(17915375)
-        .query()
-        .await?;
+    read_past_market_entered(
+        TEMP_COMPTROLLER_CREATION_BLOCK,
+        TEMP_CURRENT_BLOCK,
+        10000,
+        comptroller,
+    )
+    .await?;
 
-    println!("Got something.  Going to print");
+    Ok(())
+}
 
-    for log in logs.iter() {
-        println!("{:?}", log);
+async fn read_past_market_entered(
+    start_block: u64,
+    end_block: u64,
+    step_size: u64,
+    comptroller: Comptroller<Provider<Ws>>,
+) -> eyre::Result<()> {
+    if start_block >= end_block {
+        return Ok(());
     }
 
-    println!("All printed");
+    // try the query
+    for i in (start_block..end_block).step_by(step_size as usize) {
+        let logs = comptroller
+            .market_entered_filter()
+            .from_block(i)
+            .to_block(i + step_size)
+            .query()
+            .await;
+
+        let progress: f64 = ((i - TEMP_COMPTROLLER_CREATION_BLOCK) as f64
+            / (end_block - TEMP_COMPTROLLER_CREATION_BLOCK) as f64)
+            * 100 as f64;
+
+        match logs {
+            Ok(logs) => {
+                let len = logs.len();
+                if len > 0 {
+                    println!("{}%  logs length: {}", progress, logs.len());
+                }
+            }
+            Err(err) => {
+                println!("FUCKED");
+            }
+        }
+    }
 
     Ok(())
 }
