@@ -38,8 +38,8 @@ async fn main() -> eyre::Result<()> {
     let comptroller = Comptroller::new(address, client);
 
     println!("Getting logs");
-    let logs: Vec<ComptrollerEvents> = comptroller
-        .events()
+    let logs = comptroller
+        .market_entered_filter()
         .from_block(17910000)
         .to_block(17915375)
         .query()
