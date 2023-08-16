@@ -11,7 +11,7 @@ pub use c_erc_20::*;
 )]
 pub mod c_erc_20 {
     const _: () = {
-        ::core::include_bytes!("/home/joss/dev/liquidator_v1/abi/CErc20.json");
+        ::core::include_bytes!("/home/joss/dev/liquidator_v1/abi/cerc20.json");
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers::core::abi::Abi {

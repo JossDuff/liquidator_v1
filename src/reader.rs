@@ -1,5 +1,8 @@
 use crate::c_erc20_bindings::CErc20;
 use crate::comptroller_bindings::{comptroller, Comptroller};
+use crate::erc20_bindings::Erc20;
+use crate::liquidator_bindings::Liquidator;
+use crate::uniswap_anchored_view_bindings::UniswapAnchoredView;
 
 use ethers::abi::Events;
 use ethers::prelude::*;
@@ -14,12 +17,15 @@ use std::fs;
 use std::mem::transmute;
 use std::{collections::HashMap, io::Write, path::PathBuf, sync::Arc};
 
+const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
 const TEMP_CURRENT_BLOCK: u64 = 17915375;
 
 pub struct Reader {
     client: Arc<Provider<Ws>>,
     comptroller: Comptroller<Provider<Ws>>,
+    liquidator: Liquidator<Provider<Ws>>,
+    oracle: UniswapAnchoredView<Provider<Ws>>,
     accounts: Vec<Address>,
 }
 
@@ -27,11 +33,15 @@ impl Reader {
     pub fn new(
         client: Arc<Provider<Ws>>,
         comptroller: Comptroller<Provider<Ws>>,
+        liquidator: Liquidator<Provider<Ws>>,
+        oracle: UniswapAnchoredView<Provider<Ws>>,
         accounts: Vec<Address>, // TODO: how do I initialize this to be empty?
     ) -> Reader {
         Self {
             client,
             comptroller,
+            liquidator,
+            oracle,
             accounts,
         }
     }
@@ -130,7 +140,7 @@ impl Reader {
 
     async fn search_for_liquidatable(&mut self) -> eyre::Result<()> {
         //let mut liquidatable_accounts: Vec<Address> = Vec::new();
-        println!("Search for liquidatable accounts...");
+        println!("Searching for liquidatable accounts...");
 
         for account in self.accounts.iter() {
             let (error, liquidity, shortfall) = self
@@ -154,32 +164,83 @@ impl Reader {
                 let assets_in = self.comptroller.get_assets_in(*account).call().await?;
 
                 for asset_addr in assets_in.iter() {
+                    if *asset_addr == CETH_ADDRESS_MAINNET.parse()? {
+                        println!("Skipping cEth");
+                        continue;
+                    }
                     let c_token = CErc20::new(Address::from(*asset_addr), self.client.clone());
                     let (error, amount_held, amount_borrowed, exchange_rate) = c_token
                         .get_account_snapshot(*account)
                         .call()
                         .await
                         .expect("Error getting underlying balance");
-
                     if (error > U256::from(0)) {
                         println!("Error getting account snapshot for account: {}", account);
                     }
 
+                    // TODO: the calculations below are likely all wrong and mixed up
+                    // at the time it was unclear to me what token (cToken or underlying) should be
+                    // converted to usd values, so I just converted both
+
+                    // println!(
+                    //     "Going to get underlying token address for cToken {}",
+                    //     asset_addr
+                    // );
+
+                    // get contract of underlying
+                    let underlying_token_address = c_token.underlying().call().await?;
+                    //println!("Got underlying token address {}", underlying_token_address);
+
+                    let underlying_token =
+                        Erc20::new(Address::from(underlying_token_address), self.client.clone());
+
+                    //println!("Going to get underlying token decimals");
+                    // get underlying token decimals
+                    let underlying_decimals = underlying_token.decimals().call().await?;
+
                     // TODO: something with exchange rate?
 
+                    // RETURNS: The price of the asset in USD as an unsigned integer scaled up by
+                    // 10 ^ (36 - underlying asset decimals).
+                    // E.g. WBTC has 8 decimal places, so the return value is scaled up by 1e28.
+                    let returned_price = self
+                        .oracle
+                        .get_underlying_price(Address::from(*asset_addr))
+                        .call()
+                        .await?;
+
+                    // convert returned price to USD
+                    // saturating_sub might be safe because I assume there will not be decimals > 36
+                    // TODO: prevent against this case
+                    // TODO: convert to float
+                    let underlying_usd: U256 = returned_price
+                        .checked_div(
+                            U256::from(10)
+                                .pow(U256::from(36).saturating_sub(underlying_decimals.into())),
+                        )
+                        .expect("Error converting returned price to USD");
+
+                    println!("Underlying usd: {}", underlying_usd);
+
+                    let amount_borrowed_underlying_usd = amount_borrowed * underlying_usd;
+
+                    // TODO: does this need to be in USD?  Need to research how conversion from amount repaid to reward works.
+                    // for now I'm just gonna assume higher usd value means more reward
+                    let amount_held_usd = amount_held * exchange_rate * underlying_usd;
+
                     // set best repay asset
-                    if amount_held > best_repay_amount {
+                    if amount_borrowed_underlying_usd > best_repay_amount {
                         best_repay_amount = amount_held;
                         best_repay_asset = Address::from(*asset_addr);
                     }
 
                     // set best seize asset
-                    if amount_borrowed > best_seize_amount {
+                    if amount_held_usd > best_seize_amount {
                         best_seize_amount = amount_borrowed;
                         best_seize_asset = Address::from(*asset_addr);
                     }
                 }
-                println!("Account {}, best repay asset / amount: {} / {}, best seize asset / amount: {} / {}", account, best_repay_asset, best_repay_amount, best_seize_asset, best_seize_amount);
+                println!("Account {}, best repay asset / amount: {} / ${}, best seize asset / amount: {} / ${}", account, best_repay_asset, best_repay_amount, best_seize_asset, best_seize_amount);
             }
         }
 

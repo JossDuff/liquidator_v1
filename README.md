@@ -41,6 +41,7 @@
 - target small lending protocols with not much competition
 
 ## Optional Phase: Data
+- add events to Liquidator contract to keep track
 - dune dashboard to track stats from all my deployed bots
 
 ## Phase 5: Slaughter

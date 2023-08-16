@@ -16,15 +16,21 @@ use eyre::Result;
 // Include the generated bindings
 mod c_erc20_bindings;
 mod comptroller_bindings;
+mod erc20_bindings;
 mod liquidator_bindings;
 mod reader;
+mod uniswap_anchored_view_bindings;
 //use crate::comptroller_interface::{Comptroller, ComptrollerEvents};
 use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
+use crate::liquidator_bindings::Liquidator;
 use crate::reader::Reader;
+use crate::uniswap_anchored_view_bindings::UniswapAnchoredView;
 use std::{collections::HashMap, sync::Arc};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+const TEMP_ORACLE_ETH_MAINNET: &str = "0x50ce56A3239671Ab62f185704Caedf626352741e";
 
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
 const TEMP_CURRENT_BLOCK: u64 = 17915375;
@@ -42,21 +48,45 @@ async fn main() -> eyre::Result<()> {
         .write_to_file("src/liquidator_bindings.rs")?;
 
     // generate cerc20 bindings
-    Abigen::new("CErc20", "./abi/CErc20.json")?
+    Abigen::new("CErc20", "./abi/cerc20.json")?
         .generate()?
         .write_to_file("src/c_erc20_bindings.rs")?;
+
+    // generate uniswapAnchoredView bindings
+    Abigen::new("UniswapAnchoredView", "./abi/uniswapAnchoredView.json")?
+        .generate()?
+        .write_to_file("src/uniswap_anchored_view_bindings.rs")?;
+
+    // generate erc20 bindings
+    Abigen::new("Erc20", "./abi/erc20.json")?
+        .generate()?
+        .write_to_file("src/erc20_bindings.rs")?;
 
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client = Arc::new(provider);
     let client2 = client.clone();
+    let client3 = client.clone();
+    let client4 = client.clone();
 
-    let address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
-    let comptroller = Comptroller::new(address, client);
+    let comptroller_address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
+    let comptroller = Comptroller::new(comptroller_address, client);
+
+    let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
+    let liquidator = Liquidator::new(liquidator_address, client2);
+
+    let oracle_address: Address = TEMP_ORACLE_ETH_MAINNET.parse()?;
+    let oracle = UniswapAnchoredView::new(oracle_address, client3);
 
     let mut accounts: Vec<Address> = Vec::new();
 
     // TODO: don't clone shit in here
-    let mut my_reader: Reader = Reader::new(client2, comptroller.clone(), accounts.clone());
+    let mut my_reader: Reader = Reader::new(
+        client4,
+        comptroller.clone(),
+        liquidator.clone(),
+        oracle.clone(),
+        accounts.clone(),
+    );
 
     my_reader.run().await?;
 
