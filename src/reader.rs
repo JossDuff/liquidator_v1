@@ -1,4 +1,6 @@
+use crate::c_erc20_bindings::CErc20;
 use crate::comptroller_bindings::{comptroller, Comptroller};
+
 use ethers::abi::Events;
 use ethers::prelude::*;
 use ethers::{

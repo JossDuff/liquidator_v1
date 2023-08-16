@@ -14,7 +14,9 @@ use ethers::{
 };
 use eyre::Result;
 // Include the generated bindings
+mod c_erc20_bindings;
 mod comptroller_bindings;
+mod liquidator_bindings;
 mod reader;
 //use crate::comptroller_interface::{Comptroller, ComptrollerEvents};
 use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
@@ -29,10 +31,20 @@ const TEMP_CURRENT_BLOCK: u64 = 17915375;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    // generating stuff
+    // generate comptroller bindings
     Abigen::new("Comptroller", "./abi/comptroller.json")?
         .generate()?
         .write_to_file("src/comptroller_bindings.rs")?;
+
+    // generate liquidator bindings
+    Abigen::new("Liquidator", "./abi/liquidator.json")?
+        .generate()?
+        .write_to_file("src/liquidator_bindings.rs")?;
+
+    // generate cerc20 bindings
+    Abigen::new("CErc20", "./abi/CErc20.json")?
+        .generate()?
+        .write_to_file("src/c_erc20_bindings.rs")?;
 
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client = Arc::new(provider);

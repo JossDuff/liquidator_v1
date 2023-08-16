@@ -13,16 +13,17 @@
 - troll chain since protocol creation and find market enter/exits
     - start a process for present and past blocks
 - call to liquidator smart contract
+- Only CERC20, not bothering with CEther for now because we don't care about L1
 
 ## Phase 2: Correct
 - proper error handling
 - multicall getAccountLiquidity
-
-## Phase 3: Scale
 - async tokio for waiting for I/O interactions, rayon for speeding up computations
     - https://tokio.rs/tokio/tutorial
     - https://docs.rs/rayon/latest/rayon/
     - recusive async historical event query instead of block stepping (read async book)
+
+## Phase 3: Scale
 - using get_logs or get_logs_paginated might be more efficient than query
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
 - store positions in a database
@@ -30,6 +31,8 @@
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
 - Confirm the fastest way to get chain data: API, theGraph, or custom indexer
+- execute multiple liquidate calls at once based on close factor
+
 
 ## Phase 4: Spread
 - script to deploy onto any lending protocol and fork
