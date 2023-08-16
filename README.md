@@ -16,7 +16,7 @@
 
 ## Phase 2: Correct
 - proper error handling
-- 
+- multicall getAccountLiquidity
 
 ## Phase 3: Scale
 - async tokio for waiting for I/O interactions, rayon for speeding up computations
