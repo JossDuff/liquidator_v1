@@ -17,7 +17,8 @@
 
 ## Phase 2: Correct
 - proper error handling
-- multicall getAccountLiquidity
+- convert c_token amounts to usd values
+- multicalls!!!!
 - async tokio for waiting for I/O interactions, rayon for speeding up computations
     - https://tokio.rs/tokio/tutorial
     - https://docs.rs/rayon/latest/rayon/
@@ -53,6 +54,9 @@
 ## Refactor to alloy when alloy is done
 
 To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
+
+# Open questions
+- will forks have an accurate open price feed?  Or will I have to build one myself?
 
 # Sources
  - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452

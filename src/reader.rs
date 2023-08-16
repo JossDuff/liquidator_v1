@@ -140,10 +140,46 @@ impl Reader {
                 .await?;
 
             if shortfall > U256::from(0) {
-                println!(
-                    "Account {} is liquidatable with shortfall: {}, liquidity: {}",
-                    account, shortfall, liquidity
-                );
+                // println!(
+                //     "Account {} is liquidatable with shortfall: {}, liquidity: {}",
+                //     account, shortfall, liquidity
+                // );
+
+                let mut best_seize_asset: Address = Address::default();
+                let mut best_seize_amount: U256 = U256::from(0);
+
+                let mut best_repay_asset: Address = Address::default();
+                let mut best_repay_amount: U256 = U256::from(0);
+
+                let assets_in = self.comptroller.get_assets_in(*account).call().await?;
+
+                for asset_addr in assets_in.iter() {
+                    let c_token = CErc20::new(Address::from(*asset_addr), self.client.clone());
+                    let (error, amount_held, amount_borrowed, exchange_rate) = c_token
+                        .get_account_snapshot(*account)
+                        .call()
+                        .await
+                        .expect("Error getting underlying balance");
+
+                    if (error > U256::from(0)) {
+                        println!("Error getting account snapshot for account: {}", account);
+                    }
+
+                    // TODO: something with exchange rate?
+
+                    // set best repay asset
+                    if amount_held > best_repay_amount {
+                        best_repay_amount = amount_held;
+                        best_repay_asset = Address::from(*asset_addr);
+                    }
+
+                    // set best seize asset
+                    if amount_borrowed > best_seize_amount {
+                        best_seize_amount = amount_borrowed;
+                        best_seize_asset = Address::from(*asset_addr);
+                    }
+                }
+                println!("Account {}, best repay asset / amount: {} / {}, best seize asset / amount: {} / {}", account, best_repay_asset, best_repay_amount, best_seize_asset, best_seize_amount);
             }
         }
 
