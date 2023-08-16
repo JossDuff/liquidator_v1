@@ -10,47 +10,115 @@ use eyre::Result;
 use std::mem::transmute;
 use std::{collections::HashMap, io::Write, path::PathBuf, sync::Arc};
 
-pub struct Reader<M> {
-    client: Arc<M>,
+const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
+const TEMP_CURRENT_BLOCK: u64 = 17915375;
+
+pub struct Reader {
+    client: Arc<Provider<Ws>>,
     comptroller: Comptroller<Provider<Ws>>,
+    accounts: Vec<Address>,
 }
 
-impl<M: Middleware> Reader<M> {
+impl Reader {
     /// Instantiates the keeper. `state` should be passed if there is previous
     /// data which should be taken into account from a previous run
-    pub async fn new(
-        client: Arc<M>,
+    pub fn new(
+        client: Arc<Provider<Ws>>,
         comptroller: Comptroller<Provider<Ws>>,
-    ) -> Result<Reader<M>, M> {
-        Ok(Self {
+        accounts: Vec<Address>, // TODO: how do I initialize this to be empty?
+    ) -> Reader {
+        Self {
             client,
             comptroller,
-        })
+            accounts,
+        }
     }
 
-    pub async fn read_present_blocks(&mut self) -> Result<(), M> {
-        let watcher = self.client.clone();
-        // let watcher = self.client.clone();
-        // let mut on_block = watcher
-        //     .watch_blocks()
-        //     .await
-        //     //.map_err(ContractError::MiddlewareError)?
-        //     .expect("Fucky wucky on watcher on_block") // TODO: this is a bandaid
-        //     .stream();
+    pub async fn run(&mut self) -> eyre::Result<()> {
+        self.read_past_market_entered(TEMP_COMPTROLLER_CREATION_BLOCK, TEMP_CURRENT_BLOCK, 40000)
+            .await?;
 
-        // while on_block.next().await.is_some() {
-        //     // TODO: block number is probably also somewhere in the metadata.  Provider call is slow
-        //     let block_number = self
-        //         .client
-        //         .get_block_number()
-        //         .await
-        //         .expect("Fucky wucky on on_block.next()"); // TODO: this is a bandaid
-        //                                                    //.map_err(ContractError::MiddlewareError)?;
+        self.read_current_market_entered().await?;
 
-        //     // run the logic for this block
-        //     //on_block(block_number).await?;
-        //     println!("{}", block_number);
-        // }
+        println!("I'm done running.");
+
+        Ok(())
+    }
+
+    async fn read_past_market_entered(
+        &mut self,
+        start_block: u64,
+        end_block: u64,
+        step_size: u64,
+    ) -> eyre::Result<()> {
+        if start_block >= end_block {
+            return Ok(());
+        }
+
+        let mut highest_len = 0;
+
+        // try the query
+        // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
+        for i in (start_block..end_block).step_by(step_size as usize) {
+            let logs = self
+                .comptroller
+                .market_entered_filter()
+                .from_block(i)
+                .to_block(i + step_size)
+                .query()
+                .await;
+
+            let progress: f64 = ((i - TEMP_COMPTROLLER_CREATION_BLOCK) as f64
+                / (end_block - TEMP_COMPTROLLER_CREATION_BLOCK) as f64)
+                * 100 as f64;
+
+            match logs {
+                Ok(logs) => {
+                    let len = logs.len();
+                    if len > 0 {
+                        if logs.len() > highest_len {
+                            highest_len = logs.len();
+                        }
+                        println!("{}%  logs length: {}", progress, logs.len());
+                    }
+                    for log in logs {
+                        let account: Address = Address::from(log.account);
+                        if !self.accounts.contains(&account) {
+                            self.accounts.push(account);
+                        }
+                    }
+                }
+                Err(err) => {
+                    // TODO: resolve
+                    println!("FUCKED");
+                }
+            }
+        }
+
+        println!("\nFinal size of accounts: {}", self.accounts.len());
+        println!("Largest amount in one query: {}", highest_len);
+
+        Ok(())
+    }
+
+    async fn read_current_market_entered(&mut self) -> eyre::Result<()> {
+        println!("Watching for new market entered events...");
+
+        let market_entered_filter = self.comptroller.market_entered_filter();
+        let mut stream = market_entered_filter.stream().await?; // TODO: subscribe seems better than stream according to docs, but not sure why subscribe wasn't working
+
+        while let Some(event) = stream.next().await {
+            match event {
+                Ok(log) => {
+                    println!("GOT A NEW MARKET ENTERED: {}", log);
+                    let account: Address = Address::from(log.account);
+                    if !self.accounts.contains(&account) {
+                        self.accounts.push(account);
+                    }
+                }
+                Err(e) => println!("Error reading event: {}", e),
+            }
+        }
         Ok(())
     }
 }

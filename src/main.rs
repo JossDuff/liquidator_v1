@@ -43,88 +43,10 @@ async fn main() -> eyre::Result<()> {
 
     let mut accounts: Vec<Address> = Vec::new();
 
-    read_past_market_entered(
-        TEMP_COMPTROLLER_CREATION_BLOCK,
-        TEMP_CURRENT_BLOCK,
-        40000,
-        comptroller.clone(), // TODO: fix
-        &mut accounts,
-    )
-    .await?;
+    // TODO: don't clone shit in here
+    let mut my_reader: Reader = Reader::new(client2, comptroller.clone(), accounts.clone());
 
-    println!("Watching for new market entered events...");
-
-    let market_entered_filter = comptroller.market_entered_filter();
-    let mut stream = market_entered_filter.subscribe().await?;
-
-    while let Some(event) = stream.next().await {
-        match event {
-            Ok(log) => {
-                println!("GOT A NEW MARKET ENTERED: {}", log);
-                let account: Address = Address::from(log.account);
-                if !accounts.contains(&account) {
-                    accounts.push(account);
-                }
-            }
-            Err(e) => println!("Error reading event: {}", e),
-        }
-    }
-
-    Ok(())
-}
-
-async fn read_past_market_entered(
-    start_block: u64,
-    end_block: u64,
-    step_size: u64,
-    comptroller: Comptroller<Provider<Ws>>,
-    accounts: &mut Vec<Address>,
-) -> eyre::Result<()> {
-    if start_block >= end_block {
-        return Ok(());
-    }
-
-    let mut highest_len = 0;
-
-    // try the query
-    // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
-    for i in (start_block..end_block).step_by(step_size as usize) {
-        let logs = comptroller
-            .market_entered_filter()
-            .from_block(i)
-            .to_block(i + step_size)
-            .query()
-            .await;
-
-        let progress: f64 = ((i - TEMP_COMPTROLLER_CREATION_BLOCK) as f64
-            / (end_block - TEMP_COMPTROLLER_CREATION_BLOCK) as f64)
-            * 100 as f64;
-
-        match logs {
-            Ok(logs) => {
-                let len = logs.len();
-                if len > 0 {
-                    if logs.len() > highest_len {
-                        highest_len = logs.len();
-                    }
-                    println!("{}%  logs length: {}", progress, logs.len());
-                }
-                for log in logs {
-                    let account: Address = Address::from(log.account);
-                    if !accounts.contains(&account) {
-                        accounts.push(account);
-                    }
-                }
-            }
-            Err(err) => {
-                // TODO: resolve
-                println!("FUCKED");
-            }
-        }
-    }
-
-    println!("\nFinal size of accounts: {}", accounts.len());
-    println!("Largest amount in one query: {}", highest_len);
+    my_reader.run().await?;
 
     Ok(())
 }
