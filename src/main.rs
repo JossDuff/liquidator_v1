@@ -19,12 +19,10 @@ mod comptroller_bindings;
 mod erc20_bindings;
 mod liquidator_bindings;
 mod reader;
-mod uniswap_anchored_view_bindings;
 //use crate::comptroller_interface::{Comptroller, ComptrollerEvents};
 use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
 use crate::liquidator_bindings::Liquidator;
 use crate::reader::Reader;
-use crate::uniswap_anchored_view_bindings::UniswapAnchoredView;
 use std::{collections::HashMap, sync::Arc};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
@@ -52,11 +50,6 @@ async fn main() -> eyre::Result<()> {
         .generate()?
         .write_to_file("src/c_erc20_bindings.rs")?;
 
-    // generate uniswapAnchoredView bindings
-    Abigen::new("UniswapAnchoredView", "./abi/uniswapAnchoredView.json")?
-        .generate()?
-        .write_to_file("src/uniswap_anchored_view_bindings.rs")?;
-
     // generate erc20 bindings
     Abigen::new("Erc20", "./abi/erc20.json")?
         .generate()?
@@ -74,9 +67,6 @@ async fn main() -> eyre::Result<()> {
     let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
     let liquidator = Liquidator::new(liquidator_address, client2);
 
-    let oracle_address: Address = TEMP_ORACLE_ETH_MAINNET.parse()?;
-    let oracle = UniswapAnchoredView::new(oracle_address, client3);
-
     let mut accounts: Vec<Address> = Vec::new();
 
     // TODO: don't clone shit in here
@@ -84,7 +74,6 @@ async fn main() -> eyre::Result<()> {
         client4,
         comptroller.clone(),
         liquidator.clone(),
-        oracle.clone(),
         accounts.clone(),
     );
 
