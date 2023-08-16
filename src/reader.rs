@@ -30,30 +30,27 @@ impl<M: Middleware> Reader<M> {
 
     pub async fn read_present_blocks(&mut self) -> Result<(), M> {
         let watcher = self.client.clone();
-        let mut on_block = watcher
-            .watch_blocks()
-            .await
-            //.map_err(ContractError::MiddlewareError)?
-            .expect("Fucky wucky on watcher on_block") // TODO: this is a bandaid
-            .stream();
+        // let watcher = self.client.clone();
+        // let mut on_block = watcher
+        //     .watch_blocks()
+        //     .await
+        //     //.map_err(ContractError::MiddlewareError)?
+        //     .expect("Fucky wucky on watcher on_block") // TODO: this is a bandaid
+        //     .stream();
 
-        while on_block.next().await.is_some() {
-            // TODO: block number is probably also somewhere in the metadata.  Provider call is slow
-            let block_number = self
-                .client
-                .get_block_number()
-                .await
-                .expect("Fucky wucky on on_block.next()"); // TODO: this is a bandaid
-                                                           //.map_err(ContractError::MiddlewareError)?;
+        // while on_block.next().await.is_some() {
+        //     // TODO: block number is probably also somewhere in the metadata.  Provider call is slow
+        //     let block_number = self
+        //         .client
+        //         .get_block_number()
+        //         .await
+        //         .expect("Fucky wucky on on_block.next()"); // TODO: this is a bandaid
+        //                                                    //.map_err(ContractError::MiddlewareError)?;
 
-            // run the logic for this block
-            //on_block(block_number).await?;
-            println!("{}", block_number);
-        }
-        Ok(())
-    }
-
-    pub async fn read_past_blocks(&mut self, start_block: u64, end_block: u64) -> Result<(), M> {
+        //     // run the logic for this block
+        //     //on_block(block_number).await?;
+        //     println!("{}", block_number);
+        // }
         Ok(())
     }
 }

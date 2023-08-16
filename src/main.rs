@@ -46,11 +46,29 @@ async fn main() -> eyre::Result<()> {
     read_past_market_entered(
         TEMP_COMPTROLLER_CREATION_BLOCK,
         TEMP_CURRENT_BLOCK,
-        20000,
-        comptroller,
+        40000,
+        comptroller.clone(), // TODO: fix
         &mut accounts,
     )
     .await?;
+
+    println!("Watching for new market entered events...");
+
+    let market_entered_filter = comptroller.market_entered_filter();
+    let mut stream = market_entered_filter.subscribe().await?;
+
+    while let Some(event) = stream.next().await {
+        match event {
+            Ok(log) => {
+                println!("GOT A NEW MARKET ENTERED: {}", log);
+                let account: Address = Address::from(log.account);
+                if !accounts.contains(&account) {
+                    accounts.push(account);
+                }
+            }
+            Err(e) => println!("Error reading event: {}", e),
+        }
+    }
 
     Ok(())
 }

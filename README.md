@@ -49,6 +49,7 @@
 
 ## Refactor to alloy when alloy is done
 
+To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
 
 # Sources
  - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452
