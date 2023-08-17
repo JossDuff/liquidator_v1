@@ -2,7 +2,6 @@ use crate::c_erc20_bindings::CErc20;
 use crate::comptroller_bindings::{comptroller, Comptroller};
 use crate::erc20_bindings::Erc20;
 use crate::liquidator_bindings::Liquidator;
-
 use ethers::abi::{encode, AbiEncode, Events};
 use ethers::prelude::*;
 use ethers::utils::{format_units, to_checksum};
@@ -17,6 +16,7 @@ use std::fs;
 use std::mem::transmute;
 use std::ops::{Div, Mul};
 use std::{collections::HashMap, io::Write, path::PathBuf, sync::Arc};
+use tokio::time::Duration;
 
 const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
@@ -142,6 +142,7 @@ impl Reader {
 
         // Hash map for coin address to price float
         let mut coin_prices: HashMap<Address, f64> = HashMap::new();
+        let mut ignore_coins: Vec<Address> = Vec::new();
 
         for account in self.accounts.iter() {
             let (error, liquidity, shortfall) = self
@@ -203,8 +204,14 @@ impl Reader {
                     let underlying_token_addr = c_token.underlying().call().await?;
                     //println!("Got underlying token address {}", underlying_token_addr);
 
-                    // if underlying_token_addr doesn't exist in the hash map, add it
-                    if !coin_prices.contains_key(&underlying_token_addr) {
+                    // if underlying_token_addr doesn't exist in the hash map and isn't ignored add it
+                    if !coin_prices.contains_key(&underlying_token_addr)
+                        && !ignore_coins.contains(&underlying_token_addr)
+                    {
+                        // println!(
+                        //     "token  {} not found, getting price and adding to hash map",
+                        //     underlying_token_addr
+                        // );
                         let chain: &str = "ethereum"; // Replace with the desired chain (e.g., "ethereum")
                         let asset_address: &str = &format!("{:?}", underlying_token_addr); // Replace with the asset address
                         let currency: &str = "usd";
@@ -217,16 +224,32 @@ impl Reader {
                             chain, asset_address, currency
                         );
 
+                        println!("Querying token price for {}", asset_address);
+                        let mut response = reqwest::get(&url).await?;
                         // Send the HTTP GET request
-                        let response = reqwest::get(&url).await?;
+                        while let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+                            println!("Hit rate limit, waiting 61 seconds...");
+                            tokio::time::sleep(Duration::from_secs(61)).await;
+                            response = reqwest::get(&url).await?;
+                        }
+
                         let json: HashMap<String, HashMap<String, f64>> = response.json().await?;
 
                         if let Some(asset_prices) = json.get(asset_address) {
                             if let Some(price) = asset_prices.get(currency) {
                                 // insert price into hash map
                                 coin_prices.insert(underlying_token_addr, *price);
+
+                                let x = coin_prices.len();
+                                // println!("Added token {}", underlying_token_addr);
+                                println!("Coin prices size: {}", x);
                             }
+                        } else {
+                            //println!("Token not found, ignoring");
+                            ignore_coins.push(underlying_token_addr);
                         }
+                    } else {
+                        //println!("token {} found in hash map", underlying_token_addr);
                     }
 
                     let zero: f64 = 0.0;
@@ -276,9 +299,14 @@ impl Reader {
                         }
                     }
                 }
-                let best_repay_amount_formatted = format_units(best_repay_amount, "ether").unwrap();
-                let best_seize_amount_formatted = format_units(best_seize_amount, "ether").unwrap();
-                println!("Account {}, best repay asset / amount: {} / ${}, best seize asset / amount: {} / ${}", account, best_repay_asset, best_repay_amount_formatted, best_seize_asset, best_seize_amount_formatted);
+
+                if best_repay_amount != U256::from(0) && best_seize_amount != U256::from(0) {
+                    let best_repay_amount_formatted =
+                        format_units(best_repay_amount, "ether").unwrap();
+                    let best_seize_amount_formatted =
+                        format_units(best_seize_amount, "ether").unwrap();
+                    println!("Account {}, best repay asset / amount: {} / ${}, best seize asset / amount: {} / ${}", account, best_repay_asset, best_repay_amount_formatted, best_seize_asset, best_seize_amount_formatted);
+                }
             }
         }
 

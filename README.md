@@ -17,8 +17,7 @@
 
 ## Phase 2: Correct
 - proper error handling
-- DON'T USE COMPOUND OPEN PRICE FEED
-- it fixes stablecoins to dollar value
+- use a better price oracle.  Coingecko rate limit is like 10/minute
 - multicalls!!!!
 - async tokio for waiting for I/O interactions, rayon for speeding up computations
     - https://tokio.rs/tokio/tutorial
