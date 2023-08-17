@@ -34,6 +34,7 @@
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
 - Confirm the fastest way to get chain data: API, theGraph, or custom indexer
 - execute multiple liquidate calls at once based on close factor
+- database cache
 
 
 ## Phase 4: Spread

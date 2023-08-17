@@ -3,9 +3,9 @@ use crate::comptroller_bindings::{comptroller, Comptroller};
 use crate::erc20_bindings::Erc20;
 use crate::liquidator_bindings::Liquidator;
 
-use ethers::abi::Events;
+use ethers::abi::{encode, AbiEncode, Events};
 use ethers::prelude::*;
-use ethers::utils::format_units;
+use ethers::utils::{format_units, to_checksum};
 use ethers::{
     contract::abigen,
     core::types::Address,
@@ -15,6 +15,7 @@ use eyre::Result;
 use serde_json; // Add this to your Cargo.toml if you're using JSON serialization
 use std::fs;
 use std::mem::transmute;
+use std::ops::{Div, Mul};
 use std::{collections::HashMap, io::Write, path::PathBuf, sync::Arc};
 
 const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
@@ -139,6 +140,9 @@ impl Reader {
         //let mut liquidatable_accounts: Vec<Address> = Vec::new();
         println!("Searching for liquidatable accounts...");
 
+        // Hash map for coin address to price float
+        let mut coin_prices: HashMap<Address, f64> = HashMap::new();
+
         for account in self.accounts.iter() {
             let (error, liquidity, shortfall) = self
                 .comptroller
@@ -171,7 +175,7 @@ impl Reader {
                 for c_token_addr in assets_in.iter() {
                     // skip ceth
                     if *c_token_addr == CETH_ADDRESS_MAINNET.parse()? {
-                        println!("Skipping cEth");
+                        //println!("Skipping cEth");
                         continue;
                     }
 
@@ -186,89 +190,95 @@ impl Reader {
                         println!("Error getting account snapshot for account: {}", account);
                     }
 
+                    // if amount_held == U256::from(0) && amount_borrowed == U256::from(0) {
+                    //     println!("Skipping asset with no holdings or borrowings");
+                    //     continue;
+                    // }
+
                     // TODO: the calculations below are likely all wrong and mixed up
                     // at the time it was unclear to me what token (cToken or underlying) should be
                     // converted to usd values, so I just converted both
 
-                    // println!(
-                    //     "Going to get underlying token address for cToken {}",
-                    //     c_token_addr
-                    // );
-
-                    /*
                     // get contract of underlying
                     let underlying_token_addr = c_token.underlying().call().await?;
                     //println!("Got underlying token address {}", underlying_token_addr);
 
-                    let underlying_token =
-                        Erc20::new(Address::from(underlying_token_addr), self.client.clone());
+                    // if underlying_token_addr doesn't exist in the hash map, add it
+                    if !coin_prices.contains_key(&underlying_token_addr) {
+                        let chain: &str = "ethereum"; // Replace with the desired chain (e.g., "ethereum")
+                        let asset_address: &str = &format!("{:?}", underlying_token_addr); // Replace with the asset address
+                        let currency: &str = "usd";
+                        // println!("underlying_token_addr {:?}", underlying_token_addr);
+                        // println!("asset_address: {:?}", asset_address);
 
-                    //println!("Going to get underlying token decimals");
-                    // get underlying token decimals
-                    let underlying_decimals = underlying_token.decimals().call().await?;
+                        // Construct the API URL
+                        let url = format!(
+                            "https://api.coingecko.com/api/v3/simple/token_price/{}/?contract_addresses={}&vs_currencies={}",
+                            chain, asset_address, currency
+                        );
 
-                    println!(
-                        "underlying decimals of {} is {}",
-                        underlying_token_addr, underlying_decimals
-                    );
+                        // Send the HTTP GET request
+                        let response = reqwest::get(&url).await?;
+                        let json: HashMap<String, HashMap<String, f64>> = response.json().await?;
 
-                    // TODO: something with exchange rate?
-
-                    // RETURNS: The price of the asset in USD as an unsigned integer scaled up by
-                    // 10 ^ (36 - underlying asset decimals).
-                    // E.g. WBTC has 8 decimal places, so the return value is scaled up by 1e28.
-                    let returned_price = self
-                        .oracle
-                        .get_underlying_price(Address::from(*c_token_addr))
-                        .call()
-                        .await?;
-
-                    // let base = U256::from(10).pow(18.into());
-                    // let returned_price = returned_price / base;
-
-                    let returned_price_string = format_units(returned_price, "ether").unwrap();
-                    println!(
-                        "underlying token {:?} has USD value of: {}",
-                        underlying_token_addr, returned_price_string
-                    );
-
-                    // convert returned price to USD
-                    // saturating_sub might be safe because I assume there will not be decimals > 36
-                    // TODO: prevent against this case
-                    // TODO: convert to float
-                    let underlying_usd: U256 = returned_price
-                        / (U256::from(10)
-                            .pow(U256::from(36).saturating_sub(underlying_decimals.into())));
-
-                    //let underlying_usd: f64 =
-                    //println!("Underlying usd: {}", underlying_usd);
-
-                    let amount_borrowed_underlying_usd = amount_borrowed * underlying_usd;
-
-                    // TODO: does this need to be in USD?  Need to research how conversion from amount repaid to reward works.
-                    // for now I'm just gonna assume higher usd value means more reward
-                    let amount_held_of_underlying_usd =
-                        amount_held * exchange_rate * underlying_usd;
-
-                    */
-
-                    // temp for compilation until I get a price oracle
-                    let amount_borrowed_underlying_usd: U256 = 0.into();
-                    // set best repay asset
-                    if amount_borrowed_underlying_usd > best_repay_amount {
-                        best_repay_amount = amount_borrowed_underlying_usd;
-                        best_repay_asset = Address::from(*c_token_addr);
+                        if let Some(asset_prices) = json.get(asset_address) {
+                            if let Some(price) = asset_prices.get(currency) {
+                                // insert price into hash map
+                                coin_prices.insert(underlying_token_addr, *price);
+                            }
+                        }
                     }
 
-                    // temp for compilation until I get a price oracle
-                    let amount_held_of_underlying_usd: U256 = 0.into();
-                    // set best seize asset
-                    if amount_held_of_underlying_usd > best_seize_amount {
-                        best_seize_amount = amount_held_of_underlying_usd;
-                        best_seize_asset = Address::from(*c_token_addr);
+                    let zero: f64 = 0.0;
+                    // look up price of underlying token from hash map
+                    let underlying_price = coin_prices
+                        .get(&underlying_token_addr)
+                        .unwrap_or_else(|| &zero);
+
+                    // skip if we couldn't get the price
+                    if underlying_price == &zero {
+                        //println!("Underlying price is zero, skipping");
+                        continue;
+                    }
+
+                    // println!(
+                    //     "Price of underlying token {} is {}",
+                    //     underlying_token_addr, underlying_price
+                    // );
+                    let underlying_price_casted: U256 =
+                        U256::from((underlying_price * 1e18) as u64);
+                    // println!("Underlying_price_casted: {}", underlying_price_casted);
+                    // println!("Amount_borrowed: {}", amount_borrowed);
+
+                    let base = U256::from(10).pow(18.into());
+
+                    if amount_borrowed != U256::from(0) {
+                        // Assuming amount_borrowed from get_account_snapshot is amount in underlying tokens
+                        let amount_borrowed_underlying_usd: U256 =
+                            amount_borrowed.mul(underlying_price_casted).div(base);
+
+                        // set best repay asset
+                        if amount_borrowed_underlying_usd > best_repay_amount {
+                            best_repay_amount = amount_borrowed_underlying_usd;
+                            best_repay_asset = Address::from(*c_token_addr);
+                        }
+                    }
+
+                    if amount_held != U256::from(0) {
+                        // TODO: add in exchange rate
+                        let amount_held_of_underlying_usd: U256 =
+                            amount_held.mul(underlying_price_casted).div(base);
+
+                        // set best seize asset
+                        if amount_held_of_underlying_usd > best_seize_amount {
+                            best_seize_amount = amount_held_of_underlying_usd;
+                            best_seize_asset = Address::from(*c_token_addr);
+                        }
                     }
                 }
-                println!("Account {}, best repay asset / amount: {} / ${}, best seize asset / amount: {} / ${}", account, best_repay_asset, best_repay_amount, best_seize_asset, best_seize_amount);
+                let best_repay_amount_formatted = format_units(best_repay_amount, "ether").unwrap();
+                let best_seize_amount_formatted = format_units(best_seize_amount, "ether").unwrap();
+                println!("Account {}, best repay asset / amount: {} / ${}, best seize asset / amount: {} / ${}", account, best_repay_asset, best_repay_amount_formatted, best_seize_asset, best_seize_amount_formatted);
             }
         }
 

@@ -23,6 +23,8 @@ mod reader;
 use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
 use crate::liquidator_bindings::Liquidator;
 use crate::reader::Reader;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{collections::HashMap, sync::Arc};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
@@ -32,6 +34,20 @@ const TEMP_ORACLE_ETH_MAINNET: &str = "0x50ce56A3239671Ab62f185704Caedf626352741
 
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
 const TEMP_CURRENT_BLOCK: u64 = 17915375;
+
+// #[derive(Debug, Serialize, Deserialize)]
+// struct CoinGeckoPrice {
+//     usd: Value, // Price in USD
+//                 // You can include more fields for other currencies if needed
+// }
+
+// fn extract_price(json_value: &Value) -> Option<f64> {
+//     match json_value {
+//         Value::Number(num) => num.as_f64(),
+//         Value::String(s) => s.parse::<f64>().ok(),
+//         _ => None,
+//     }
+// }
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -76,6 +92,32 @@ async fn main() -> eyre::Result<()> {
         liquidator.clone(),
         accounts.clone(),
     );
+
+    // let chain = "ethereum"; // Replace with the desired chain (e.g., "ethereum")
+    // let asset_address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // Replace with the asset address
+    // let currency = "usd";
+
+    // // Construct the API URL
+    // let url = format!(
+    //     "https://api.coingecko.com/api/v3/simple/token_price/{}/?contract_addresses={}&vs_currencies={}",
+    //     chain, asset_address, currency
+    // );
+
+    // // Send the HTTP GET request
+    // let response = reqwest::get(&url).await?;
+    // let json: HashMap<String, HashMap<String, f64>> = response.json().await?;
+
+    // if let Some(asset_prices) = json.get(asset_address) {
+    //     if let Some(price) = asset_prices.get(currency) {
+    //         println!(
+    //             "Price of {} on {} in {}: ${}",
+    //             asset_address,
+    //             chain,
+    //             currency.to_uppercase(),
+    //             price
+    //         );
+    //     }
+    // }
 
     my_reader.run().await?;
 
