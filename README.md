@@ -23,6 +23,7 @@
     - https://tokio.rs/tokio/tutorial
     - https://docs.rs/rayon/latest/rayon/
     - recusive async historical event query instead of block stepping (read async book)
+- TESTS!!!
 
 ## Phase 3: Scale
 - using get_logs or get_logs_paginated might be more efficient than query
@@ -39,6 +40,7 @@
 ## Phase 4: Spread
 - script to deploy onto any lending protocol and fork
 - function to find the comptroller contract creation block for each protocol
+- Add abstraction for any evm chain
 - target small lending protocols with not much competition
 
 ## Optional Phase: Data
