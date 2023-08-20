@@ -23,12 +23,12 @@
     - https://tokio.rs/tokio/tutorial
     - https://docs.rs/rayon/latest/rayon/
     - recusive async historical event query instead of block stepping (read async book)
-- TESTS!!!
+- TESTS!
 
 ## Phase 3: Scale
 - using get_logs or get_logs_paginated might be more efficient than query
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
-- store positions in a database
+- store positions in a database (redis?)
 - multithread
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
