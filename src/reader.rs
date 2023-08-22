@@ -16,6 +16,8 @@ use std::fs;
 use std::mem::transmute;
 use std::ops::{Div, Mul};
 use std::{collections::HashMap, io::Write, path::PathBuf, sync::Arc};
+use tokio::join;
+use tokio::spawn;
 use tokio::time::Duration;
 
 const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
@@ -45,27 +47,35 @@ impl Reader {
     }
 
     pub async fn run(&mut self) -> eyre::Result<()> {
-        self.load_data();
-        // self.read_past_market_entered(TEMP_COMPTROLLER_CREATION_BLOCK, TEMP_CURRENT_BLOCK, 40000)
-        //     .await?;
+        // self.load_data();
 
-        // println!("collected all past accounts");
+        // TODO: battle borrow checker
 
-        //self.read_current_market_entered().await?;
+        // Spawn read_current_market_entered in a separate task
+        let current_task = spawn(async move {
+            self.read_current_market_entered().await;
+        });
+
+        // Start and await read_past_market_entered
+        self.read_past_market_entered(TEMP_COMPTROLLER_CREATION_BLOCK, TEMP_CURRENT_BLOCK, 40000)
+            .await?;
+        println!("collected all past accounts");
+
+        // Await the completion of read_current_market_entered
+        current_task.await;
         self.search_for_liquidatable().await?;
 
         Ok(())
     }
 
     async fn read_past_market_entered(
-        &mut self,
+        &self,
         start_block: u64,
         end_block: u64,
         step_size: u64,
-    ) -> eyre::Result<()> {
-        if start_block >= end_block {
-            return Ok(());
-        }
+    ) -> eyre::Result<Vec<Address>> {
+        // TODO: don't initialize a new vector.  figure out how to store only one vec
+        let mut accounts: Vec<Address> = vec![];
 
         let mut highest_len = 0;
 
@@ -95,8 +105,8 @@ impl Reader {
                     }
                     for log in logs {
                         let account: Address = Address::from(log.account);
-                        if !self.accounts.contains(&account) {
-                            self.accounts.push(account);
+                        if !accounts.contains(&account) {
+                            accounts.push(account);
                         }
                     }
                 }
@@ -110,12 +120,14 @@ impl Reader {
         println!("\nFinal size of accounts: {}", self.accounts.len());
         println!("Largest amount in one query: {}", highest_len);
 
-        self.save_data();
+        //self.save_data();
 
-        Ok(())
+        Ok(accounts)
     }
 
-    async fn read_current_market_entered(&mut self) -> eyre::Result<()> {
+    async fn read_current_market_entered(&self) -> eyre::Result<()> {
+        // TODO: don't initialize a new vector
+        let mut accounts: Vec<Address> = vec![];
         println!("Watching for new market entered events...");
 
         let market_entered_filter = self.comptroller.market_entered_filter();
@@ -126,13 +138,15 @@ impl Reader {
                 Ok(log) => {
                     println!("GOT A NEW MARKET ENTERED: {}", log);
                     let account: Address = Address::from(log.account);
-                    if !self.accounts.contains(&account) {
-                        self.accounts.push(account);
+                    if !accounts.contains(&account) {
+                        accounts.push(account);
                     }
                 }
                 Err(e) => println!("Error reading event: {}", e),
             }
         }
+
+        // this never returns actually...
         Ok(())
     }
 
