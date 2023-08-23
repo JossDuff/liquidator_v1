@@ -21,7 +21,7 @@ use tokio::join;
 use tokio::spawn;
 use tokio::sync::{
     mpsc::{channel, Sender},
-    Mutex,
+    oneshot, Mutex,
 };
 use tokio::time::Duration;
 
@@ -39,7 +39,7 @@ pub struct Reader {
     client: Arc<Provider<Ws>>,
     comptroller: Comptroller<Provider<Ws>>,
     liquidator: Liquidator<Provider<Ws>>,
-    accounts: Arc<Mutex<HashMap<Address, u32>>>, // TODO: something more useful than u32
+    accounts: HashMap<Address, u32>, // TODO: something more useful than u32
 }
 
 impl Reader {
@@ -48,7 +48,7 @@ impl Reader {
         comptroller: Comptroller<Provider<Ws>>,
         liquidator: Liquidator<Provider<Ws>>,
     ) -> Reader {
-        let accounts = Arc::new(Mutex::new(HashMap::new()));
+        let accounts = HashMap::new();
         Self {
             client,
             comptroller,
@@ -58,16 +58,38 @@ impl Reader {
     }
 
     pub async fn run(&mut self) -> eyre::Result<()> {
-        let (tx, mut rx) = channel(32);
+        let (tx, mut rx) = mpsc::channel(32);
         let tx2: Sender<Address> = tx.clone();
 
-        // Clone the accounts Arc for use in tasks
-        //let accounts_clone = self.accounts.clone();
+        let account_manager = tokio::spawn(async move {
+            // start receiving messages
+            while let Some(cmd) = rx.recv().await {
+                match cmd {
+                    Command::Get { key } => {
+                        let value = accounts.get(&key).unwrap_or(&0);
+                        println!("{}: {}", key, value);
+                    }
+                    Command::Add { key } => {
+                        // if it doesn't exist in the hash map, or is 0 in the map, add it
+                        if accounts.get(&key).is_none() || accounts.get(&key) == Some(&0) {
+                            accounts.insert(key, 0);
+                            let value = accounts.entry(key).or_insert(0);
+                            *value += 1;
+                        }
+                    }
+                }
+            }
+        });
 
         // Spawn read_current task (runs infinitely)
-        // let current_task = tokio::spawn(async move {
-        //     self.read_current_market_entered().await;
-        // });
+        let current_task = tokio::spawn(async move {
+            read_current_market_entered(tx2).await;
+        });
+
+        // Spawn read_past task (returns eventually)
+        let past_task = tokio::spawn(async move {
+            read_past_market_entered(tx, 0, 0, 0).await;
+        });
 
         // // Spawn read_past task (returns eventually)
         // // Start and await read_past_market_entered
@@ -79,97 +101,42 @@ impl Reader {
 
         // ... handle read_past_result ...
 
-        // Wait for read_current task to finish (if needed)
-        //current_task.await?;
+        // this one eventually returns
+        past_task.await.unwrap();
 
-        // ... rest of your code ...
+        // this one never returns
+        current_task.await.unwrap();
+
+        // this one should never return because current_task never returns
+        account_manager.await.unwrap();
 
         Ok(())
     }
 
     async fn read_past_market_entered(
-        &mut self,
+        tx: Sender<Address>,
         start_block: u64,
         end_block: u64,
         step_size: u64,
     ) -> eyre::Result<()> {
-        println!("READING PAST MARKET ENTERED");
+        let cmd = Command::Add {
+            key: Address::default(),
+        };
 
-        let mut highest_len = 0;
-
-        // try the query
-        // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
-        for i in (start_block..end_block).step_by(step_size as usize) {
-            let logs = self
-                .comptroller
-                .market_entered_filter()
-                .from_block(i)
-                .to_block(i + step_size)
-                .query()
-                .await;
-
-            let progress: f64 = ((i - TEMP_COMPTROLLER_CREATION_BLOCK) as f64
-                / (end_block - TEMP_COMPTROLLER_CREATION_BLOCK) as f64)
-                * 100 as f64;
-
-            match logs {
-                Ok(logs) => {
-                    let len = logs.len();
-                    if len > 0 {
-                        if logs.len() > highest_len {
-                            highest_len = logs.len();
-                        }
-                        println!("{}%  logs length: {}", progress, logs.len());
-                    }
-                    for log in logs {
-                        let account: Address = Address::from(log.account);
-                        // Acquire lock and update accounts
-                        // let mut accounts_lock = self.accounts.lock().await;
-                        // if !accounts_lock.contains(&account) {
-                        //     accounts_lock.push(account);
-                        // }
-                        // MutexGuard is automatically dropped here, releasing the lock
-                    }
-                }
-                Err(err) => {
-                    // TODO: resolve
-                    println!("FUCKED");
-                }
-            }
-        }
-
-        //println!("\nFinal size of accounts: {}", self.accounts.len());
-        println!("Largest amount in one query: {}", highest_len);
-
-        //self.save_data();
+        tx.send(cmd).await.unwrap();
 
         Ok(())
     }
 
-    // TODO: might be the case that this returns when there hasn't been some market_entered events in awhile?
-    // not exactly sure how the event filter stream works
-    async fn read_current_market_entered(&mut self) -> eyre::Result<()> {
-        // TODO: don't initialize a new vector
-        println!("Watching for new market entered events...");
+    async fn read_current_market_entered(tx: Sender<Address>) -> eyre::Result<()> {
+        loop {
+            let cmd = Command::Add {
+                key: Address::default(),
+            };
 
-        let market_entered_filter = self.comptroller.market_entered_filter();
-        let mut stream = market_entered_filter.stream().await?; // TODO: subscribe seems better than stream according to docs, but not sure why subscribe wasn't working
+            tx.send(cmd).await.unwrap();
 
-        while let Some(event) = stream.next().await {
-            match event {
-                Ok(log) => {
-                    println!("GOT A NEW MARKET ENTERED: {}", log);
-                    let account: Address = Address::from(log.account);
-
-                    // acquire lock and push account if it doesn't exist
-                    // let mut accounts_lock = self.accounts.lock().await;
-                    // if !accounts_lock.contains(&account) {
-                    //     accounts_lock.push(account);
-                    // }
-                    // MutexGuard is automatically dropped here, releasing the lock
-                }
-                Err(e) => println!("Error reading event: {}", e),
-            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
         }
 
         // this never returns actually...
