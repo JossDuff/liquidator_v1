@@ -83,15 +83,8 @@ async fn main() -> eyre::Result<()> {
     let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
     let liquidator = Liquidator::new(liquidator_address, client2);
 
-    let mut accounts: Vec<Address> = Vec::new();
-
     // TODO: don't clone shit in here
-    let mut my_reader: Reader = Reader::new(
-        client4,
-        comptroller.clone(),
-        liquidator.clone(),
-        accounts.clone(),
-    );
+    let mut my_reader: Reader = Reader::new(client4, comptroller.clone(), liquidator.clone());
 
     // let chain = "ethereum"; // Replace with the desired chain (e.g., "ethereum")
     // let asset_address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // Replace with the asset address

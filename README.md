@@ -19,10 +19,9 @@
 - proper error handling
 - use a better price oracle.  Coingecko rate limit is like 10/minute
 - multicalls!!!!
-- async tokio for waiting for I/O interactions, rayon for speeding up computations
-    - https://tokio.rs/tokio/tutorial
-    - https://docs.rs/rayon/latest/rayon/
-    - recusive async historical event query instead of block stepping (read async book)
+- find best approach to share the accounts
+    - Should probably use a hash map so we don't have to do .contains
+    - https://tokio.rs/tokio/tutorial/shared-state
 - TESTS!
 
 ## Phase 3: Scale
