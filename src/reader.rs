@@ -151,12 +151,7 @@ impl Reader {
                     }
                     for log in logs {
                         let account: Address = Address::from(log.account);
-                        // Acquire lock and update accounts
-                        // let mut accounts_lock = self.accounts.lock().await;
-                        // if !accounts_lock.contains(&account) {
-                        //     accounts_lock.push(account);
-                        // }
-                        // MutexGuard is automatically dropped here, releasing the lock
+
                         let cmd = Command::Add { key: account };
 
                         tx.send(cmd).await.unwrap();
@@ -195,9 +190,7 @@ impl Reader {
                     println!("GOT A NEW MARKET ENTERED: {}", log);
                     let account: Address = Address::from(log.account);
 
-                    let cmd = Command::Add {
-                        key: Address::default(),
-                    };
+                    let cmd = Command::Add { key: account };
 
                     tx.send(cmd).await.unwrap();
                 }
