@@ -1,5 +1,5 @@
 use crate::c_erc20_bindings::CErc20;
-use crate::comptroller_bindings::{comptroller, Comptroller};
+use crate::comptroller_bindings::{comptroller, Comptroller, MarketEnteredFilter};
 use crate::erc20_bindings::Erc20;
 use crate::liquidator_bindings::Liquidator;
 use ethers::abi::{encode, AbiEncode, Events};
@@ -39,7 +39,7 @@ pub struct Reader {
     client: Arc<Provider<Ws>>,
     comptroller: Comptroller<Provider<Ws>>,
     liquidator: Liquidator<Provider<Ws>>,
-    accounts: Arc<Mutex<HashMap<Address, u32>>>, // TODO: something more useful than u32
+    //accounts: HashMap<Address, u32>, // TODO: something more useful than u32
 }
 
 impl Reader {
@@ -48,47 +48,76 @@ impl Reader {
         comptroller: Comptroller<Provider<Ws>>,
         liquidator: Liquidator<Provider<Ws>>,
     ) -> Reader {
-        let accounts = Arc::new(Mutex::new(HashMap::new()));
+        //let accounts = HashMap::new();
         Self {
             client,
             comptroller,
             liquidator,
-            accounts,
+            //accounts,
         }
     }
 
     pub async fn run(&mut self) -> eyre::Result<()> {
         let (tx, mut rx) = channel(32);
-        let tx2: Sender<Address> = tx.clone();
+        let tx2: Sender<Command> = tx.clone();
+        let market_entered_filter_1 = self.comptroller.market_entered_filter();
 
-        // Clone the accounts Arc for use in tasks
-        //let accounts_clone = self.accounts.clone();
+        let temp_fix_comptroller = self.comptroller.clone();
+
+        let mut accounts: HashMap<Address, u32> = HashMap::new();
+
+        let account_manager = tokio::spawn(async move {
+            // start receiving messages
+            while let Some(cmd) = rx.recv().await {
+                match cmd {
+                    Command::Get { key } => {
+                        let value = accounts.get(&key).unwrap_or(&0);
+                        println!("{}: {}", key, value);
+                    }
+                    Command::Add { key } => {
+                        // if it doesn't exist in the hash map, or is 0 in the map, add it
+                        if accounts.get(&key).is_none() || accounts.get(&key) == Some(&0) {
+                            accounts.insert(key, 0);
+                            let value = accounts.entry(key).or_insert(0);
+                            *value += 1;
+                        }
+                    }
+                }
+            }
+        });
 
         // Spawn read_current task (runs infinitely)
-        // let current_task = tokio::spawn(async move {
-        //     self.read_current_market_entered().await;
-        // });
+        let current_task = tokio::spawn(async move {
+            Self::read_current_market_entered(tx2, market_entered_filter_1).await;
+        });
 
-        // // Spawn read_past task (returns eventually)
-        // // Start and await read_past_market_entered
-        // let read_past_result = self
-        //     .read_past_market_entered(TEMP_COMPTROLLER_CREATION_BLOCK, TEMP_CURRENT_BLOCK, 40000)
-        //     .await?;
-        // println!("collected all past accounts");
-        // println!("collected all past accounts");
+        // Spawn read_past task (returns eventually)
+        let past_task = tokio::spawn(async move {
+            Self::read_past_market_entered(
+                tx,
+                temp_fix_comptroller,
+                TEMP_COMPTROLLER_CREATION_BLOCK,
+                TEMP_CURRENT_BLOCK,
+                40000,
+            )
+            .await;
+        });
 
-        // ... handle read_past_result ...
+        // this one eventually returns
+        past_task.await.unwrap();
 
-        // Wait for read_current task to finish (if needed)
-        //current_task.await?;
+        // this one never returns
+        current_task.await.unwrap();
 
-        // ... rest of your code ...
+        // this one should never return because current_task never returns
+        account_manager.await.unwrap();
 
         Ok(())
     }
 
     async fn read_past_market_entered(
-        &mut self,
+        tx: Sender<Command>,
+        temp_fix_comptroller: Comptroller<Provider<Ws>>,
         start_block: u64,
         end_block: u64,
         step_size: u64,
@@ -100,8 +129,7 @@ impl Reader {
         // try the query
         // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
         for i in (start_block..end_block).step_by(step_size as usize) {
-            let logs = self
-                .comptroller
+            let logs = temp_fix_comptroller
                 .market_entered_filter()
                 .from_block(i)
                 .to_block(i + step_size)
@@ -129,6 +157,9 @@ impl Reader {
                         //     accounts_lock.push(account);
                         // }
                         // MutexGuard is automatically dropped here, releasing the lock
+                        let cmd = Command::Add { key: account };
+
+                        tx.send(cmd).await.unwrap();
                     }
                 }
                 Err(err) => {
@@ -148,11 +179,14 @@ impl Reader {
 
     // TODO: might be the case that this returns when there hasn't been some market_entered events in awhile?
     // not exactly sure how the event filter stream works
-    async fn read_current_market_entered(&mut self) -> eyre::Result<()> {
+    async fn read_current_market_entered(
+        tx: Sender<Command>,
+        market_entered_filter: Event<Arc<Provider<Ws>>, Provider<Ws>, MarketEnteredFilter>,
+    ) -> eyre::Result<()> {
         // TODO: don't initialize a new vector
         println!("Watching for new market entered events...");
 
-        let market_entered_filter = self.comptroller.market_entered_filter();
+        // let market_entered_filter = self.comptroller.market_entered_filter();
         let mut stream = market_entered_filter.stream().await?; // TODO: subscribe seems better than stream according to docs, but not sure why subscribe wasn't working
 
         while let Some(event) = stream.next().await {
@@ -161,12 +195,11 @@ impl Reader {
                     println!("GOT A NEW MARKET ENTERED: {}", log);
                     let account: Address = Address::from(log.account);
 
-                    // acquire lock and push account if it doesn't exist
-                    // let mut accounts_lock = self.accounts.lock().await;
-                    // if !accounts_lock.contains(&account) {
-                    //     accounts_lock.push(account);
-                    // }
-                    // MutexGuard is automatically dropped here, releasing the lock
+                    let cmd = Command::Add {
+                        key: Address::default(),
+                    };
+
+                    tx.send(cmd).await.unwrap();
                 }
                 Err(e) => println!("Error reading event: {}", e),
             }
