@@ -19,6 +19,8 @@ mod comptroller_bindings;
 mod erc20_bindings;
 mod liquidator_bindings;
 mod reader;
+mod types;
+
 //use crate::comptroller_interface::{Comptroller, ComptrollerEvents};
 use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
 use crate::liquidator_bindings::Liquidator;

@@ -17,6 +17,7 @@
 
 ## Phase 2: Correct
 - proper error handling
+- store positions in a database (redis?)
 - use a better price oracle.  Coingecko rate limit is like 10/minute
 - multicalls!!!!
 - find best approach to share the accounts
@@ -27,13 +28,14 @@
 ## Phase 3: Scale
 - using get_logs or get_logs_paginated might be more efficient than query
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
-- store positions in a database (redis?)
+- make the redis db secure
 - multithread
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
 - Confirm the fastest way to get chain data: API, theGraph, or custom indexer
 - execute multiple liquidate calls at once based on close factor
-- database cache
+- database cache (don't need because we're using a cache for a database - redis :))))
+- find a faster serializer: https://github.com/djkoloski/rust_serialization_benchmark
 
 
 ## Phase 4: Spread
