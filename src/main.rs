@@ -1,33 +1,25 @@
-// The `prelude` module provides a convenient way to import a number
-// of common dependencies at once. This can be useful if you are working
-// with multiple parts of the library and want to avoid having
-// to import each dependency individually.
+mod bindings;
+mod reader;
+mod types;
 
-//use bigdecimal::{BigDecimal, ToPrimitive};
-//use core::borrow;
+pub use crate::bindings::{
+    c_erc20_bindings::CErc20,
+    comptroller_bindings::{Comptroller, ComptrollerEvents},
+    erc20_bindings::Erc20,
+    liquidator_bindings::Liquidator,
+};
+use crate::reader::Reader;
+
 use ethers::{
     contract::{abigen, Contract, EthEvent},
     core::types::{Address, Filter, Topic, H160, H256, U256, U64},
     prelude::*,
-    providers::{Middleware, Provider, StreamExt, Ws},
-    types::spoof::Account,
+    providers::{Provider, StreamExt, Ws},
 };
 use eyre::Result;
-// Include the generated bindings
-mod c_erc20_bindings;
-mod comptroller_bindings;
-mod erc20_bindings;
-mod liquidator_bindings;
-mod reader;
-mod types;
-
-//use crate::comptroller_interface::{Comptroller, ComptrollerEvents};
-use crate::comptroller_bindings::{Comptroller, ComptrollerEvents};
-use crate::liquidator_bindings::Liquidator;
-use crate::reader::Reader;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{collections::HashMap, sync::Arc};
+extern crate redis;
+use redis::Commands;
+use std::sync::Arc;
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
@@ -73,6 +65,17 @@ async fn main() -> eyre::Result<()> {
 
     // TODO: don't clone shit in here
     let mut my_reader: Reader = Reader::new(client4, comptroller.clone(), liquidator.clone());
+
+    /*  // connect to redis
+    let client = redis::Client::open("redis://127.0.0.1/")?;
+    let mut con = client.get_connection()?;
+    // throw away the result, just make sure it does not fail
+    let _: () = con.set("my_key", 42)?;
+    // read back the key and return it.  Because the return value
+    // from the function is a result for integer this will automatically
+    // convert into one.
+    let redis_result: Result<String, redis::RedisError> = con.get("my_key");
+    println!("{:?}", redis_result); */
 
     my_reader.run().await?;
 

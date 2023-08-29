@@ -30,13 +30,14 @@
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
 - make the redis db secure (close ports?)
 - use complex redis data structures to represent data instead of serializing/deserializing every time
+- use redis ahash (+7-10% performance)
 - multithread
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
 - Confirm the fastest way to get chain data: API, theGraph, or custom indexer
 - execute multiple liquidate calls at once based on close factor
-- database cache (don't need because we're using a cache for a database - redis :))))
 - find a faster serializer: https://github.com/djkoloski/rust_serialization_benchmark
+    - don't need if we switch to approach of using complex redis data structures for everything
 
 
 ## Phase 4: Spread

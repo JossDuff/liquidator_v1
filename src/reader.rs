@@ -1,22 +1,28 @@
-use crate::c_erc20_bindings::CErc20;
-use crate::comptroller_bindings::{comptroller, Comptroller, MarketEnteredFilter};
-use crate::erc20_bindings::Erc20;
-use crate::liquidator_bindings::Liquidator;
-use ethers::abi::{encode, AbiEncode, Events};
-use ethers::prelude::*;
-use ethers::utils::{format_units, to_checksum};
+pub use crate::bindings::{
+    c_erc20_bindings::CErc20,
+    comptroller_bindings::{Comptroller, ComptrollerEvents, MarketEnteredFilter},
+    erc20_bindings::Erc20,
+    liquidator_bindings::Liquidator,
+};
 use ethers::{
+    abi::{encode, AbiEncode, Events},
     contract::abigen,
     core::types::Address,
+    prelude::*,
     providers::{Provider, StreamExt, Ws},
+    utils::{format_units, to_checksum},
 };
 use eyre::Result;
 use serde_json;
-use std::fs;
-use std::mem::transmute;
-use std::ops::{Div, Mul};
-use std::sync::Arc;
-use std::{collections::HashMap, io::Write, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    io::Write,
+    mem::transmute,
+    ops::{Div, Mul},
+    path::PathBuf,
+    sync::Arc,
+};
 use tokio::join;
 use tokio::spawn;
 use tokio::sync::{
@@ -298,10 +304,6 @@ impl Reader {
                     //     println!("Skipping asset with no holdings or borrowings");
                     //     continue;
                     // }
-
-                    // TODO: the calculations below are likely all wrong and mixed up
-                    // at the time it was unclear to me what token (cToken or underlying) should be
-                    // converted to usd values, so I just converted both
 
                     // get contract of underlying
                     let underlying_token_addr = c_token.underlying().call().await?;
