@@ -1,6 +1,7 @@
 mod bindings;
 mod reader;
-mod types;
+pub mod types;
+pub mod watcher;
 
 pub use crate::bindings::{
     c_erc20_bindings::CErc20,
@@ -9,6 +10,7 @@ pub use crate::bindings::{
     liquidator_bindings::Liquidator,
 };
 use crate::reader::Reader;
+pub use crate::watcher::*;
 
 use ethers::{
     contract::{abigen, Contract, EthEvent},
@@ -31,25 +33,27 @@ const TEMP_CURRENT_BLOCK: u64 = 17915375;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    /*  Not sure why these aren't working any more but it's fine since we already generated them.  problem for later
     // generate comptroller bindings
     Abigen::new("Comptroller", "./abi/comptroller.json")?
         .generate()?
-        .write_to_file("src/comptroller_bindings.rs")?;
+        .write_to_file("src/bindings/comptroller_bindings.rs")?;
 
     // generate liquidator bindings
     Abigen::new("Liquidator", "./abi/liquidator.json")?
         .generate()?
-        .write_to_file("src/liquidator_bindings.rs")?;
+        .write_to_file("src/bindings/liquidator_bindings.rs")?;
 
     // generate cerc20 bindings
     Abigen::new("CErc20", "./abi/cerc20.json")?
         .generate()?
-        .write_to_file("src/c_erc20_bindings.rs")?;
+        .write_to_file("src/bindings/c_erc20_bindings.rs")?;
 
     // generate erc20 bindings
     Abigen::new("Erc20", "./abi/erc20.json")?
         .generate()?
-        .write_to_file("src/erc20_bindings.rs")?;
+        .write_to_file("src/bindings/erc20_bindings.rs")?;
+    */
 
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client = Arc::new(provider);
@@ -81,3 +85,12 @@ async fn main() -> eyre::Result<()> {
 
     Ok(())
 }
+
+/*
+IDEAL FLOW
+
+reader.run() gets all previous events and starts subscriber for new events and adds to db
+
+watcher.run() takes accounts from db and watches for liquidation opportunities
+
+*/
