@@ -19,7 +19,9 @@
 - proper error handling
 - store positions in redis.  Use the more simple approach of serializing/deserializing entire data structures
 - use a better price oracle.  Coingecko rate limit is like 10/minute
-- multicalls!!!!
+- If db instance is wrapped in arc mutex, do I really need each operation inside of db to be also wrapped in arc mutex?  This slows down everything cause they're all leaning on the one db...
+- multicalls!!!! (processor.rs will be a bear)
+- use tokio or std mutex???
 - find best approach to share the accounts
     - Should probably use a hash map so we don't have to do .contains
     - https://tokio.rs/tokio/tutorial/shared-state

@@ -25,14 +25,9 @@ impl Database {
         Ok(Database { client, connection })
     }
 
-    pub fn exists(&self, db_key: DBKey) -> bool {
+    pub fn exists(&self, address: Address) -> bool {
         let mut con = self.connection.lock().unwrap();
-
-        // could just be a single line, but keeping DBKey type parameter/ match pattern for consistency
-        match db_key {
-            DBKey::Account(address) => con.exists(address.to_string()).unwrap(),
-            DBKey::CToken(address) => con.exists(address.to_string()).unwrap(),
-        }
+        con.exists(address.to_string()).unwrap()
     }
 
     /// TODO: handle different case for key not found vs redis error
@@ -66,28 +61,64 @@ impl Database {
     // I think I should check wherever I'm calling this.  Since, for example, I'll have to check
     // if the entry exists to determine if I'll have to call contract/oracle to build the DBVal
     // TODO: this can fail
-    pub fn save(&self, db_val: DBVal) -> Option<DBVal> {
+    pub fn set(&self, db_val: DBVal) -> bool {
         let mut con = self.connection.lock().unwrap();
         match db_val {
             DBVal::Account(account) => {
+                // add address/account kv
                 let _: () = con
                     .set(
                         account.address.to_string(),
                         serde_json::to_string(&account).unwrap(),
                     )
                     .unwrap();
-                Some(DBVal::Account(account))
+
+                // add to set of accounts
+                let _: () = con.sadd("accounts", account.address.to_string()).unwrap();
+
+                true
             }
             DBVal::CToken(ctoken) => {
+                // add address/ctoken kv
                 let _: () = con
                     .set(
                         ctoken.address.to_string(),
                         serde_json::to_string(&ctoken).unwrap(),
                     )
                     .unwrap();
-                Some(DBVal::CToken(ctoken))
+
+                // add to set of ctokens
+                let _: () = con.sadd("ctokens", ctoken.address.to_string()).unwrap();
+
+                true
             }
         }
+    }
+
+    pub fn get_all_account_addresses(&self) -> Vec<Address> {
+        let mut con = self.connection.lock().unwrap();
+        let members: Vec<String> = con.smembers("accounts").unwrap();
+        drop(con); // drop connection to release lock
+
+        let account_addresses: Vec<Address> = members
+            .iter()
+            .filter_map(|member| member.parse().ok())
+            .collect();
+
+        account_addresses
+    }
+
+    pub fn get_all_ctoken_addresses(&self) -> Vec<Address> {
+        let mut con = self.connection.lock().unwrap();
+        let members: Vec<String> = con.smembers("ctokens").unwrap();
+        drop(con); // drop connection to release lock
+
+        let ctoken_addresses: Vec<Address> = members
+            .iter()
+            .filter_map(|member| member.parse().ok())
+            .collect();
+
+        ctoken_addresses
     }
 }
 

@@ -1,16 +1,29 @@
+use crate::types::{
+    account::Account,
+    ctoken::CToken,
+    db_types::{DBKey, DBVal},
+};
 use ethers::types::Address;
 use std::collections::HashMap;
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc::Sender, oneshot};
 
-#[derive(Debug)]
 pub enum Command {
     Get {
-        key: Address,
+        key: DBKey,
+        resp: oneshot::Sender<DBVal>,
     },
-    Add {
-        key: Address,
+    Set {
+        key: DBKey,
+        val: DBVal,
     },
-    GetCopy {
-        resp: oneshot::Sender<HashMap<Address, u32>>,
+    Update {
+        key: DBKey,
+        val: DBVal,
+    },
+    GetAllAccountAddresses {
+        resp: oneshot::Sender<Vec<Address>>,
+    },
+    GetAllCTokenAddresses {
+        resp: oneshot::Sender<Vec<Address>>,
     },
 }

@@ -4,14 +4,23 @@ pub use crate::bindings::{
     erc20_bindings::Erc20,
     liquidator_bindings::Liquidator,
 };
-pub use crate::types::{account::Account, command::Command, ctoken::CToken};
+use crate::db::Database;
+pub use crate::types::{
+    account::Account,
+    command::Command,
+    ctoken::CToken,
+    db_types::{DBKey, DBVal},
+};
 pub use crate::watcher;
 use ethers::{
     core::types::Address,
     prelude::*,
     providers::{Provider, StreamExt, Ws},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 use tokio::sync::mpsc::{channel, Sender};
 
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
@@ -21,7 +30,6 @@ pub struct Reader {
     client: Arc<Provider<Ws>>,
     comptroller: Comptroller<Provider<Ws>>,
     liquidator: Liquidator<Provider<Ws>>,
-    //accounts: HashMap<Address, u32>, // TODO: something more useful than u32
 }
 
 impl Reader {
@@ -51,26 +59,45 @@ impl Reader {
 
         let temp_fix_client = self.client.clone();
 
-        let mut accounts: HashMap<Address, u32> = HashMap::new();
+        // let mut accounts: HashMap<Address, u32> = HashMap::new();
+        let db = Database::new().unwrap();
 
-        let account_manager = tokio::spawn(async move {
+        let db_manager = tokio::spawn(async move {
             // start receiving messages
             while let Some(cmd) = rx.recv().await {
                 match cmd {
-                    Command::Get { key } => {
-                        let value = accounts.get(&key).unwrap_or(&0);
-                        println!("{}: {}", key, value);
+                    Command::Get { key, resp } => {
+                        let got = db.get(key).unwrap();
+                        let _ = resp.send(got);
                     }
-                    Command::Add { key } => {
-                        // if it doesn't exist in the hash map, or is 0 in the map, add it
-                        if accounts.get(&key).is_none() || accounts.get(&key) == Some(&0) {
-                            accounts.insert(key, 0);
-                            let value = accounts.entry(key).or_insert(0);
-                            *value += 1;
+                    Command::Set { key, val } => {
+                        let key = match key {
+                            DBKey::Account(address) => address,
+                            DBKey::CToken(address) => address,
+                        };
+
+                        // only add to db if it doesn't already exist
+                        if db.exists(key) {
+                            // do nothing.  it already exists
+                        } else {
+                            db.set(val);
                         }
                     }
-                    Command::GetCopy { resp } => {
-                        let copy = accounts.clone();
+                    Command::Update { key, val } => {
+                        let key = match key {
+                            DBKey::Account(address) => address,
+                            DBKey::CToken(address) => address,
+                        };
+
+                        db.set(val);
+                    }
+                    Command::GetAllAccountAddresses { resp } => {
+                        let copy = db.get_all_account_addresses();
+                        // ignore errors
+                        let _ = resp.send(copy);
+                    }
+                    Command::GetAllCTokenAddresses { resp } => {
+                        let copy = db.get_all_ctoken_addresses();
                         // ignore errors
                         let _ = resp.send(copy);
                     }
@@ -112,7 +139,7 @@ impl Reader {
 
         // these never return because current_task never returns
         searching_for_liquidatable_task.await.unwrap();
-        account_manager.await.unwrap();
+        db_manager.await.unwrap();
 
         Ok(())
     }
@@ -129,7 +156,6 @@ impl Reader {
         let mut highest_len = 0;
 
         // try the query
-        // TODO: is there a way to filter for only accounts that are not already in our list of accounts?
         for i in (start_block..end_block).step_by(step_size as usize) {
             let logs = temp_fix_comptroller
                 .market_entered_filter()
@@ -144,6 +170,7 @@ impl Reader {
 
             match logs {
                 Ok(logs) => {
+                    // Just some logging stuff
                     let len = logs.len();
                     if len > 0 {
                         if logs.len() > highest_len {
@@ -151,10 +178,23 @@ impl Reader {
                         }
                         println!("{}%  logs length: {}", progress, logs.len());
                     }
-                    for log in logs {
-                        let account: Address = Address::from(log.account);
 
-                        let cmd = Command::Add { key: account };
+                    // add all addresses
+                    for log in logs {
+                        let account_addr: Address = Address::from(log.account);
+
+                        // build new account entry and add it
+                        let cmd = Command::Set {
+                            key: DBKey::Account(account_addr),
+                            val: DBVal::Account(Account {
+                                address: account_addr,
+                                liquidity: None,
+                                shortfall: None,
+                                assets_in: None,
+                                ctokens_held: None,
+                                ctokens_borrowed: None,
+                            }),
+                        };
 
                         tx.send(cmd).await.unwrap();
                     }
@@ -190,9 +230,20 @@ impl Reader {
             match event {
                 Ok(log) => {
                     println!("GOT A NEW MARKET ENTERED: {}", log);
-                    let account: Address = Address::from(log.account);
+                    let account_addr: Address = Address::from(log.account);
 
-                    let cmd = Command::Add { key: account };
+                    // build new account entry and add it
+                    let cmd = Command::Set {
+                        key: DBKey::Account(account_addr),
+                        val: DBVal::Account(Account {
+                            address: account_addr,
+                            liquidity: None,
+                            shortfall: None,
+                            assets_in: None,
+                            ctokens_held: None,
+                            ctokens_borrowed: None,
+                        }),
+                    };
 
                     tx.send(cmd).await.unwrap();
                 }

@@ -6,6 +6,7 @@ pub enum DBKey {
     CToken(Address),
 }
 
+// TODO: I don't need to wrap this in account(account) lol
 pub enum DBVal {
     Account(Account),
     CToken(CToken),
