@@ -1,7 +1,8 @@
 mod bindings;
+mod db;
 mod reader;
-pub mod types;
-pub mod watcher;
+pub mod types; // TODO: why does this have to be pub?
+pub mod watcher; // TODO: why does this have to be pub?
 
 pub use crate::bindings::{
     c_erc20_bindings::CErc20,
@@ -13,23 +14,16 @@ use crate::reader::Reader;
 pub use crate::watcher::*;
 
 use ethers::{
-    contract::{abigen, Contract, EthEvent},
-    core::types::{Address, Filter, Topic, H160, H256, U256, U64},
-    prelude::*,
-    providers::{Provider, StreamExt, Ws},
+    contract::abigen,
+    core::types::Address,
+    providers::{Provider, Ws},
 };
-use eyre::Result;
 extern crate redis;
-use redis::Commands;
 use std::sync::Arc;
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
-const TEMP_ORACLE_ETH_MAINNET: &str = "0x50ce56A3239671Ab62f185704Caedf626352741e";
-
-const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
-const TEMP_CURRENT_BLOCK: u64 = 17915375;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -69,17 +63,6 @@ async fn main() -> eyre::Result<()> {
 
     // TODO: don't clone shit in here
     let mut my_reader: Reader = Reader::new(client4, comptroller.clone(), liquidator.clone());
-
-    /*  // connect to redis
-    let client = redis::Client::open("redis://127.0.0.1/")?;
-    let mut con = client.get_connection()?;
-    // throw away the result, just make sure it does not fail
-    let _: () = con.set("my_key", 42)?;
-    // read back the key and return it.  Because the return value
-    // from the function is a result for integer this will automatically
-    // convert into one.
-    let redis_result: Result<String, redis::RedisError> = con.get("my_key");
-    println!("{:?}", redis_result); */
 
     my_reader.run().await?;
 

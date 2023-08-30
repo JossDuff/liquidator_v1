@@ -7,31 +7,12 @@ pub use crate::bindings::{
 pub use crate::types::{account::Account, command::Command, ctoken::CToken};
 pub use crate::watcher;
 use ethers::{
-    abi::{encode, AbiEncode, Events},
-    contract::abigen,
     core::types::Address,
     prelude::*,
     providers::{Provider, StreamExt, Ws},
-    utils::{format_units, to_checksum},
 };
-use eyre::Result;
-use serde_json;
-use std::{
-    collections::HashMap,
-    fs,
-    io::Write,
-    mem::transmute,
-    ops::{Div, Mul},
-    path::PathBuf,
-    sync::Arc,
-};
-use tokio::join;
-use tokio::spawn;
-use tokio::sync::{
-    mpsc::{channel, Sender},
-    oneshot, Mutex,
-};
-use tokio::time::Duration;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::mpsc::{channel, Sender};
 
 const TEMP_COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
 const TEMP_CURRENT_BLOCK: u64 = 17915375;
@@ -89,7 +70,7 @@ impl Reader {
                         }
                     }
                     Command::GetCopy { resp } => {
-                        let mut copy = accounts.clone();
+                        let copy = accounts.clone();
                         // ignore errors
                         let _ = resp.send(copy);
                     }

@@ -2,35 +2,21 @@ pub use crate::bindings::{
     c_erc20_bindings::CErc20,
     comptroller_bindings::{Comptroller, ComptrollerEvents, MarketEnteredFilter},
     erc20_bindings::Erc20,
-    liquidator_bindings::Liquidator,
 };
 pub use crate::types::{account::Account, command::Command, ctoken::CToken};
 
 use ethers::{
-    abi::{encode, AbiEncode, Events},
-    contract::abigen,
     core::types::Address,
     prelude::*,
-    providers::{Provider, StreamExt, Ws},
-    utils::{format_units, to_checksum},
+    providers::{Provider, Ws},
+    utils::format_units,
 };
-use eyre::Result;
-use serde_json;
 use std::{
     collections::HashMap,
-    fs,
-    io::Write,
-    mem::transmute,
     ops::{Div, Mul},
-    path::PathBuf,
     sync::Arc,
 };
-use tokio::join;
-use tokio::spawn;
-use tokio::sync::{
-    mpsc::{channel, Sender},
-    oneshot, Mutex,
-};
+use tokio::sync::{mpsc::Sender, oneshot};
 use tokio::time::Duration;
 
 const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
