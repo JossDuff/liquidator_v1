@@ -1,11 +1,5 @@
 # liquidator_v1
 
-
-# TODO
- - maybe subgraph query: 
-// https://github.com/graphql-rust/juniper/issues/429
-// https://petkopavlovski-42828.medium.com/blazingly-fast-yet-simple-graphql-client-written-in-rust-%EF%B8%8F-f608c8c38702
-
 # Roadmap
 
 ## Phase 1: Start
