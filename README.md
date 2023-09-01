@@ -15,6 +15,11 @@
 - call to liquidator smart contract
 - Only CERC20, not bothering with CEther for now because we don't care about L1
 
+## Refactor
+Was horribly smelly and dirty and stinky and messy.  This is the game plan for now:
+
+![refactoring diagram](liquidator_v1.png)
+
 ## Phase 2: Correct
 - proper error handling
 - store positions in redis.  Use the more simple approach of serializing/deserializing entire data structures
