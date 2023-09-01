@@ -10,6 +10,7 @@ use crate::bindings::{
     erc20_bindings::Erc20,
     liquidator_bindings::Liquidator,
 };
+use crate::types::account::Account;
 
 use crate::data::Data;
 use crate::indexer::Indexer;
@@ -48,7 +49,7 @@ async fn main() -> eyre::Result<()> {
     let (indexer_to_data, data_from_indexer): (Sender<Address>, Receiver<Address>) = channel(32);
 
     // Channel for sending vector of addresses from data to liquidator
-    let (data_to_liquidator, liquidator_from_data): (Sender<Vec<Address>>, Receiver<Vec<Address>>) =
+    let (data_to_liquidator, liquidator_from_data): (Sender<Vec<Account>>, Receiver<Vec<Account>>) =
         channel(32);
 
     // initialize indexer module
