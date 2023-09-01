@@ -10,7 +10,7 @@ use crate::bindings::{
     erc20_bindings::Erc20,
     liquidator_bindings::Liquidator,
 };
-use crate::types::account::Account;
+use crate::types::{account::Account, ctoken::CToken};
 
 use crate::data::Data;
 use crate::indexer::Indexer;
@@ -22,7 +22,7 @@ use ethers::{
     providers::{Provider, Ws},
 };
 extern crate redis; // TODO: why is this "extern crate" and not "use"?
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
@@ -49,8 +49,10 @@ async fn main() -> eyre::Result<()> {
     let (indexer_to_data, data_from_indexer): (Sender<Address>, Receiver<Address>) = channel(32);
 
     // Channel for sending vector of addresses from data to liquidator
-    let (data_to_liquidator, liquidator_from_data): (Sender<Vec<Account>>, Receiver<Vec<Account>>) =
-        channel(32);
+    let (data_to_liquidator, liquidator_from_data): (
+        Sender<(Vec<Account>, HashMap<Address, CToken>)>,
+        Receiver<(Vec<Account>, HashMap<Address, CToken>)>,
+    ) = channel(32);
 
     // initialize indexer module
     let indexer = Indexer::new(indexer_to_data, comptroller_for_indexer);
@@ -59,7 +61,7 @@ async fn main() -> eyre::Result<()> {
     let data = Data::new(data_to_liquidator, data_from_indexer, comptroller_for_data);
 
     // initialize liquidation module
-    let liquidation = Liquidation::new(liquidator_from_data, liquidator);
+    let mut liquidation = Liquidation::new(liquidator_from_data, liquidator);
 
     // let it rip
     let indexer_task = tokio::spawn(async move {
