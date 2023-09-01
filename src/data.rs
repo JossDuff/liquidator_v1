@@ -30,7 +30,7 @@ impl Data {
         }
     }
 
-    pub fn run(&self) -> () {
+    pub async fn run(&self) -> () {
         println!("data is running");
     }
 }

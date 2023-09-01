@@ -61,9 +61,19 @@ async fn main() -> eyre::Result<()> {
     let liquidation = Liquidation::new(liquidator_from_data, liquidator);
 
     // let it rip
-    indexer.run();
-    data.run();
-    liquidation.run();
+    let indexer_task = tokio::spawn(async move {
+        let _ = indexer.run().await;
+    });
+    let data_task = tokio::spawn(async move {
+        let _ = data.run().await;
+    });
+    let liquidation_task = tokio::spawn(async move {
+        let _ = liquidation.run().await;
+    });
+
+    indexer_task.await?;
+    data_task.await?;
+    liquidation_task.await?;
 
     /*  Not sure why these aren't working any more but it's fine since we already generated them.  problem for later
     // generate comptroller bindings

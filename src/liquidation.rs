@@ -22,7 +22,7 @@ impl Liquidation {
         }
     }
 
-    pub fn run(&self) -> () {
+    pub async fn run(&self) -> () {
         println!("Liquidation is running");
     }
 }
