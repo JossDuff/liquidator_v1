@@ -1,27 +1,27 @@
 use crate::bindings::liquidator_bindings::Liquidator;
-use crate::types::{account::Account, ctoken::CToken};
+use crate::types::{account::Account, command::Command, ctoken::CToken};
 
 use ethers::{
     core::types::{Address, U256},
     providers::{Provider, Ws},
 };
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::mpsc::{channel, Receiver};
+use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
 
 pub struct Liquidation {
-    data_from_indexer: Receiver<(Vec<Account>, HashMap<Address, CToken>)>,
+    sender_to_database_manager: Sender<Command>,
     liquidator: Liquidator<Provider<Ws>>,
 }
 
 impl Liquidation {
     pub fn new(
-        data_from_indexer: Receiver<(Vec<Account>, HashMap<Address, CToken>)>,
+        sender_to_database_manager: Sender<Command>,
         liquidator: Liquidator<Provider<Ws>>,
     ) -> Liquidation {
         Liquidation {
-            data_from_indexer,
+            sender_to_database_manager,
             liquidator,
         }
     }
@@ -30,7 +30,7 @@ impl Liquidation {
         println!("Liquidation is running");
 
         // TODO: I probably don't need to pull in the ENTIRE list of ctokens?  maybe it's faster than individual calls to db idk
-        while let Some((accounts, all_ctokens_map)) = self.data_from_indexer.recv().await {
+        /*         while let Some((accounts, all_ctokens_map)) = self.data_from_indexer.recv().await {
             println!("addresses received data from Data");
 
             for account in accounts.iter() {
@@ -53,7 +53,7 @@ impl Liquidation {
                     // using found best seize and repay assets
                 }
             }
-        }
+        } */
     }
 
     fn find_highest_USD_val(

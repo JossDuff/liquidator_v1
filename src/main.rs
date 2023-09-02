@@ -1,5 +1,6 @@
 mod bindings;
-mod data;
+mod data_updater;
+mod database_manager;
 mod indexer;
 mod liquidation;
 mod types;
@@ -10,9 +11,10 @@ use crate::bindings::{
     erc20_bindings::Erc20,
     liquidator_bindings::Liquidator,
 };
-use crate::types::{account::Account, ctoken::CToken};
+use crate::types::{account::Account, command::Command, ctoken::CToken};
 
-use crate::data::Data;
+use crate::data_updater::DataUpdater;
+use crate::database_manager::DatabaseManager;
 use crate::indexer::Indexer;
 use crate::liquidation::Liquidation;
 
@@ -36,46 +38,56 @@ async fn main() -> eyre::Result<()> {
     let client_for_comptroller = Arc::new(provider);
     let client_for_liquidator = client_for_comptroller.clone();
 
-    // initialize comptroller contracts
+    // initialize contracts
     let comptroller_address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller_for_indexer = Comptroller::new(comptroller_address, client_for_comptroller);
-    let comptroller_for_data = comptroller_for_indexer.clone();
-
-    // intialize liquidator contracts
+    let comptroller_for_data_updater = comptroller_for_indexer.clone();
     let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
     let liquidator = Liquidator::new(liquidator_address, client_for_liquidator);
 
-    // Channel for sending addresses from indexer to data
-    let (indexer_to_data, data_from_indexer): (Sender<Address>, Receiver<Address>) = channel(32);
+    // Channel for sending addresses from indexer to data_updater
+    // TODO: we could set this channel size to 50 to allow for maximum efficiency multicall batching
+    let (sender_to_data_updater, receiver_from_indexer): (Sender<Address>, Receiver<Address>) =
+        channel(32);
 
-    // Channel for sending vector of addresses from data to liquidator
-    let (data_to_liquidator, liquidator_from_data): (
-        Sender<(Vec<Account>, HashMap<Address, CToken>)>,
-        Receiver<(Vec<Account>, HashMap<Address, CToken>)>,
+    let (sender_to_database_manager_from_updater, receiver_from_data_updater): (
+        Sender<Command>,
+        Receiver<Command>,
     ) = channel(32);
 
-    // initialize indexer module
-    let indexer = Indexer::new(indexer_to_data, comptroller_for_indexer);
+    let (sender_to_database_manager_from_liquidation, receiver_from_liquidation): (
+        Sender<Command>,
+        Receiver<Command>,
+    ) = channel(32);
 
-    // initialize data module
-    let data = Data::new(data_to_liquidator, data_from_indexer, comptroller_for_data);
-
-    // initialize liquidation module
-    let mut liquidation = Liquidation::new(liquidator_from_data, liquidator);
+    // initialize modules
+    let indexer = Indexer::new(sender_to_data_updater, comptroller_for_indexer);
+    let mut data_updater = DataUpdater::new(
+        receiver_from_indexer,
+        sender_to_database_manager_from_updater,
+        comptroller_for_data_updater,
+    );
+    let mut database_manager =
+        DatabaseManager::new(receiver_from_liquidation, receiver_from_data_updater);
+    let mut liquidation = Liquidation::new(sender_to_database_manager_from_liquidation, liquidator);
 
     // let it rip
     let indexer_task = tokio::spawn(async move {
         let _ = indexer.run().await;
     });
-    let data_task = tokio::spawn(async move {
-        let _ = data.run().await;
+    let data_updater_task = tokio::spawn(async move {
+        let _ = data_updater.run().await;
+    });
+    let database_manager_task = tokio::spawn(async move {
+        let _ = database_manager.run().await;
     });
     let liquidation_task = tokio::spawn(async move {
         let _ = liquidation.run().await;
     });
 
     indexer_task.await?;
-    data_task.await?;
+    data_updater_task.await?;
+    database_manager_task.await?;
     liquidation_task.await?;
 
     /*  Not sure why these aren't working any more but it's fine since we already generated them.  problem for later
