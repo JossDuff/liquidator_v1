@@ -50,15 +50,12 @@ async fn main() -> eyre::Result<()> {
     let (sender_to_data_updater, receiver_from_indexer): (Sender<Address>, Receiver<Address>) =
         channel(32);
 
-    let (sender_to_database_manager_from_updater, receiver_from_data_updater): (
+    let (sender_to_database_manager_from_liquidation, receiver_database_manager): (
         Sender<Command>,
         Receiver<Command>,
     ) = channel(32);
-
-    let (sender_to_database_manager_from_liquidation, receiver_from_liquidation): (
-        Sender<Command>,
-        Receiver<Command>,
-    ) = channel(32);
+    let sender_to_database_manager_from_updater =
+        sender_to_database_manager_from_liquidation.clone();
 
     // initialize modules
     let indexer = Indexer::new(sender_to_data_updater, comptroller_for_indexer);
@@ -67,8 +64,7 @@ async fn main() -> eyre::Result<()> {
         sender_to_database_manager_from_updater,
         comptroller_for_data_updater,
     );
-    let mut database_manager =
-        DatabaseManager::new(receiver_from_liquidation, receiver_from_data_updater);
+    let mut database_manager = DatabaseManager::new(receiver_database_manager);
     let mut liquidation = Liquidation::new(sender_to_database_manager_from_liquidation, liquidator);
 
     // let it rip
