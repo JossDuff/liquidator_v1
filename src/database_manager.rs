@@ -1,10 +1,7 @@
 mod database;
 
 use crate::database_manager::database::Database;
-use crate::types::{
-    command::Command,
-    db_types::{DBKey, DBVal},
-};
+use crate::types::{command::Command, db_types::DBVal};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 pub struct DatabaseManager {
@@ -27,12 +24,8 @@ impl DatabaseManager {
                     let val = self.database.get(key).unwrap();
                     let _ = resp.send(val);
                 }
-                // TODO: inconsistencies on key and value with set and update
-                Command::Set { key, val } => {
-                    let key = match key {
-                        DBKey::Account(address) => address,
-                        DBKey::CToken(address) => address,
-                    };
+                Command::Set { val } => {
+                    let key = val.get_address();
                     // only add to self.database if it doesn't already exist
                     if self.database.exists(key) {
                         // do nothing.  it already exists
@@ -40,12 +33,7 @@ impl DatabaseManager {
                         self.database.set(val);
                     }
                 }
-                Command::Update { key, val } => {
-                    let key = match key {
-                        DBKey::Account(address) => address,
-                        DBKey::CToken(address) => address,
-                    };
-
+                Command::Update { val } => {
                     self.database.set(val);
                 }
                 Command::GetAllAccountAddresses { resp } => {

@@ -1,8 +1,4 @@
-use crate::types::{
-    account::Account,
-    ctoken::CToken,
-    db_types::{DBKey, DBVal},
-};
+use crate::types::{account::Account, ctoken::CToken, db_types::DBVal};
 use ethers::types::Address;
 use redis::{Client, Commands, RedisError, RedisResult};
 use std::{
@@ -31,29 +27,18 @@ impl Database {
     }
 
     /// TODO: handle different case for key not found vs redis error
-    pub fn get(&self, db_key: DBKey) -> Option<DBVal> {
+    pub fn get(&self, db_key: Address) -> Option<DBVal> {
         let mut con = self.connection.lock().unwrap();
-        match db_key {
-            DBKey::Account(address) => {
-                let account_res: Result<String, RedisError> = con.get(address.to_string());
-                match account_res {
-                    Ok(account) => {
-                        let account: Account = serde_json::from_str(&account).unwrap();
-                        Some(DBVal::Account(account))
-                    }
-                    Err(_) => None,
+        let res: Result<String, RedisError> = con.get(db_key.to_string());
+        match res {
+            Ok(db_val) => {
+                let db_val: DBVal = serde_json::from_str(&db_val).unwrap();
+                match db_val {
+                    DBVal::Account(account) => Some(DBVal::Account(account)),
+                    DBVal::CToken(ctoken) => Some(DBVal::CToken(ctoken)),
                 }
             }
-            DBKey::CToken(address) => {
-                let ctoken_res: Result<String, RedisError> = con.get(address.to_string());
-                match ctoken_res {
-                    Ok(ctoken) => {
-                        let ctoken: CToken = serde_json::from_str(&ctoken).unwrap();
-                        Some(DBVal::CToken(ctoken))
-                    }
-                    Err(_) => None,
-                }
-            }
+            Err(_) => None,
         }
     }
 
