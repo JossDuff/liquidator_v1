@@ -1,11 +1,5 @@
 # liquidator_v1
 
-
-# TODO
- - maybe subgraph query: 
-// https://github.com/graphql-rust/juniper/issues/429
-// https://petkopavlovski-42828.medium.com/blazingly-fast-yet-simple-graphql-client-written-in-rust-%EF%B8%8F-f608c8c38702
-
 # Roadmap
 
 ## Phase 1: Start
@@ -15,16 +9,18 @@
 - call to liquidator smart contract
 - Only CERC20, not bothering with CEther for now because we don't care about L1
 
+## Refactor
+Was horribly smelly and dirty and stinky and messy.  This is the game plan for now:
+
+![refactoring diagram](liquidator_v1.png)
+
 ## Phase 2: Correct
 - proper error handling
 - store positions in redis.  Use the more simple approach of serializing/deserializing entire data structures
 - use a better price oracle.  Coingecko rate limit is like 10/minute
 - If db instance is wrapped in arc mutex, do I really need each operation inside of db to be also wrapped in arc mutex?  This slows down everything cause they're all leaning on the one db...
-- multicalls!!!! (processor.rs will be a bear)
+- multicalls!!!!
 - use tokio or std mutex???
-- find best approach to share the accounts
-    - Should probably use a hash map so we don't have to do .contains
-    - https://tokio.rs/tokio/tutorial/shared-state
 - TESTS!
 
 ## Phase 3: Scale
@@ -34,6 +30,7 @@
 - use complex redis data structures to represent data instead of serializing/deserializing every time
 - use redis ahash (+7-10% performance)
 - multithread
+- better logging than println
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
 - Confirm the fastest way to get chain data: API, theGraph, or custom indexer
@@ -52,7 +49,7 @@
 - add events to Liquidator contract to keep track
 - dune dashboard to track stats from all my deployed bots
 
-## Phase 5: Slaughter
+## Phase 5: Big
 - suit up to be competive on large lending protocols
 - my own ethereum/OP/ARB/etc nodes
 - switch to IPC for even faster speeds
