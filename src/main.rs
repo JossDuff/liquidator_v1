@@ -13,7 +13,7 @@ use crate::bindings::{
 };
 use crate::types::{account::Account, command::Command, ctoken::CToken};
 
-use crate::data_updater::DataUpdater;
+use crate::data_updater::run as data_updater;
 use crate::database_manager::DatabaseManager;
 use crate::indexer::Indexer;
 use crate::liquidation::Liquidation;
@@ -39,6 +39,7 @@ async fn main() -> eyre::Result<()> {
     let client_for_liquidator = client_for_comptroller.clone();
 
     // initialize contracts
+    // TODO: should I init contracts within each module instead?
     let comptroller_address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller_for_indexer = Comptroller::new(comptroller_address, client_for_comptroller);
     let comptroller_for_data_updater = comptroller_for_indexer.clone();
@@ -50,29 +51,33 @@ async fn main() -> eyre::Result<()> {
     let (sender_to_data_updater, receiver_from_indexer): (Sender<Address>, Receiver<Address>) =
         channel(32);
 
-    let (sender_to_database_manager_from_liquidation, receiver_database_manager): (
+    let (sender_to_database_manager_for_liquidation, receiver_database_manager): (
         Sender<Command>,
         Receiver<Command>,
     ) = channel(32);
-    let sender_to_database_manager_from_updater =
-        sender_to_database_manager_from_liquidation.clone();
+    let sender_to_database_manager_for_updater = sender_to_database_manager_for_liquidation.clone();
 
     // initialize modules
     let indexer = Indexer::new(sender_to_data_updater, comptroller_for_indexer);
-    let mut data_updater = DataUpdater::new(
-        receiver_from_indexer,
-        sender_to_database_manager_from_updater,
-        comptroller_for_data_updater,
-    );
+    // let mut data_updater = DataUpdater::new(
+    //     receiver_from_indexer,
+    //     sender_to_database_manager_from_updater,
+    //     comptroller_for_data_updater,
+    // );
     let mut database_manager = DatabaseManager::new(receiver_database_manager);
-    let mut liquidation = Liquidation::new(sender_to_database_manager_from_liquidation, liquidator);
+    let mut liquidation = Liquidation::new(sender_to_database_manager_for_liquidation, liquidator);
 
     // let it rip
     let indexer_task = tokio::spawn(async move {
         let _ = indexer.run().await;
     });
     let data_updater_task = tokio::spawn(async move {
-        let _ = data_updater.run().await;
+        let _ = data_updater::run(
+            receiver_from_indexer,
+            sender_to_database_manager_for_updater,
+            comptroller_for_data_updater,
+        )
+        .await;
     });
     let database_manager_task = tokio::spawn(async move {
         let _ = database_manager.run().await;
