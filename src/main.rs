@@ -37,6 +37,7 @@ async fn main() -> eyre::Result<()> {
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client_for_comptroller = Arc::new(provider);
     let client_for_liquidator = client_for_comptroller.clone();
+    let client_for_data_updater = client_for_comptroller.clone();
 
     // initialize contracts
     // TODO: should I init contracts within each module instead?
@@ -48,7 +49,7 @@ async fn main() -> eyre::Result<()> {
 
     // Channel for sending addresses from indexer to data_updater
     // TODO: we could set this channel size to 50 to allow for maximum efficiency multicall batching
-    let (sender_to_data_updater, receiver_from_indexer): (Sender<Address>, Receiver<Address>) =
+    let (sender_to_data_updater, receiver_data_updater): (Sender<Address>, Receiver<Address>) =
         channel(32);
 
     let (sender_to_database_manager_for_liquidation, receiver_database_manager): (
@@ -64,6 +65,7 @@ async fn main() -> eyre::Result<()> {
     //     sender_to_database_manager_from_updater,
     //     comptroller_for_data_updater,
     // );
+    // TODO: this doesn't need to be a struct
     let mut database_manager = DatabaseManager::new(receiver_database_manager);
     let mut liquidation = Liquidation::new(sender_to_database_manager_for_liquidation, liquidator);
 
@@ -73,9 +75,10 @@ async fn main() -> eyre::Result<()> {
     });
     let data_updater_task = tokio::spawn(async move {
         let _ = data_updater::run(
-            receiver_from_indexer,
+            receiver_data_updater,
             sender_to_database_manager_for_updater,
             comptroller_for_data_updater,
+            client_for_data_updater,
         )
         .await;
     });

@@ -1,5 +1,6 @@
 use ethers::types::{Address, U256};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // TODO: 'last_updated' fields where needed
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,8 +9,9 @@ pub struct Account {
     pub liquidity: U256,
     pub shortfall: U256,
     pub assets_in: Vec<Address>,
-    pub ctokens_held: Vec<(Address, U256)>, // ctoken, amount
-    pub ctokens_borrowed: Vec<(Address, U256)>, // ctoken, amount
+    // TODO: these should def be hash maps
+    pub ctokens_held: HashMap<Address, U256>, // ctoken, amount
+    pub ctokens_borrowed: HashMap<Address, U256>, // ctoken, amount
 }
 
 impl Account {
@@ -18,8 +20,8 @@ impl Account {
         liquidity: U256,
         shortfall: U256,
         assets_in: Vec<Address>,
-        ctokens_held: Vec<(Address, U256)>,
-        ctokens_borrowed: Vec<(Address, U256)>,
+        ctokens_held: HashMap<Address, U256>,
+        ctokens_borrowed: HashMap<Address, U256>,
     ) -> Account {
         Self {
             address,

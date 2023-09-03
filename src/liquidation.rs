@@ -66,7 +66,7 @@ impl Liquidation {
 
     async fn find_highest_USD_val(
         &self,
-        ctokens: Vec<(Address, U256)>,
+        ctokens: HashMap<Address, U256>,
         ctoken_price_cache: &mut HashMap<Address, (f64, U256)>,
     ) -> (Address, U256) {
         let mut address_most_valuable_asset: Address = Address::default();

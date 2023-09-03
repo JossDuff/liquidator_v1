@@ -4,6 +4,7 @@ use crate::database_manager::database::Database;
 use crate::types::{command::Command, db_types::DBVal};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
+// TODO: this doesn't need to be a struct either
 pub struct DatabaseManager {
     receiver: Receiver<Command>,
     database: Database,
