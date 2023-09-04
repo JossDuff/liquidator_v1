@@ -11,6 +11,8 @@ pub struct Database {
     pub connection: Arc<Mutex<redis::Connection>>,
 }
 
+// TODO: currently we're storing everything twice, ctokens and accounts
+// instead we can just use 2 hash maps, accounts and ctokens
 // TODO: these get/set functions can fail
 // TODO: if the account doesn't exist return something to indicate this
 impl Database {
@@ -58,8 +60,12 @@ impl Database {
                     )
                     .unwrap();
 
-                // add to set of accounts
-                let _: () = con.sadd("accounts", account.address.to_string()).unwrap();
+                let serialized_account = serde_json::to_string(&account).unwrap();
+                let serialized_address: String = serde_json::to_string(&account.address).unwrap();
+                // add to hash map of accounts
+                let _: () = con
+                    .hset("accounts", serialized_address, serialized_account)
+                    .unwrap();
 
                 true
             }
@@ -72,38 +78,42 @@ impl Database {
                     )
                     .unwrap();
 
-                // add to set of ctokens
-                let _: () = con.sadd("ctokens", ctoken.address.to_string()).unwrap();
+                let serialized_ctoken = serde_json::to_string(&ctoken).unwrap();
+                let serialized_address = serde_json::to_string(&ctoken.address).unwrap();
+                // add to hash map of ctokens
+                let _: () = con
+                    .hset("ctokens", serialized_address, serialized_ctoken)
+                    .unwrap();
 
                 true
             }
         }
     }
 
-    pub fn get_all_account_addresses(&self) -> Vec<Address> {
+    pub fn get_all_accounts(&self) -> Vec<Account> {
         let mut con = self.connection.lock().unwrap();
-        let members: Vec<String> = con.smembers("accounts").unwrap();
+        let members: Vec<(String, String)> = con.hgetall("accounts").unwrap();
         drop(con); // drop connection to release lock
 
-        let account_addresses: Vec<Address> = members
+        let all_accounts: Vec<Account> = members
             .iter()
-            .filter_map(|member| member.parse().ok())
+            .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
             .collect();
 
-        account_addresses
+        all_accounts
     }
 
-    pub fn get_all_ctoken_addresses(&self) -> Vec<Address> {
+    pub fn get_all_ctokens(&self) -> Vec<CToken> {
         let mut con = self.connection.lock().unwrap();
-        let members: Vec<String> = con.smembers("ctokens").unwrap();
+        let members: Vec<(String, String)> = con.hgetall("ctokens").unwrap();
         drop(con); // drop connection to release lock
 
-        let ctoken_addresses: Vec<Address> = members
+        let all_ctokens: Vec<CToken> = members
             .iter()
-            .filter_map(|member| member.parse().ok())
+            .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
             .collect();
 
-        ctoken_addresses
+        all_ctokens
     }
 }
 

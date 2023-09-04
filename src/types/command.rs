@@ -14,10 +14,10 @@ pub enum Command {
     Update {
         val: DBVal,
     },
-    GetAllAccountAddresses {
-        resp: oneshot::Sender<Vec<Address>>,
+    GetAllAccounts {
+        resp: oneshot::Sender<Vec<Account>>,
     },
-    GetAllCTokenAddresses {
-        resp: oneshot::Sender<Vec<Address>>,
+    GetAllCTokens {
+        resp: oneshot::Sender<Vec<CToken>>,
     },
 }

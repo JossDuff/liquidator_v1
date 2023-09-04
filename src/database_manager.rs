@@ -2,6 +2,7 @@ mod database;
 
 use crate::database_manager::database::Database;
 use crate::types::{command::Command, db_types::DBVal};
+use ethers::types::Address;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 // TODO: this doesn't need to be a struct either
@@ -37,13 +38,13 @@ impl DatabaseManager {
                 Command::Update { val } => {
                     self.database.set(val);
                 }
-                Command::GetAllAccountAddresses { resp } => {
-                    let copy = self.database.get_all_account_addresses();
+                Command::GetAllAccounts { resp } => {
+                    let copy = self.database.get_all_accounts();
                     // ignore errors
                     let _ = resp.send(copy);
                 }
-                Command::GetAllCTokenAddresses { resp } => {
-                    let copy = self.database.get_all_ctoken_addresses();
+                Command::GetAllCTokens { resp } => {
+                    let copy = self.database.get_all_ctokens();
                     // ignore errors
                     let _ = resp.send(copy);
                 }

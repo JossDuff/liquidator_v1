@@ -33,11 +33,9 @@ impl Liquidation {
     pub async fn run(&mut self) -> () {
         println!("Liquidation is running");
 
-        let all_account_addrs: Vec<Address> = self.get_all_account_addrs_from_db().await;
+        let all_accounts: Vec<Account> = self.get_all_accounts_from_db().await;
 
-        for account_addr in all_account_addrs.iter() {
-            let account = self.get_account_from_db(account_addr).await;
-
+        for account in all_accounts.iter() {
             // skip account with no assets
             if account.assets_in.len() == 0 {
                 continue;
@@ -121,27 +119,10 @@ impl Liquidation {
         dollar_value
     }
 
-    async fn get_account_from_db(&self, account_addr: &Address) -> Account {
-        let (resp_tx, resp_rx) = oneshot::channel();
-        let command = Command::Get {
-            key: *account_addr,
-            resp: (resp_tx),
-        };
-        self.sender_to_database_manager.send(command).await.unwrap();
-        // TODO: get a list of all the accounts from database, not just the addresses
-        let db_val_res: DBVal = resp_rx.await.unwrap();
-        match db_val_res {
-            DBVal::Account(account) => account,
-            DBVal::CToken(_) => {
-                panic!("Expected account, got ctoken");
-            }
-        }
-    }
-
     // TODO: get a list of all the accounts from database, not just the addresses
-    async fn get_all_account_addrs_from_db(&self) -> Vec<Address> {
+    async fn get_all_accounts_from_db(&self) -> Vec<Account> {
         let (resp_tx, resp_rx) = oneshot::channel();
-        let command = Command::GetAllAccountAddresses { resp: (resp_tx) };
+        let command = Command::GetAllAccounts { resp: (resp_tx) };
         self.sender_to_database_manager.send(command).await.unwrap();
         resp_rx.await.unwrap()
     }

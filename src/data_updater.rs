@@ -2,6 +2,7 @@ mod price_oracle;
 
 use crate::bindings::{c_erc20_bindings::CErc20, comptroller_bindings::Comptroller};
 use crate::data_updater::price_oracle::PriceOracle;
+use crate::types::command;
 use crate::types::{account::Account, command::Command, ctoken::CToken, db_types::*};
 use ethers::{
     core::types::{Address, U256},
@@ -9,7 +10,10 @@ use ethers::{
 };
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::{
+    mpsc::{channel, Receiver, Sender},
+    oneshot,
+};
 
 pub async fn run(
     receiver_from_indexer: Receiver<Address>,
@@ -22,7 +26,6 @@ pub async fn run(
 
     let sender_to_database_manager_clone = sender_to_database_manager.clone();
     let comptroller_clone = comptroller.clone();
-    let price_oracle_clone = price_oracle.clone();
     let client_clone = client.clone();
 
     // start add_new_asset task
@@ -31,18 +34,18 @@ pub async fn run(
             receiver_from_indexer,
             sender_to_database_manager,
             comptroller,
-            price_oracle,
             client,
         )
         .await;
     });
 
+    // TODO: split into 2 tasks, one for accounts and one for ctokens
     // start update_data task
     let update_data_task = tokio::spawn(async move {
         let _ = update_all_data(
             sender_to_database_manager_clone,
             comptroller_clone,
-            price_oracle_clone,
+            price_oracle,
             client_clone,
         )
         .await;
@@ -56,76 +59,122 @@ async fn watch_for_new_accounts(
     mut receiver_from_indexer: Receiver<Address>,
     sender_to_database_manager: Sender<Command>,
     comptroller: Comptroller<Provider<Ws>>,
-    price_oracle: PriceOracle,
     client: Arc<Provider<Ws>>,
 ) {
     while let Some(account_addr) = receiver_from_indexer.recv().await {
-        // calls comptroller to get account data
-        // TODO: do I need to .call?
-        let assets_in: Vec<Address> = comptroller.get_assets_in(account_addr).await.unwrap();
-        let (error, liquidity, shortfall) = comptroller
-            .get_account_liquidity(account_addr)
-            .call()
-            .await
-            .unwrap();
-        let mut ctokens_held: HashMap<Address, U256> = HashMap::new();
-        let mut ctokens_borrowed: HashMap<Address, U256> = HashMap::new();
-
-        // calls to cTokens from assets_in to build ctokens_held and ctokens_borrowed
-        for asset in assets_in.iter() {
-            // TODO: probably don't clone
-            // TODO: where can I store instances of each ctoken?  This is probably question for ethers-rs telegram
-            let ctoken = CErc20::new(*asset, client.clone());
-            let (error, amount_held, amount_borrowed, exchange_rate) = ctoken
-                .get_account_snapshot(account_addr)
-                .call()
-                .await
-                .unwrap();
-
-            // Add to or create hash map entry for this ctoken held balance
-            if let Some(ctoken_held_balance) = ctokens_held.get_mut(asset) {
-                *ctoken_held_balance += amount_held;
-            } else {
-                ctokens_held.insert(*asset, amount_held);
-            }
-
-            // Add to or create hash map entry for this ctoken borrow balance
-            if let Some(ctoken_borrow_balance) = ctokens_borrowed.get_mut(asset) {
-                *ctoken_borrow_balance += amount_borrowed;
-            } else {
-                ctokens_borrowed.insert(*asset, amount_borrowed);
-            }
-        }
-
-        // build account entry
-        let account = Account::new(
-            account_addr,
-            liquidity,
-            shortfall,
-            assets_in,
-            ctokens_held,
-            ctokens_borrowed,
-        );
-
-        // add account to db
-        let command = Command::Set {
-            val: DBVal::Account(account),
+        let new_account = update_account_data(account_addr, &comptroller, client.clone()).await;
+        let command: Command = Command::Set {
+            val: DBVal::Account(new_account),
         };
-        sender_to_database_manager.send(command).await.unwrap();
+        sender_to_database_manager.send(command).await;
     }
 }
 
+// TODO: maybe split up into two functions: one for accounts and one for ctokens
 async fn update_all_data(
     sender_to_database_manager: Sender<Command>,
     comptroller: Comptroller<Provider<Ws>>,
     price_oracle: PriceOracle,
     client: Arc<Provider<Ws>>,
 ) {
-    // get all accounts from db
-    // for each account, update data
-    // save updated data to db
+    let all_accounts = get_all_accounts_from_db(&sender_to_database_manager).await;
+    for account in all_accounts.iter() {
+        let updated_account =
+            update_account_data(account.address, &comptroller, client.clone()).await;
+        save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
+    }
 
-    // get all ctokens from db
-    // for each ctoken, call PriceOracle to get price
-    // save updated data to db
+    let all_ctokens = get_all_ctokens_from_db(&sender_to_database_manager).await;
+    for ctoken in all_ctokens.iter() {
+        let updated_ctoken = update_ctoken_data(ctoken.address, price_oracle.clone()).await;
+        save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
+    }
+}
+
+async fn update_account_data(
+    account_addr: Address,
+    comptroller: &Comptroller<Provider<Ws>>,
+    client: Arc<Provider<Ws>>,
+) -> Account {
+    // calls comptroller to get account data
+    let assets_in: Vec<Address> = comptroller.get_assets_in(account_addr).await.unwrap();
+    let (error, liquidity, shortfall) = comptroller
+        .get_account_liquidity(account_addr)
+        .call()
+        .await
+        .unwrap();
+    let mut ctokens_held: HashMap<Address, U256> = HashMap::new();
+    let mut ctokens_borrowed: HashMap<Address, U256> = HashMap::new();
+
+    // calls to cTokens from assets_in to build ctokens_held and ctokens_borrowed
+    for asset in assets_in.iter() {
+        // TODO: probably don't clone
+        // TODO: where can I store instances of each ctoken?  This is probably question for ethers-rs telegram
+        let ctoken = CErc20::new(*asset, client.clone());
+        let (error, amount_held, amount_borrowed, exchange_rate) = ctoken
+            .get_account_snapshot(account_addr)
+            .call()
+            .await
+            .unwrap();
+
+        // Add to or create hash map entry for this ctoken held balance
+        if let Some(ctoken_held_balance) = ctokens_held.get_mut(asset) {
+            *ctoken_held_balance += amount_held;
+        } else {
+            ctokens_held.insert(*asset, amount_held);
+        }
+
+        // Add to or create hash map entry for this ctoken borrow balance
+        if let Some(ctoken_borrow_balance) = ctokens_borrowed.get_mut(asset) {
+            *ctoken_borrow_balance += amount_borrowed;
+        } else {
+            ctokens_borrowed.insert(*asset, amount_borrowed);
+        }
+    }
+
+    // build account entry
+    Account::new(
+        account_addr,
+        liquidity,
+        shortfall,
+        assets_in,
+        ctokens_held,
+        ctokens_borrowed,
+    )
+}
+
+async fn update_ctoken_data(ctoken_addr: Address, price_oracle: PriceOracle) -> CToken {}
+
+async fn save_updated_account_to_db(
+    updated_account: Account,
+    sender_to_database_manager: &Sender<Command>,
+) {
+    let command = Command::Update {
+        val: DBVal::Account(updated_account),
+    };
+    sender_to_database_manager.send(command).await;
+}
+
+async fn save_updated_ctoken_to_db(
+    updated_ctoken: CToken,
+    sender_to_database_manager: &Sender<Command>,
+) {
+    let command = Command::Update {
+        val: DBVal::CToken(updated_ctoken),
+    };
+    sender_to_database_manager.send(command).await;
+}
+
+async fn get_all_accounts_from_db(sender_to_database_manager: &Sender<Command>) -> Vec<Account> {
+    let (resp_tx, resp_rx) = oneshot::channel();
+    let command = Command::GetAllAccounts { resp: (resp_tx) };
+    sender_to_database_manager.send(command).await.unwrap();
+    resp_rx.await.unwrap()
+}
+
+async fn get_all_ctokens_from_db(sender_to_database_manager: &Sender<Command>) -> Vec<CToken> {
+    let (resp_tx, resp_rx) = oneshot::channel();
+    let command = Command::GetAllCTokens { resp: (resp_tx) };
+    sender_to_database_manager.send(command).await.unwrap();
+    resp_rx.await.unwrap()
 }
