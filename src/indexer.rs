@@ -84,7 +84,7 @@ impl Indexer {
                     println!("GOT A NEW MARKET ENTERED: {}", log);
                     let account_addr: Address = Address::from(log.account);
                     // default behavior of .send when buffer is full is to wait until there is space
-                    //tx.send(account_addr).await.unwrap();
+                    tx.send(account_addr).await.unwrap();
                 }
                 Err(e) => println!("Error reading event: {}", e),
             }
@@ -118,7 +118,7 @@ impl Indexer {
                     for log in logs {
                         let account_addr: Address = Address::from(log.account);
                         // default behavior of .send when buffer is full is to wait until there is space
-                        //tx.send(account_addr).await.unwrap();
+                        tx.send(account_addr).await.unwrap();
                     }
                 }
                 // TODO: resolve logging error

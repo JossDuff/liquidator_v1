@@ -24,8 +24,11 @@ use ethers::{
     providers::{Provider, Ws},
 };
 extern crate redis; // TODO: why is this "extern crate" and not "use"?
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::mpsc::{channel, Receiver, Sender};
+use std::{collections::HashMap, sync::Arc, thread};
+use tokio::{
+    runtime,
+    sync::mpsc::{channel, Receiver, Sender},
+};
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
@@ -60,39 +63,45 @@ async fn main() -> eyre::Result<()> {
 
     // initialize modules
     let indexer = Indexer::new(sender_to_data_updater, comptroller_for_indexer);
-    // let mut data_updater = DataUpdater::new(
-    //     receiver_from_indexer,
-    //     sender_to_database_manager_from_updater,
-    //     comptroller_for_data_updater,
-    // );
     // TODO: this doesn't need to be a struct
     let mut database_manager = DatabaseManager::new(receiver_database_manager);
     let mut liquidation = Liquidation::new(sender_to_database_manager_for_liquidation, liquidator);
 
-    // let it rip
-    let indexer_task = tokio::spawn(async move {
-        let _ = indexer.run().await;
-    });
-    let data_updater_task = tokio::spawn(async move {
-        let _ = data_updater::run(
-            receiver_data_updater,
-            sender_to_database_manager_for_updater,
-            comptroller_for_data_updater,
-            client_for_data_updater,
-        )
-        .await;
-    });
-    let database_manager_task = tokio::spawn(async move {
-        let _ = database_manager.run().await;
-    });
-    let liquidation_task = tokio::spawn(async move {
-        let _ = liquidation.run().await;
-    });
+    // for threads
+    let runtime = Arc::new(
+        runtime::Builder::new_multi_thread()
+            .worker_threads(3)
+            .enable_all()
+            .build()
+            .unwrap(),
+    );
+    let runtime_2 = runtime.clone();
+    let runtime_3 = runtime.clone();
 
-    indexer_task.await?;
-    data_updater_task.await?;
-    database_manager_task.await?;
-    liquidation_task.await?;
+    // let it rip
+    thread::spawn(move || {
+        runtime.block_on(async {
+            let _ = database_manager.run().await;
+        });
+    });
+    thread::spawn(move || {
+        runtime_2.block_on(async {
+            let _ = indexer.run().await;
+        });
+    });
+    thread::spawn(move || {
+        runtime_3.block_on(async {
+            data_updater::run(
+                receiver_data_updater,
+                sender_to_database_manager_for_updater,
+                comptroller_for_data_updater,
+                client_for_data_updater,
+            )
+            .await;
+        });
+    });
+    // this can run in the main thread
+    let _ = liquidation.run().await;
 
     /*  Not sure why these aren't working any more but it's fine since we already generated them.  problem for later
     // generate comptroller bindings

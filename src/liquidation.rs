@@ -33,31 +33,33 @@ impl Liquidation {
     pub async fn run(&mut self) -> () {
         println!("Liquidation is running");
 
-        let all_accounts: Vec<Account> = self.get_all_accounts_from_db().await;
+        loop {
+            let all_accounts: Vec<Account> = self.get_all_accounts_from_db().await;
 
-        for account in all_accounts.iter() {
-            // skip account with no assets
-            if account.assets_in.len() == 0 {
-                continue;
-            }
+            for account in all_accounts.iter() {
+                // skip account with no assets
+                if account.assets_in.len() == 0 {
+                    continue;
+                }
 
-            // address of ctoken to (price of underlying, exchange rate)
-            let mut ctoken_price_cache: HashMap<Address, (f64, U256)> = HashMap::new();
+                // address of ctoken to (price of underlying, exchange rate)
+                let mut ctoken_price_cache: HashMap<Address, (f64, U256)> = HashMap::new();
 
-            // TODO: make these run concurrently
-            let (best_seize_asset, best_seize_amount) = self
-                .find_highest_USD_val(account.ctokens_held.clone(), &mut ctoken_price_cache)
-                .await;
-            let (best_repay_asset, best_repay_amount) = self
-                .find_highest_USD_val(account.ctokens_borrowed.clone(), &mut ctoken_price_cache)
-                .await;
+                // TODO: make these run concurrently
+                let (best_seize_asset, best_seize_amount) = self
+                    .find_highest_USD_val(account.ctokens_held.clone(), &mut ctoken_price_cache)
+                    .await;
+                let (best_repay_asset, best_repay_amount) = self
+                    .find_highest_USD_val(account.ctokens_borrowed.clone(), &mut ctoken_price_cache)
+                    .await;
 
-            let min_profit = U256::from(1);
-            // ignoring gas costs for now
-            // TODO: not sure this is logically right?
-            if best_seize_amount > min_profit {
-                // LIQUIDATE THE FOOL
-                // using found best seize and repay assets
+                let min_profit = U256::from(1);
+                // ignoring gas costs for now
+                // TODO: not sure this is logically right?
+                if best_seize_amount > min_profit {
+                    // LIQUIDATE THE FOOL
+                    // using found best seize and repay assets
+                }
             }
         }
     }

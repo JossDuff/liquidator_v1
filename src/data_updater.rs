@@ -77,17 +77,30 @@ async fn update_all_data(
     price_oracle: PriceOracle,
     client: Arc<Provider<Ws>>,
 ) {
-    let all_accounts = get_all_accounts_from_db(&sender_to_database_manager).await;
-    for account in all_accounts.iter() {
-        let updated_account =
-            update_account_data(account.address, &comptroller, client.clone()).await;
-        save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
-    }
+    loop {
+        let all_accounts = get_all_accounts_from_db(&sender_to_database_manager).await;
+        for account in all_accounts.iter() {
+            let updated_account =
+                update_account_data(account.address, &comptroller, client.clone()).await;
+            save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
+        }
 
-    let all_ctokens = get_all_ctokens_from_db(&sender_to_database_manager).await;
-    for ctoken in all_ctokens.iter() {
-        let updated_ctoken = update_ctoken_data(ctoken.address, price_oracle.clone()).await;
-        save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
+        let all_ctokens = get_all_ctokens_from_db(&sender_to_database_manager).await;
+        let mut price_cache: HashMap<Address, f64> = HashMap::new();
+        let mut ignored_coins: HashMap<Address, bool> = HashMap::new();
+        for ctoken in all_ctokens.iter() {
+            let updated_ctoken = update_ctoken_data(
+                ctoken.address,
+                price_oracle.clone(),
+                client.clone(),
+                &mut price_cache,
+                &mut ignored_coins,
+            )
+            .await;
+            save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
+        }
+        // sleep thread for 10 seconds
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
     }
 }
 
@@ -143,7 +156,34 @@ async fn update_account_data(
     )
 }
 
-async fn update_ctoken_data(ctoken_addr: Address, price_oracle: PriceOracle) -> CToken {}
+async fn update_ctoken_data(
+    ctoken_addr: Address,
+    price_oracle: PriceOracle,
+    client: Arc<Provider<Ws>>,
+    price_cache: &mut HashMap<Address, f64>,
+    ignored_coins: &mut HashMap<Address, bool>,
+) -> CToken {
+    let ctoken = CErc20::new(ctoken_addr, client.clone());
+    let underlying_address = ctoken.underlying().call().await.unwrap();
+    if !price_cache.contains_key(&underlying_address)
+        && !ignored_coins.contains_key(&underlying_address)
+    {
+        let underlying_price = price_oracle.get_price(underlying_address).await;
+        if underlying_price == 0.0 {
+            ignored_coins.insert(underlying_address, true);
+        }
+        price_cache.insert(underlying_address, underlying_price);
+    }
+    let underlying_price = *price_cache.get(&underlying_address).unwrap();
+    let exchange_rate = ctoken.exchange_rate_stored().call().await.unwrap();
+
+    CToken::new(
+        ctoken_addr,
+        underlying_address,
+        underlying_price,
+        exchange_rate,
+    )
+}
 
 async fn save_updated_account_to_db(
     updated_account: Account,

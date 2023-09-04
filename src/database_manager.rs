@@ -25,6 +25,7 @@ impl DatabaseManager {
                 Command::Get { key, resp } => {
                     let val = self.database.get(key).unwrap();
                     let _ = resp.send(val);
+                    println!("Got data");
                 }
                 Command::Set { val } => {
                     let key = val.get_address();
@@ -34,19 +35,23 @@ impl DatabaseManager {
                     } else {
                         self.database.set(val);
                     }
+                    println!("Set data");
                 }
                 Command::Update { val } => {
                     self.database.set(val);
+                    println!("Update data");
                 }
                 Command::GetAllAccounts { resp } => {
                     let copy = self.database.get_all_accounts();
                     // ignore errors
                     let _ = resp.send(copy);
+                    println!("got all accounts");
                 }
                 Command::GetAllCTokens { resp } => {
                     let copy = self.database.get_all_ctokens();
                     // ignore errors
                     let _ = resp.send(copy);
+                    println!("got all ctokens")
                 }
             }
         }
