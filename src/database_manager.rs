@@ -26,12 +26,26 @@ impl DatabaseManager {
         while let Some(command) = self.receiver.recv().await {
             match command {
                 Command::Get { key, resp } => {
-                    let val = self.database.get(key).unwrap();
+                    let val = self.database.get(key);
                     resp.send(val);
                 }
                 Command::Set { val } => {
                     self.database.set(val);
                 }
+                Command::SetNew { val } => match val {
+                    DBVal::Account(account) => {
+                        let address = DBKey::Account(account.address);
+                        if !self.database.exists(address) {
+                            self.database.set(DBVal::Account(account));
+                        }
+                    }
+                    DBVal::CToken(ctoken) => {
+                        let address = DBKey::CToken(ctoken.address);
+                        if !self.database.exists(address) {
+                            self.database.set(DBVal::CToken(ctoken));
+                        }
+                    }
+                },
                 Command::GetAllAccounts { resp } => {
                     let all_accounts = self.database.get_all_accounts();
                     resp.send(all_accounts);

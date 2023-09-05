@@ -25,6 +25,23 @@ impl Database {
         Ok(Database { client, connection })
     }
 
+    pub fn exists(&mut self, db_key: DBKey) -> bool {
+        match db_key {
+            DBKey::Account(address) => {
+                let serialized_address: String = serde_json::to_string(&address).unwrap();
+                self.connection
+                    .hexists("accounts", serialized_address)
+                    .unwrap()
+            }
+            DBKey::CToken(address) => {
+                let serialized_address: String = serde_json::to_string(&address).unwrap();
+                self.connection
+                    .hexists("ctokens", serialized_address)
+                    .unwrap()
+            }
+        }
+    }
+
     /// TODO: handle different case for key not found vs redis error
     pub fn get(&mut self, db_key: DBKey) -> Option<DBVal> {
         let res: RedisResult<String>;
@@ -81,26 +98,37 @@ impl Database {
         }
     }
 
-    pub fn get_all_accounts(&mut self) -> Vec<Account> {
-        let members: Vec<(String, String)> = self.connection.hgetall("accounts").unwrap();
+    pub fn get_all_accounts(&mut self) -> Option<Vec<Account>> {
+        let members_res: Result<Vec<(String, String)>, RedisError> =
+            self.connection.hgetall("accounts");
+        match members_res {
+            Ok(members) => {
+                let all_accounts: Vec<Account> = members
+                    .iter()
+                    .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
+                    .collect();
 
-        let all_accounts: Vec<Account> = members
-            .iter()
-            .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
-            .collect();
-
-        all_accounts
+                Some(all_accounts)
+            }
+            Err(_) => None,
+        }
     }
 
-    pub fn get_all_ctokens(&mut self) -> Vec<CToken> {
-        let members: Vec<(String, String)> = self.connection.hgetall("ctokens").unwrap();
+    pub fn get_all_ctokens(&mut self) -> Option<Vec<CToken>> {
+        let members_res: Result<Vec<(String, String)>, RedisError> =
+            self.connection.hgetall("ctokens");
 
-        let all_ctokens: Vec<CToken> = members
-            .iter()
-            .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
-            .collect();
+        match members_res {
+            Ok(members) => {
+                let all_ctokens: Vec<CToken> = members
+                    .iter()
+                    .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
+                    .collect();
 
-        all_ctokens
+                Some(all_ctokens)
+            }
+            Err(_) => None,
+        }
     }
 }
 

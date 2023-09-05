@@ -10,15 +10,18 @@ use tokio::sync::{mpsc::Sender, oneshot};
 pub enum Command {
     Get {
         key: DBKey,
-        resp: oneshot::Sender<DBVal>,
+        resp: oneshot::Sender<Option<DBVal>>,
     },
     Set {
         val: DBVal,
     },
+    SetNew {
+        val: DBVal,
+    },
     GetAllAccounts {
-        resp: oneshot::Sender<Vec<Account>>,
+        resp: oneshot::Sender<Option<Vec<Account>>>,
     },
     GetAllCTokens {
-        resp: oneshot::Sender<Vec<CToken>>,
+        resp: oneshot::Sender<Option<Vec<CToken>>>,
     },
 }

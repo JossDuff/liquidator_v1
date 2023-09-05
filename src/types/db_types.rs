@@ -3,14 +3,13 @@ use ethers::types::Address;
 use serde::{Deserialize, Serialize};
 
 // TODO: should these be traits instead of enums?  Maybe both?
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBVal {
     Account(Account),
     CToken(CToken),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBKey {
     Account(Address),
     CToken(Address),

@@ -10,9 +10,12 @@ use ethers::{
 };
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{
-    mpsc::{channel, Receiver, Sender},
-    oneshot,
+use tokio::{
+    sync::{
+        mpsc::{channel, Receiver, Sender},
+        oneshot,
+    },
+    time::Duration,
 };
 
 pub async fn run(
@@ -25,18 +28,10 @@ pub async fn run(
     let price_oracle = PriceOracle::new();
 
     let sender_to_database_manager_clone = sender_to_database_manager.clone();
-    let comptroller_clone = comptroller.clone();
-    let client_clone = client.clone();
 
     // start add_new_asset task
     let new_account_task = tokio::spawn(async move {
-        let _ = watch_for_new_accounts(
-            receiver_from_indexer,
-            sender_to_database_manager,
-            comptroller,
-            client,
-        )
-        .await;
+        let _ = watch_for_new_accounts(receiver_from_indexer, sender_to_database_manager).await;
     });
 
     // TODO: split into 2 tasks, one for accounts and one for ctokens
@@ -44,9 +39,9 @@ pub async fn run(
     let update_data_task = tokio::spawn(async move {
         let _ = update_all_data(
             sender_to_database_manager_clone,
-            comptroller_clone,
+            comptroller,
             price_oracle,
-            client_clone,
+            client,
         )
         .await;
     });
@@ -58,15 +53,10 @@ pub async fn run(
 async fn watch_for_new_accounts(
     mut receiver_from_indexer: Receiver<Address>,
     sender_to_database_manager: Sender<Command>,
-    comptroller: Comptroller<Provider<Ws>>,
-    client: Arc<Provider<Ws>>,
 ) {
     while let Some(account_addr) = receiver_from_indexer.recv().await {
-        let new_account = update_account_data(account_addr, &comptroller, client.clone()).await;
-        let command: Command = Command::Set {
-            val: DBVal::Account(new_account),
-        };
-        sender_to_database_manager.send(command).await;
+        let new_account = Account::new_empty(account_addr);
+        save_new_account_to_db(new_account, &sender_to_database_manager);
     }
 }
 
@@ -78,16 +68,37 @@ async fn update_all_data(
     client: Arc<Provider<Ws>>,
 ) {
     loop {
-        let all_accounts = get_all_accounts_from_db(&sender_to_database_manager).await;
-        for account in all_accounts.iter() {
-            let updated_account =
-                update_account_data(account.address, &comptroller, client.clone()).await;
-            save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
+        let all_accounts: Vec<Account>;
+        if let Some(accounts) = get_all_accounts_from_db(&sender_to_database_manager).await {
+            all_accounts = accounts;
+        } else {
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            continue;
         }
 
-        let all_ctokens = get_all_ctokens_from_db(&sender_to_database_manager).await;
+        println!("Updating accounts");
+        for account in all_accounts.iter() {
+            let updated_account = update_account_data(
+                account.address,
+                &comptroller,
+                client.clone(),
+                &sender_to_database_manager,
+            )
+            .await;
+            save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
+        }
+        println!("Done updating accounts");
+
+        let all_ctokens: Vec<CToken>;
+        if let Some(ctokens) = get_all_ctokens_from_db(&sender_to_database_manager).await {
+            all_ctokens = ctokens;
+        } else {
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            continue;
+        }
         let mut price_cache: HashMap<Address, f64> = HashMap::new();
         let mut ignored_coins: HashMap<Address, bool> = HashMap::new();
+        println!("Length of all ctokens: {}", all_ctokens.len());
         for ctoken in all_ctokens.iter() {
             let updated_ctoken = update_ctoken_data(
                 ctoken.address,
@@ -99,15 +110,19 @@ async fn update_all_data(
             .await;
             save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
         }
+
+        println!("Updated all data");
         // sleep thread for 10 seconds
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
     }
 }
 
+// Also does ctoken discovery
 async fn update_account_data(
     account_addr: Address,
     comptroller: &Comptroller<Provider<Ws>>,
     client: Arc<Provider<Ws>>,
+    sender_to_database_manager: &Sender<Command>,
 ) -> Account {
     // calls comptroller to get account data
     let assets_in: Vec<Address> = comptroller.get_assets_in(account_addr).await.unwrap();
@@ -121,6 +136,8 @@ async fn update_account_data(
 
     // calls to cTokens from assets_in to build ctokens_held and ctokens_borrowed
     for asset in assets_in.iter() {
+        let new_ctoken = CToken::new_empty(*asset);
+        save_new_ctoken_to_db(new_ctoken, sender_to_database_manager).await;
         // TODO: probably don't clone
         // TODO: where can I store instances of each ctoken?  This is probably question for ethers-rs telegram
         let ctoken = CErc20::new(*asset, client.clone());
@@ -148,11 +165,11 @@ async fn update_account_data(
     // build account entry
     Account::new(
         account_addr,
-        liquidity,
-        shortfall,
-        assets_in,
-        ctokens_held,
-        ctokens_borrowed,
+        Some(liquidity),
+        Some(shortfall),
+        Some(assets_in),
+        Some(ctokens_held),
+        Some(ctokens_borrowed),
     )
 }
 
@@ -163,6 +180,7 @@ async fn update_ctoken_data(
     price_cache: &mut HashMap<Address, f64>,
     ignored_coins: &mut HashMap<Address, bool>,
 ) -> CToken {
+    println!("trying to update ctoken");
     let ctoken = CErc20::new(ctoken_addr, client.clone());
     let underlying_address = ctoken.underlying().call().await.unwrap();
     if !price_cache.contains_key(&underlying_address)
@@ -177,12 +195,31 @@ async fn update_ctoken_data(
     let underlying_price = *price_cache.get(&underlying_address).unwrap();
     let exchange_rate = ctoken.exchange_rate_stored().call().await.unwrap();
 
+    println!("updated a ctoken");
     CToken::new(
         ctoken_addr,
-        underlying_address,
-        underlying_price,
-        exchange_rate,
+        Some(underlying_address),
+        Some(underlying_price),
+        Some(exchange_rate),
     )
+}
+
+// TODO: we can use DBVal and DBKey types to abstract these functions
+async fn save_new_account_to_db(
+    new_account: Account,
+    sender_to_database_manager: &Sender<Command>,
+) {
+    let command = Command::SetNew {
+        val: DBVal::Account(new_account),
+    };
+    sender_to_database_manager.send(command).await;
+}
+
+async fn save_new_ctoken_to_db(new_ctoken: CToken, sender_to_database_manager: &Sender<Command>) {
+    let command = Command::SetNew {
+        val: DBVal::CToken(new_ctoken),
+    };
+    sender_to_database_manager.send(command).await;
 }
 
 async fn save_updated_account_to_db(
@@ -205,16 +242,26 @@ async fn save_updated_ctoken_to_db(
     sender_to_database_manager.send(command).await;
 }
 
-async fn get_all_accounts_from_db(sender_to_database_manager: &Sender<Command>) -> Vec<Account> {
+async fn get_all_accounts_from_db(
+    sender_to_database_manager: &Sender<Command>,
+) -> Option<Vec<Account>> {
     let (resp_tx, resp_rx) = oneshot::channel();
     let command = Command::GetAllAccounts { resp: (resp_tx) };
     sender_to_database_manager.send(command).await.unwrap();
-    resp_rx.await.unwrap()
+    match resp_rx.await {
+        Ok(result) => result,
+        Err(_) => panic!("Error getting accounts from database"),
+    }
 }
 
-async fn get_all_ctokens_from_db(sender_to_database_manager: &Sender<Command>) -> Vec<CToken> {
+async fn get_all_ctokens_from_db(
+    sender_to_database_manager: &Sender<Command>,
+) -> Option<Vec<CToken>> {
     let (resp_tx, resp_rx) = oneshot::channel();
     let command = Command::GetAllCTokens { resp: (resp_tx) };
     sender_to_database_manager.send(command).await.unwrap();
-    resp_rx.await.unwrap()
+    match resp_rx.await {
+        Ok(result) => result,
+        Err(_) => panic!("Error getting accounts from database"),
+    }
 }
