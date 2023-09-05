@@ -1,4 +1,8 @@
-use crate::types::{account::Account, ctoken::CToken, db_types::DBVal};
+use crate::types::{
+    account::Account,
+    ctoken::CToken,
+    db_types::{DBKey, DBVal},
+};
 use ethers::types::Address;
 use redis::{Client, Commands, RedisError, RedisResult};
 use std::{
@@ -8,34 +12,39 @@ use std::{
 
 pub struct Database {
     pub client: redis::Client,
-    pub connection: Arc<Mutex<redis::Connection>>,
+    pub connection: redis::Connection,
 }
 
-// TODO: currently we're storing everything twice, ctokens and accounts
-// instead we can just use 2 hash maps, accounts and ctokens
 // TODO: these get/set functions can fail
 // TODO: if the account doesn't exist return something to indicate this
 impl Database {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let client = Client::open("redis://127.0.0.1/")?; // Replace with your Redis connection details
-        let connection = Arc::new(Mutex::new(client.get_connection()?));
+        let connection = client.get_connection()?;
 
         Ok(Database { client, connection })
     }
 
-    pub fn exists(&self, address: Address) -> bool {
-        let mut con = self.connection.lock().unwrap();
-        con.exists(address.to_string()).unwrap()
-    }
-
     /// TODO: handle different case for key not found vs redis error
-    pub fn get(&self, db_key: Address) -> Option<DBVal> {
-        let mut con = self.connection.lock().unwrap();
-        let res: Result<String, RedisError> = con.get(db_key.to_string());
+    pub fn get(&mut self, db_key: DBKey) -> Option<DBVal> {
+        let res: RedisResult<String>;
+        match db_key {
+            DBKey::Account(address) => {
+                res = self
+                    .connection
+                    .hget("accounts", serde_json::to_string(&address).unwrap());
+            }
+            DBKey::CToken(address) => {
+                res = self
+                    .connection
+                    .hget("accounts", serde_json::to_string(&address).unwrap());
+            }
+        }
+
         match res {
             Ok(db_val) => {
-                let db_val: DBVal = serde_json::from_str(&db_val).unwrap();
-                match db_val {
+                let val: DBVal = serde_json::from_str(&db_val).unwrap();
+                match val {
                     DBVal::Account(account) => Some(DBVal::Account(account)),
                     DBVal::CToken(ctoken) => Some(DBVal::CToken(ctoken)),
                 }
@@ -44,44 +53,26 @@ impl Database {
         }
     }
 
-    // TODO: should I check for account existence here???
-    // I think I should check wherever I'm calling this.  Since, for example, I'll have to check
-    // if the entry exists to determine if I'll have to call contract/oracle to build the DBVal
     // TODO: this can fail
-    pub fn set(&self, db_val: DBVal) -> bool {
-        let mut con = self.connection.lock().unwrap();
+    pub fn set(&mut self, db_val: DBVal) -> bool {
         match db_val {
             DBVal::Account(account) => {
-                // add address/account kv
-                let _: () = con
-                    .set(
-                        account.address.to_string(),
-                        serde_json::to_string(&account).unwrap(),
-                    )
-                    .unwrap();
-
                 let serialized_account = serde_json::to_string(&account).unwrap();
                 let serialized_address: String = serde_json::to_string(&account.address).unwrap();
                 // add to hash map of accounts
-                let _: () = con
+                let _: () = self
+                    .connection
                     .hset("accounts", serialized_address, serialized_account)
                     .unwrap();
 
                 true
             }
             DBVal::CToken(ctoken) => {
-                // add address/ctoken kv
-                let _: () = con
-                    .set(
-                        ctoken.address.to_string(),
-                        serde_json::to_string(&ctoken).unwrap(),
-                    )
-                    .unwrap();
-
                 let serialized_ctoken = serde_json::to_string(&ctoken).unwrap();
                 let serialized_address = serde_json::to_string(&ctoken.address).unwrap();
                 // add to hash map of ctokens
-                let _: () = con
+                let _: () = self
+                    .connection
                     .hset("ctokens", serialized_address, serialized_ctoken)
                     .unwrap();
 
@@ -90,10 +81,8 @@ impl Database {
         }
     }
 
-    pub fn get_all_accounts(&self) -> Vec<Account> {
-        let mut con = self.connection.lock().unwrap();
-        let members: Vec<(String, String)> = con.hgetall("accounts").unwrap();
-        drop(con); // drop connection to release lock
+    pub fn get_all_accounts(&mut self) -> Vec<Account> {
+        let members: Vec<(String, String)> = self.connection.hgetall("accounts").unwrap();
 
         let all_accounts: Vec<Account> = members
             .iter()
@@ -103,10 +92,8 @@ impl Database {
         all_accounts
     }
 
-    pub fn get_all_ctokens(&self) -> Vec<CToken> {
-        let mut con = self.connection.lock().unwrap();
-        let members: Vec<(String, String)> = con.hgetall("ctokens").unwrap();
-        drop(con); // drop connection to release lock
+    pub fn get_all_ctokens(&mut self) -> Vec<CToken> {
+        let members: Vec<(String, String)> = self.connection.hgetall("ctokens").unwrap();
 
         let all_ctokens: Vec<CToken> = members
             .iter()

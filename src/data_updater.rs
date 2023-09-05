@@ -189,7 +189,7 @@ async fn save_updated_account_to_db(
     updated_account: Account,
     sender_to_database_manager: &Sender<Command>,
 ) {
-    let command = Command::Update {
+    let command = Command::Set {
         val: DBVal::Account(updated_account),
     };
     sender_to_database_manager.send(command).await;
@@ -199,7 +199,7 @@ async fn save_updated_ctoken_to_db(
     updated_ctoken: CToken,
     sender_to_database_manager: &Sender<Command>,
 ) {
-    let command = Command::Update {
+    let command = Command::Set {
         val: DBVal::CToken(updated_ctoken),
     };
     sender_to_database_manager.send(command).await;

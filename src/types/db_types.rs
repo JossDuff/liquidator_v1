@@ -9,6 +9,13 @@ pub enum DBVal {
     CToken(CToken),
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+
+pub enum DBKey {
+    Account(Address),
+    CToken(Address),
+}
+
 impl DBVal {
     pub fn get_address(&self) -> Address {
         match self {

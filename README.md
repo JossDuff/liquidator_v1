@@ -30,6 +30,7 @@ Was horribly smelly and dirty and stinky and messy.  This is the game plan for n
 - use complex redis data structures to represent data instead of serializing/deserializing every time
 - use redis ahash (+7-10% performance)
 - multithread
+    - split account and ctoken updating into their own threads
 - better logging than println
 - batching RPC calls (multicall)
 - websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)

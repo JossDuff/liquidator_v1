@@ -1,6 +1,11 @@
 use crate::bindings::liquidator_bindings::Liquidator;
 use crate::types::ctoken;
-use crate::types::{account::Account, command::Command, ctoken::CToken, db_types::DBVal};
+use crate::types::{
+    account::Account,
+    command::Command,
+    ctoken::CToken,
+    db_types::{DBKey, DBVal},
+};
 
 use ethers::{
     core::types::{Address, U256},
@@ -141,22 +146,25 @@ impl Liquidation {
         } else {
             let (resp_tx, resp_rx) = oneshot::channel();
             let command = Command::Get {
-                key: *ctoken_addr,
+                key: DBKey::CToken(*ctoken_addr),
                 resp: (resp_tx),
             };
             self.sender_to_database_manager.send(command).await.unwrap();
-            let db_val_res: DBVal = resp_rx.await.unwrap();
+            let db_val_res = resp_rx.await;
             match db_val_res {
-                DBVal::Account(_) => {
-                    panic!("Expected ctoken, got account");
-                }
-                DBVal::CToken(ctoken_res) => {
+                Ok(DBVal::CToken(ctoken_res)) => {
                     let address_res = ctoken_res.address;
                     let underlying_price_res = ctoken_res.underlying_price;
                     let exchange_rate_res = ctoken_res.exchange_rate;
                     ctoken_price_cache
                         .insert(address_res, (underlying_price_res, exchange_rate_res));
                     (underlying_price_res, exchange_rate_res)
+                }
+                Ok(DBVal::Account(_)) => {
+                    panic!("Expected ctoken, got account");
+                }
+                Err(_) => {
+                    panic!("Error getting ctoken from database");
                 }
             }
         }
