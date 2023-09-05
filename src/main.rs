@@ -13,7 +13,6 @@ use crate::bindings::{
 };
 use crate::types::{account::Account, command::Command, ctoken::CToken};
 
-use crate::data_updater::run as data_updater;
 use crate::database_manager::DatabaseManager;
 use crate::indexer::Indexer;
 use crate::liquidation::Liquidation;
@@ -40,26 +39,32 @@ async fn main() -> eyre::Result<()> {
     let provider = Provider::<Ws>::connect(WSS_URL).await?;
     let client_for_comptroller = Arc::new(provider);
     let client_for_liquidator = client_for_comptroller.clone();
-    let client_for_data_updater = client_for_comptroller.clone();
+    let client_for_update_accounts = client_for_comptroller.clone();
+    let client_for_update_ctokens = client_for_comptroller.clone();
 
     // initialize contracts
     // TODO: should I init contracts within each module instead?
     let comptroller_address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
     let comptroller_for_indexer = Comptroller::new(comptroller_address, client_for_comptroller);
-    let comptroller_for_data_updater = comptroller_for_indexer.clone();
+    let comptroller_for_update_accounts = comptroller_for_indexer.clone();
     let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
     let liquidator = Liquidator::new(liquidator_address, client_for_liquidator);
 
     // Channel for sending addresses from indexer to data_updater
     // TODO: we could set this channel size to 50 to allow for maximum efficiency multicall batching
-    let (sender_to_data_updater, receiver_data_updater): (Sender<Address>, Receiver<Address>) =
-        channel(32);
+    let (sender_to_data_updater, receiver_for_update_accounts): (
+        Sender<Address>,
+        Receiver<Address>,
+    ) = channel(32);
 
     let (sender_to_database_manager_for_liquidation, receiver_database_manager): (
         Sender<Command>,
         Receiver<Command>,
     ) = channel(32);
-    let sender_to_database_manager_for_updater = sender_to_database_manager_for_liquidation.clone();
+    let sender_to_database_manager_for_update_accounts =
+        sender_to_database_manager_for_liquidation.clone();
+    let sender_to_database_manager_for_update_ctokens =
+        sender_to_database_manager_for_liquidation.clone();
 
     // initialize modules
     let indexer = Indexer::new(sender_to_data_updater, comptroller_for_indexer);
@@ -70,13 +75,14 @@ async fn main() -> eyre::Result<()> {
     // for threads
     let runtime = Arc::new(
         runtime::Builder::new_multi_thread()
-            .worker_threads(3)
+            .worker_threads(4)
             .enable_all()
             .build()
             .unwrap(),
     );
     let runtime_2 = runtime.clone();
     let runtime_3 = runtime.clone();
+    let runtime_4 = runtime.clone();
 
     // let it rip
     thread::spawn(move || {
@@ -91,11 +97,20 @@ async fn main() -> eyre::Result<()> {
     });
     thread::spawn(move || {
         runtime_3.block_on(async {
-            data_updater::run(
-                receiver_data_updater,
-                sender_to_database_manager_for_updater,
-                comptroller_for_data_updater,
-                client_for_data_updater,
+            data_updater::update_accounts(
+                receiver_for_update_accounts,
+                sender_to_database_manager_for_update_accounts,
+                comptroller_for_update_accounts,
+                client_for_update_accounts,
+            )
+            .await;
+        });
+    });
+    thread::spawn(move || {
+        runtime_4.block_on(async {
+            data_updater::update_ctokens(
+                sender_to_database_manager_for_update_ctokens,
+                client_for_update_ctokens,
             )
             .await;
         });

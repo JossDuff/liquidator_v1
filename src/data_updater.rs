@@ -18,15 +18,12 @@ use tokio::{
     time::Duration,
 };
 
-pub async fn run(
+pub async fn update_accounts(
     receiver_from_indexer: Receiver<Address>,
     sender_to_database_manager: Sender<Command>,
     comptroller: Comptroller<Provider<Ws>>,
     client: Arc<Provider<Ws>>,
 ) -> () {
-    println!("Data_updater is running");
-    let price_oracle = PriceOracle::new();
-
     let sender_to_database_manager_clone = sender_to_database_manager.clone();
 
     // start add_new_asset task
@@ -35,60 +32,22 @@ pub async fn run(
     });
 
     // TODO: split into 2 tasks, one for accounts and one for ctokens
-    // start update_data task
-    let update_data_task = tokio::spawn(async move {
-        let _ = update_all_data(
-            sender_to_database_manager_clone,
-            comptroller,
-            price_oracle,
-            client,
-        )
-        .await;
+    // sta rt update_data task
+    let update_saved_accounts_task = tokio::spawn(async move {
+        let _ = update_saved_accounts(sender_to_database_manager_clone, comptroller, client).await;
     });
 
     new_account_task.await.unwrap();
-    update_data_task.await.unwrap();
+    update_saved_accounts_task.await.unwrap();
 }
 
-async fn watch_for_new_accounts(
-    mut receiver_from_indexer: Receiver<Address>,
+pub async fn update_ctokens(
     sender_to_database_manager: Sender<Command>,
-) {
-    while let Some(account_addr) = receiver_from_indexer.recv().await {
-        let new_account = Account::new_empty(account_addr);
-        save_new_account_to_db(new_account, &sender_to_database_manager);
-    }
-}
-
-// TODO: maybe split up into two functions: one for accounts and one for ctokens
-async fn update_all_data(
-    sender_to_database_manager: Sender<Command>,
-    comptroller: Comptroller<Provider<Ws>>,
-    price_oracle: PriceOracle,
     client: Arc<Provider<Ws>>,
 ) {
+    let price_oracle = PriceOracle::new();
+
     loop {
-        let all_accounts: Vec<Account>;
-        if let Some(accounts) = get_all_accounts_from_db(&sender_to_database_manager).await {
-            all_accounts = accounts;
-        } else {
-            tokio::time::sleep(Duration::from_secs(5)).await;
-            continue;
-        }
-
-        println!("Updating accounts");
-        for account in all_accounts.iter() {
-            let updated_account = update_account_data(
-                account.address,
-                &comptroller,
-                client.clone(),
-                &sender_to_database_manager,
-            )
-            .await;
-            save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
-        }
-        println!("Done updating accounts");
-
         let all_ctokens: Vec<CToken>;
         if let Some(ctokens) = get_all_ctokens_from_db(&sender_to_database_manager).await {
             all_ctokens = ctokens;
@@ -110,15 +69,50 @@ async fn update_all_data(
             .await;
             save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
         }
+    }
+}
 
-        println!("Updated all data");
-        // sleep thread for 10 seconds
-        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+async fn watch_for_new_accounts(
+    mut receiver_from_indexer: Receiver<Address>,
+    sender_to_database_manager: Sender<Command>,
+) {
+    while let Some(account_addr) = receiver_from_indexer.recv().await {
+        let new_account = Account::new_empty(account_addr);
+        save_new_account_to_db(new_account, &sender_to_database_manager);
+    }
+}
+
+async fn update_saved_accounts(
+    sender_to_database_manager: Sender<Command>,
+    comptroller: Comptroller<Provider<Ws>>,
+    client: Arc<Provider<Ws>>,
+) {
+    loop {
+        let all_accounts: Vec<Account>;
+        if let Some(accounts) = get_all_accounts_from_db(&sender_to_database_manager).await {
+            all_accounts = accounts;
+        } else {
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            continue;
+        }
+
+        println!("Updating accounts");
+        for account in all_accounts.iter() {
+            let updated_account = update_this_account_data(
+                account.address,
+                &comptroller,
+                client.clone(),
+                &sender_to_database_manager,
+            )
+            .await;
+            save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
+        }
+        println!("Done updating accounts");
     }
 }
 
 // Also does ctoken discovery
-async fn update_account_data(
+async fn update_this_account_data(
     account_addr: Address,
     comptroller: &Comptroller<Provider<Ws>>,
     client: Arc<Provider<Ws>>,
