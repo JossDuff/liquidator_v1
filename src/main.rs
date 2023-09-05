@@ -51,7 +51,6 @@ async fn main() -> eyre::Result<()> {
     let liquidator = Liquidator::new(liquidator_address, client_for_liquidator);
 
     // Channel for sending addresses from indexer to data_updater
-    // TODO: we could set this channel size to 50 to allow for maximum efficiency multicall batching
     let (sender_to_data_updater, receiver_for_update_accounts): (
         Sender<Address>,
         Receiver<Address>,

@@ -5,6 +5,7 @@ use crate::data_updater::price_oracle::PriceOracle;
 use crate::types::command;
 use crate::types::{account::Account, command::Command, ctoken::CToken, db_types::*};
 use ethers::{
+    contract::Multicall,
     core::types::{Address, U256},
     providers::{Provider, Ws},
 };
@@ -31,8 +32,6 @@ pub async fn update_accounts(
         let _ = watch_for_new_accounts(receiver_from_indexer, sender_to_database_manager).await;
     });
 
-    // TODO: split into 2 tasks, one for accounts and one for ctokens
-    // sta rt update_data task
     let update_saved_accounts_task = tokio::spawn(async move {
         let _ = update_saved_accounts(sender_to_database_manager_clone, comptroller, client).await;
     });
@@ -59,6 +58,12 @@ pub async fn update_ctokens(
         let mut ignored_coins: HashMap<Address, bool> = HashMap::new();
         println!("Length of all ctokens: {}", all_ctokens.len());
         for ctoken in all_ctokens.iter() {
+            // take 50 ctokens
+            // for each, make (but don't execute) a call to ctoken.exchange_rate_stored() and store in vec
+            // multicall.add_calls(vec of calls)
+            // execute multicall
+            // sort returned data back into ctokens
+            // save ctokens to db
             let updated_ctoken = update_ctoken_data(
                 ctoken.address,
                 price_oracle.clone(),
@@ -98,6 +103,13 @@ async fn update_saved_accounts(
 
         println!("Updating accounts");
         for account in all_accounts.iter() {
+            // take x accounts (assuming max multicall is 50)
+            // for each, build (but don't execute) calls to...
+            //      comptroller.get_account_liquidity(account_addr)
+            //      comptroller.get_assets_in(account_addr)
+            //      for each ctoken of assets_in, build (but don't execute) calls to...
+            //          ctoken.get_account_snapshot(account_addr)
+            // bundle an execute multicall
             let updated_account = update_this_account_data(
                 account.address,
                 &comptroller,
@@ -175,6 +187,7 @@ async fn update_ctoken_data(
     ignored_coins: &mut HashMap<Address, bool>,
 ) -> CToken {
     println!("trying to update ctoken");
+    // TODO: only need to set underlying address once
     let ctoken = CErc20::new(ctoken_addr, client.clone());
     let underlying_address = ctoken.underlying().call().await.unwrap();
     if !price_cache.contains_key(&underlying_address)
