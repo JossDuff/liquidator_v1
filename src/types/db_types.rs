@@ -1,4 +1,9 @@
-use crate::types::{account::Account, ctoken::CToken};
+use crate::types::{
+    account::Account,
+    account_ctoken::{AccountCToken, AccountCTokenAddress},
+    comptroller::Comptroller,
+    ctoken::CToken,
+};
 use ethers::types::Address;
 use serde::{Deserialize, Serialize};
 
@@ -7,19 +12,14 @@ use serde::{Deserialize, Serialize};
 pub enum DBVal {
     Account(Account),
     CToken(CToken),
+    AccountCToken(AccountCToken),
+    Comptroller(Comptroller),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBKey {
     Account(Address),
     CToken(Address),
-}
-
-impl DBVal {
-    pub fn get_address(&self) -> Address {
-        match self {
-            DBVal::Account(account) => account.address,
-            DBVal::CToken(ctoken) => ctoken.address,
-        }
-    }
+    AccountCToken(AccountCTokenAddress),
+    Comptroller(Address),
 }
