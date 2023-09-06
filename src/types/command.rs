@@ -15,7 +15,7 @@ pub enum Command {
     Set {
         val: DBVal,
     },
-    SetNew {
+    Update {
         val: DBVal,
     },
     GetAllAccounts {

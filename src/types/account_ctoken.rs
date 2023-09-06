@@ -9,9 +9,9 @@ pub struct AccountCTokenAddress {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountCToken {
-    both_addresses: AccountCTokenAddress,
-    borrowed_balance: Option<U256>,
-    supplied_balance: Option<U256>,
+    pub both_addresses: AccountCTokenAddress,
+    pub borrowed_balance: Option<U256>,
+    pub supplied_balance: Option<U256>,
 }
 
 impl AccountCToken {

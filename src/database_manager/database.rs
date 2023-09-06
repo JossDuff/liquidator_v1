@@ -39,6 +39,14 @@ impl Database {
                     .hexists("ctokens", serialized_address)
                     .unwrap()
             }
+            DBKey::AccountCToken(account_ctoken_address) => {
+                let serialized_address: String =
+                    serde_json::to_string(&account_ctoken_address).unwrap();
+                self.connection
+                    .hexists("account_ctokens", serialized_address)
+                    .unwrap()
+            }
+            DBKey::Comptroller() => self.connection.exists("comptroller").unwrap(),
         }
     }
 
@@ -54,7 +62,16 @@ impl Database {
             DBKey::CToken(address) => {
                 res = self
                     .connection
-                    .hget("accounts", serde_json::to_string(&address).unwrap());
+                    .hget("ctokens", serde_json::to_string(&address).unwrap());
+            }
+            DBKey::AccountCToken(account_ctoken_address) => {
+                res = self.connection.hget(
+                    "account_ctokens",
+                    serde_json::to_string(&account_ctoken_address).unwrap(),
+                );
+            }
+            DBKey::Comptroller() => {
+                res = self.connection.get("comptroller");
             }
         }
 
@@ -62,8 +79,10 @@ impl Database {
             Ok(db_val) => {
                 let val: DBVal = serde_json::from_str(&db_val).unwrap();
                 match val {
-                    DBVal::Account(account) => Some(DBVal::Account(account)),
-                    DBVal::CToken(ctoken) => Some(DBVal::CToken(ctoken)),
+                    DBVal::Account(x) => Some(DBVal::Account(x)),
+                    DBVal::CToken(x) => Some(DBVal::CToken(x)),
+                    DBVal::AccountCToken(x) => Some(DBVal::AccountCToken(x)),
+                    DBVal::Comptroller(x) => Some(DBVal::Comptroller(x)),
                 }
             }
             Err(_) => None,
@@ -74,8 +93,8 @@ impl Database {
     pub fn set(&mut self, db_val: DBVal) -> bool {
         match db_val {
             DBVal::Account(account) => {
-                let serialized_account = serde_json::to_string(&account).unwrap();
                 let serialized_address: String = serde_json::to_string(&account.address).unwrap();
+                let serialized_account = serde_json::to_string(&account).unwrap();
                 // add to hash map of accounts
                 let _: () = self
                     .connection
@@ -85,14 +104,39 @@ impl Database {
                 true
             }
             DBVal::CToken(ctoken) => {
-                let serialized_ctoken = serde_json::to_string(&ctoken).unwrap();
                 let serialized_address = serde_json::to_string(&ctoken.address).unwrap();
+                let serialized_ctoken = serde_json::to_string(&ctoken).unwrap();
                 // add to hash map of ctokens
                 let _: () = self
                     .connection
                     .hset("ctokens", serialized_address, serialized_ctoken)
                     .unwrap();
 
+                true
+            }
+            DBVal::AccountCToken(account_ctoken) => {
+                let serialized_account_ctoken_address =
+                    serde_json::to_string(&account_ctoken.both_addresses).unwrap();
+                let serialized_account_ctoken = serde_json::to_string(&account_ctoken).unwrap();
+
+                let _: () = self
+                    .connection
+                    .hset(
+                        "account_ctokens",
+                        serialized_account_ctoken_address,
+                        serialized_account_ctoken,
+                    )
+                    .unwrap();
+
+                true
+            }
+            DBVal::Comptroller(comptroller) => {
+                let serialized_comptroller = serde_json::to_string(&comptroller).unwrap();
+
+                let _: () = self
+                    .connection
+                    .set("comptroller", serialized_comptroller)
+                    .unwrap();
                 true
             }
         }

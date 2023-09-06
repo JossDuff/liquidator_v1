@@ -21,5 +21,18 @@ pub enum DBKey {
     Account(Address),
     CToken(Address),
     AccountCToken(AccountCTokenAddress),
-    Comptroller(Address),
+    Comptroller(),
+}
+
+impl DBVal {
+    pub fn get_key(&self) -> DBKey {
+        match self {
+            DBVal::Account(account) => DBKey::Account(account.address),
+            DBVal::CToken(ctoken) => DBKey::CToken(ctoken.address),
+            DBVal::AccountCToken(account_ctoken) => {
+                DBKey::AccountCToken(account_ctoken.both_addresses.clone())
+            }
+            DBVal::Comptroller(comptroller) => DBKey::Comptroller(),
+        }
+    }
 }

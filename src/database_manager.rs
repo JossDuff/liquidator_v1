@@ -32,20 +32,12 @@ impl DatabaseManager {
                 Command::Set { val } => {
                     self.database.set(val);
                 }
-                Command::SetNew { val } => match val {
-                    DBVal::Account(account) => {
-                        let address = DBKey::Account(account.address);
-                        if !self.database.exists(address) {
-                            self.database.set(DBVal::Account(account));
-                        }
+                Command::Update { val } => {
+                    let key: DBKey = val.get_key();
+                    if !self.database.exists(key) {
+                        self.database.set(val);
                     }
-                    DBVal::CToken(ctoken) => {
-                        let address = DBKey::CToken(ctoken.address);
-                        if !self.database.exists(address) {
-                            self.database.set(DBVal::CToken(ctoken));
-                        }
-                    }
-                },
+                }
                 Command::GetAllAccounts { resp } => {
                     let all_accounts = self.database.get_all_accounts();
                     resp.send(all_accounts);
