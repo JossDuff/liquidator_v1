@@ -20,7 +20,6 @@ Was horribly smelly and dirty and stinky and messy.  This is the game plan for n
 - use a better price oracle.  Coingecko rate limit is like 10/minute
 - If db instance is wrapped in arc mutex, do I really need each operation inside of db to be also wrapped in arc mutex?  This slows down everything cause they're all leaning on the one db...
 - multicalls!!!!
-- use tokio or std mutex???
 - TESTS!
 
 ## Phase 3: Scale
@@ -63,7 +62,7 @@ Was horribly smelly and dirty and stinky and messy.  This is the game plan for n
 To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
 
 # Open questions
-- will forks have an accurate open price feed?  Or will I have to build one myself?
+- What is the best strategy to narrow down the number of accounts I'm searching through to be only the active accounts that are at risk of liquidation...
 
 # Sources
  - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452

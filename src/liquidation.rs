@@ -45,6 +45,7 @@ impl Liquidation {
         loop {
             let all_accounts: Vec<Account> = self.get_all_accounts_from_db().await;
 
+            println!("got all accounts");
             for account in all_accounts.iter() {
                 if let Err(_) = Self::account_empty_checks(account) {
                     continue;
@@ -79,6 +80,13 @@ impl Liquidation {
                         account.address
                     );
                     // using found best seize and repay assets
+                } else {
+                    println!(
+                        "NO LIQUIDATE: seize / repay / address: {}, {}, {}",
+                        format_units(best_seize_amount, "ether").unwrap(),
+                        format_units(best_repay_amount, "ether").unwrap(),
+                        account.address
+                    );
                 }
             }
         }
@@ -134,14 +142,21 @@ impl Liquidation {
         (underlying_price, exchange_rate): (f64, U256),
     ) -> U256 {
         let underlying_price_casted: U256 = U256::from((underlying_price * 1e18) as u64);
-        let exchange_rate = exchange_rate;
         let base = U256::from(10).pow(18.into());
 
         // get the dollar value of amount held which is the dollar value if all
         // ctokens were converted into underlying tokens
         // = ctoken_amount_held * exchange_rate * underlying_price_in_usd
         // TODO: add in exchange rate.  I was too lazy to figure out the proper conversion
-        let dollar_value = ctoken_amount * underlying_price_casted / base;
+        let dollar_value = ctoken_amount * exchange_rate * underlying_price_casted / base;
+
+        println!(
+            "dollar value: ${}  ctoken_amount: {}   exchange_rate: {}   underlying_price: {}",
+            format_units(dollar_value, "ether").unwrap(),
+            ctoken_amount,
+            exchange_rate,
+            underlying_price
+        );
 
         dollar_value
     }

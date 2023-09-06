@@ -56,7 +56,6 @@ pub async fn update_ctokens(
         }
         let mut price_cache: HashMap<Address, f64> = HashMap::new();
         let mut ignored_coins: HashMap<Address, bool> = HashMap::new();
-        println!("Length of all ctokens: {}", all_ctokens.len());
         for ctoken in all_ctokens.iter() {
             // take 50 ctokens
             // for each, make (but don't execute) a call to ctoken.exchange_rate_stored() and store in vec
@@ -72,7 +71,13 @@ pub async fn update_ctokens(
                 &mut ignored_coins,
             )
             .await;
-            save_updated_ctoken_to_db(updated_ctoken, &sender_to_database_manager).await;
+
+            match updated_ctoken {
+                Some(ctoken) => {
+                    save_updated_ctoken_to_db(ctoken, &sender_to_database_manager).await
+                }
+                None => continue,
+            }
         }
     }
 }
@@ -83,7 +88,7 @@ async fn watch_for_new_accounts(
 ) {
     while let Some(account_addr) = receiver_from_indexer.recv().await {
         let new_account = Account::new_empty(account_addr);
-        save_new_account_to_db(new_account, &sender_to_database_manager);
+        save_new_account_to_db(new_account, &sender_to_database_manager).await;
     }
 }
 
@@ -119,7 +124,6 @@ async fn update_saved_accounts(
             .await;
             save_updated_account_to_db(updated_account, &sender_to_database_manager).await;
         }
-        println!("Done updating accounts");
     }
 }
 
@@ -185,11 +189,16 @@ async fn update_ctoken_data(
     client: Arc<Provider<Ws>>,
     price_cache: &mut HashMap<Address, f64>,
     ignored_coins: &mut HashMap<Address, bool>,
-) -> CToken {
-    println!("trying to update ctoken");
+) -> Option<CToken> {
     // TODO: only need to set underlying address once
     let ctoken = CErc20::new(ctoken_addr, client.clone());
-    let underlying_address = ctoken.underlying().call().await.unwrap();
+    let underlying_address: Address;
+    let underlying_address_res = ctoken.underlying().call().await;
+    match underlying_address_res {
+        Ok(x) => underlying_address = x,
+        Err(_) => return None,
+    }
+
     if !price_cache.contains_key(&underlying_address)
         && !ignored_coins.contains_key(&underlying_address)
     {
@@ -202,13 +211,12 @@ async fn update_ctoken_data(
     let underlying_price = *price_cache.get(&underlying_address).unwrap();
     let exchange_rate = ctoken.exchange_rate_stored().call().await.unwrap();
 
-    println!("updated a ctoken");
-    CToken::new(
+    Some(CToken::new(
         ctoken_addr,
         Some(underlying_address),
         Some(underlying_price),
         Some(exchange_rate),
-    )
+    ))
 }
 
 // TODO: we can use DBVal and DBKey types to abstract these functions
