@@ -7,12 +7,19 @@
 - troll chain since protocol creation and find market enter/exits
     - start a process for present and past blocks
 - call to liquidator smart contract
-- Only CERC20, not bothering with CEther for now because we don't care about L1
+- Only CERC20, not bothering with CEther for now because we only care about L2s
 
 ## Refactor
 Was horribly smelly and dirty and stinky and messy.  This is the game plan for now:
 
 ![refactoring diagram](liquidator_v1.png)
+
+## Database
+This is for my reference.  I know it will probably look like mush to anyone else
+
+![database diagram](liquidator_database_v1.png)
+
+TODO: handle newComptroller event
 
 ## Phase 2: Correct
 - proper error handling

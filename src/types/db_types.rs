@@ -14,6 +14,7 @@ pub enum DBVal {
     CToken(CToken),
     AccountCToken(AccountCToken),
     Comptroller(Comptroller),
+    CTokenToAccounts(Address),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -22,6 +23,7 @@ pub enum DBKey {
     CToken(Address),
     AccountCToken(AccountCTokenAddress),
     Comptroller(),
+    CTokenToAccounts(Address),
 }
 
 impl DBVal {
@@ -33,6 +35,7 @@ impl DBVal {
                 DBKey::AccountCToken(account_ctoken.both_addresses.clone())
             }
             DBVal::Comptroller(comptroller) => DBKey::Comptroller(),
+            DBVal::CTokenToAccounts(ctoken) => DBKey::CTokenToAccounts(ctoken.clone()),
         }
     }
 }
