@@ -1,29 +1,27 @@
 use crate::types::{
-    account::Account,
-    account_ctoken::{AccountCToken, AccountCTokenAddress},
-    comptroller::Comptroller,
-    ctoken::CToken,
+    account_ctoken_amounts::AccountCTokenAmounts, comptroller::Comptroller, ctoken::CToken,
 };
 use ethers::types::Address;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // TODO: should these be traits instead of enums?  Maybe both?
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBVal {
-    Account(Account),
-    CToken(CToken),
-    AccountCToken(AccountCToken),
     Comptroller(Comptroller),
-    CTokenToAccounts(Address),
+    CToken(CToken),
+    AllCTokens(Vec<CToken>),
+    AccountToCTokens(HashMap<Address, Vec<AccountCTokenAmounts>>),
+    AccountCTokenAmounts(AccountCTokenAmounts),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBKey {
-    Account(Address),
-    CToken(Address),
-    AccountCToken(AccountCTokenAddress),
     Comptroller(),
-    CTokenToAccounts(Address),
+    CToken(Address),
+    AllCTokens(),
+    AccountToCTokens(Address),
+    AccountCTokenAmounts(Address, Address), // account address, ctoken address
 }
 
 impl DBVal {

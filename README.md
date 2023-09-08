@@ -35,6 +35,7 @@ TODO: rework readme
 - TESTS!
 
 ## Phase 3: Scale
+- run it through a profiler to find bottlenecks
 - using get_logs or get_logs_paginated might be more efficient than query
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
 - make the redis db secure (close ports?)
