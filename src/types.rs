@@ -1,4 +1,4 @@
-pub mod account_ctoken_amounts;
+pub mod account_ctoken_amount;
 pub mod command;
 pub mod comptroller;
 pub mod ctoken;

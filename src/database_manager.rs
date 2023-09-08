@@ -1,9 +1,9 @@
-mod database;
+mod api;
 
-use crate::database_manager::database::Database;
+use crate::database_manager::api::Database;
 use crate::types::{
     command::Command,
-    db_types::{DBKey, DBVal},
+    db_types::{DBQuery, DBVal},
 };
 use ethers::types::Address;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
@@ -33,7 +33,7 @@ impl DatabaseManager {
                     self.database.set(val);
                 }
                 Command::Update { val } => {
-                    let key: DBKey = val.get_key();
+                    let key: DBQuery = val.get_key();
                     if !self.database.exists(key) {
                         self.database.set(val);
                     }
