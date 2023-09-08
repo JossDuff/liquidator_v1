@@ -1,26 +1,21 @@
 use crate::types::{
-    account::Account,
     ctoken::CToken,
     db_types::{DBKey, DBVal},
 };
-use ethers::types::Address;
-use std::collections::HashMap;
-use tokio::sync::{mpsc::Sender, oneshot};
+use tokio::sync::oneshot;
 
 pub enum Command {
+    // returns None if it doesn't exist
     Get {
         key: DBKey,
         resp: oneshot::Sender<Option<DBVal>>,
     },
+    // doesn't check existence, overwrites. Panics on error
     Set {
+        key: DBKey,
         val: DBVal,
     },
-    SetNew {
-        val: DBVal,
-    },
-    GetAllAccounts {
-        resp: oneshot::Sender<Option<Vec<Account>>>,
-    },
+    // getallctokens
     GetAllCTokens {
         resp: oneshot::Sender<Option<Vec<CToken>>>,
     },

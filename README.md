@@ -1,5 +1,14 @@
 # liquidator_v1
 
+# Architecture
+These diagrams are just for my reference, they don't comply to any standard
+
+## Modules
+![modules diagram](liquidator_v1_1.png)
+
+## Database
+![database diagram](liquidator_database_v1_1.png)
+
 # Roadmap
 
 ## Phase 1: Start
@@ -7,12 +16,15 @@
 - troll chain since protocol creation and find market enter/exits
     - start a process for present and past blocks
 - call to liquidator smart contract
-- Only CERC20, not bothering with CEther for now because we don't care about L1
+- Only CERC20, not bothering with CEther for now because we only care about L2s
 
-## Refactor
-Was horribly smelly and dirty and stinky and messy.  This is the game plan for now:
 
-![refactoring diagram](liquidator_v1.png)
+
+TODO: handle newComptroller event
+TODO: Where could I assign some sort of
+priority to accounts that I should
+check for liquidation/ volatile tokens?
+TODO: rework readme
 
 ## Phase 2: Correct
 - proper error handling
@@ -23,6 +35,7 @@ Was horribly smelly and dirty and stinky and messy.  This is the game plan for n
 - TESTS!
 
 ## Phase 3: Scale
+- run it through a profiler to find bottlenecks
 - using get_logs or get_logs_paginated might be more efficient than query
 - Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
 - make the redis db secure (close ports?)
@@ -60,9 +73,6 @@ Was horribly smelly and dirty and stinky and messy.  This is the game plan for n
 ## Refactor to alloy when alloy is done
 
 To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
-
-# Open questions
-- What is the best strategy to narrow down the number of accounts I'm searching through to be only the active accounts that are at risk of liquidation...
 
 # Sources
  - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452

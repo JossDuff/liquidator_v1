@@ -1,14 +1,12 @@
 use crate::types::{
-    account::Account,
+    account_ctoken_amount::AccountCTokenAmount,
+    comptroller::Comptroller,
     ctoken::CToken,
     db_types::{DBKey, DBVal},
 };
 use ethers::types::Address;
 use redis::{Client, Commands, RedisError, RedisResult};
-use std::{
-    error::Error,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, error::Error};
 
 pub struct Database {
     pub client: redis::Client,
@@ -25,107 +23,114 @@ impl Database {
         Ok(Database { client, connection })
     }
 
-    pub fn exists(&mut self, db_key: DBKey) -> bool {
-        match db_key {
-            DBKey::Account(address) => {
-                let serialized_address: String = serde_json::to_string(&address).unwrap();
-                self.connection
-                    .hexists("accounts", serialized_address)
-                    .unwrap()
-            }
-            DBKey::CToken(address) => {
-                let serialized_address: String = serde_json::to_string(&address).unwrap();
-                self.connection
-                    .hexists("ctokens", serialized_address)
-                    .unwrap()
-            }
-        }
-    }
-
-    /// TODO: handle different case for key not found vs redis error
+    // TODO: handle different case for key not found vs redis error
+    // TODO: shouldn't return a DBVal, should return the actual type (traits?)
     pub fn get(&mut self, db_key: DBKey) -> Option<DBVal> {
-        let res: RedisResult<String>;
         match db_key {
-            DBKey::Account(address) => {
-                res = self
-                    .connection
-                    .hget("accounts", serde_json::to_string(&address).unwrap());
-            }
-            DBKey::CToken(address) => {
-                res = self
-                    .connection
-                    .hget("accounts", serde_json::to_string(&address).unwrap());
-            }
-        }
-
-        match res {
-            Ok(db_val) => {
-                let val: DBVal = serde_json::from_str(&db_val).unwrap();
-                match val {
-                    DBVal::Account(account) => Some(DBVal::Account(account)),
-                    DBVal::CToken(ctoken) => Some(DBVal::CToken(ctoken)),
+            DBKey::Comptroller() => {
+                let res: RedisResult<String> = self.connection.get("comptroller");
+                match res {
+                    Ok(comptroller_serialized) => {
+                        let comptroller_deserialized: Comptroller =
+                            serde_json::from_str(&comptroller_serialized).unwrap();
+                        return Some(DBVal::Comptroller(comptroller_deserialized));
+                    }
+                    Err(_) => return None,
                 }
             }
-            Err(_) => None,
+            DBKey::CToken(ctoken_address) => {
+                let res: RedisResult<String> = self
+                    .connection
+                    .hget("ctokens", serde_json::to_string(&ctoken_address).unwrap());
+                match res {
+                    Ok(ctoken_serialized) => {
+                        let ctoken_deserialized: CToken =
+                            serde_json::from_str(&ctoken_serialized).unwrap();
+                        return Some(DBVal::CToken(ctoken_deserialized));
+                    }
+                    Err(_) => return None,
+                }
+            }
+            DBKey::AccountCTokens(account_address) => {
+                let res: RedisResult<String> = self
+                    .connection
+                    .hget("accounts", serde_json::to_string(&account_address).unwrap());
+                match res {
+                    Ok(account_ctokens_serialized) => {
+                        let account_ctokens_deserialized: HashMap<Address, AccountCTokenAmount> =
+                            serde_json::from_str(&account_ctokens_serialized).unwrap();
+                        return Some(DBVal::AccountCTokens(account_ctokens_deserialized));
+                    }
+                    Err(_) => return None,
+                }
+            }
         }
     }
 
-    // TODO: this can fail
-    pub fn set(&mut self, db_val: DBVal) -> bool {
+    pub fn set(&mut self, db_key: DBKey, db_val: DBVal) {
         match db_val {
-            DBVal::Account(account) => {
-                let serialized_account = serde_json::to_string(&account).unwrap();
-                let serialized_address: String = serde_json::to_string(&account.address).unwrap();
-                // add to hash map of accounts
-                let _: () = self
-                    .connection
-                    .hset("accounts", serialized_address, serialized_account)
-                    .unwrap();
+            DBVal::Comptroller(comptroller) => {
+                let comptroller_serialized = serde_json::to_string(&comptroller).unwrap();
 
-                true
+                let res: RedisResult<()> =
+                    self.connection.set("comptroller", comptroller_serialized);
+
+                if let Err(err) = res {
+                    panic!("Error setting comptroller: {:?}", err);
+                }
             }
             DBVal::CToken(ctoken) => {
-                let serialized_ctoken = serde_json::to_string(&ctoken).unwrap();
-                let serialized_address = serde_json::to_string(&ctoken.address).unwrap();
-                // add to hash map of ctokens
-                let _: () = self
-                    .connection
-                    .hset("ctokens", serialized_address, serialized_ctoken)
-                    .unwrap();
+                let ctoken_serialized = serde_json::to_string(&ctoken).unwrap();
+                let ctoken_address_serialized: String;
 
-                true
+                if let DBKey::CToken(ctoken_address) = db_key {
+                    ctoken_address_serialized = serde_json::to_string(&ctoken_address).unwrap();
+                } else {
+                    panic!("Error setting ctoken: wrong key type");
+                }
+
+                let res: RedisResult<()> =
+                    self.connection
+                        .hset("ctokens", ctoken_address_serialized, ctoken_serialized);
+
+                if let Err(err) = res {
+                    panic!("Error setting ctoken: {:?}", err);
+                }
             }
-        }
-    }
+            DBVal::AccountCTokens(account_ctokens) => {
+                let account_ctokens_serialized = serde_json::to_string(&account_ctokens).unwrap();
+                let account_address_serialized: String;
 
-    pub fn get_all_accounts(&mut self) -> Option<Vec<Account>> {
-        let members_res: Result<Vec<(String, String)>, RedisError> =
-            self.connection.hgetall("accounts");
-        match members_res {
-            Ok(members) => {
-                let all_accounts: Vec<Account> = members
-                    .iter()
-                    .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
-                    .collect();
+                if let DBKey::AccountCTokens(account_address) = db_key {
+                    account_address_serialized = serde_json::to_string(&account_address).unwrap();
+                } else {
+                    panic!("Error setting account_ctokens: wrong key type");
+                }
 
-                Some(all_accounts)
+                let res: RedisResult<()> = self.connection.hset(
+                    "accounts",
+                    account_address_serialized,
+                    account_ctokens_serialized,
+                );
+
+                if let Err(err) = res {
+                    panic!("Error setting account_ctokens: {:?}", err);
+                }
             }
-            Err(_) => None,
         }
     }
 
     pub fn get_all_ctokens(&mut self) -> Option<Vec<CToken>> {
-        let members_res: Result<Vec<(String, String)>, RedisError> =
-            self.connection.hgetall("ctokens");
-
-        match members_res {
-            Ok(members) => {
-                let all_ctokens: Vec<CToken> = members
+        let res: Result<Vec<String>, RedisError> = self.connection.hvals("ctokens");
+        match res {
+            Ok(all_ctokens_serialized) => {
+                let all_ctokens_deserialized: Vec<CToken> = all_ctokens_serialized
                     .iter()
-                    .filter_map(|(_, member)| serde_json::from_str(member).unwrap())
+                    .filter_map(|ctoken_serialized| {
+                        serde_json::from_str(ctoken_serialized).unwrap()
+                    })
                     .collect();
-
-                Some(all_ctokens)
+                Some(all_ctokens_deserialized)
             }
             Err(_) => None,
         }
