@@ -1,12 +1,11 @@
-mod api;
+mod database;
 
-use crate::database_manager::api::Database;
+use crate::database_manager::database::Database;
 use crate::types::{
     command::Command,
-    db_types::{DBQuery, DBVal},
+    db_types::{DBKey, DBVal},
 };
-use ethers::types::Address;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::mpsc::Receiver;
 
 // TODO: this doesn't need to be a struct either
 pub struct DatabaseManager {
@@ -29,23 +28,12 @@ impl DatabaseManager {
                     let val = self.database.get(key);
                     resp.send(val);
                 }
-                Command::Set { val } => {
-                    self.database.set(val);
-                }
-                Command::Update { val } => {
-                    let key: DBQuery = val.get_key();
-                    if !self.database.exists(key) {
-                        self.database.set(val);
-                    }
-                }
-                Command::GetAllAccounts { resp } => {
-                    let all_accounts = self.database.get_all_accounts();
-                    resp.send(all_accounts);
+                Command::Set { key, val } => {
+                    self.database.set(key, val);
                 }
                 Command::GetAllCTokens { resp } => {
                     let all_ctokens = self.database.get_all_ctokens();
                     resp.send(all_ctokens);
-                    println!("got all ctokens")
                 }
             }
         }
