@@ -1,5 +1,14 @@
 # liquidator_v1
 
+# Architecture
+These diagrams are just for my reference, they don't comply to any standard
+
+## Modules
+![modules diagram](liquidator_v1_1.png)
+
+## Database
+![database diagram](liquidator_database_v1_1.png)
+
 # Roadmap
 
 ## Phase 1: Start
@@ -9,17 +18,13 @@
 - call to liquidator smart contract
 - Only CERC20, not bothering with CEther for now because we only care about L2s
 
-## Refactor
-Was horribly smelly and dirty and stinky and messy.  This is the game plan for now:
 
-![refactoring diagram](liquidator_v1.png)
-
-## Database
-This is for my reference.  I know it will probably look like mush to anyone else
-
-![database diagram](liquidator_database_v1.png)
 
 TODO: handle newComptroller event
+TODO: Where could I assign some sort of
+priority to accounts that I should
+check for liquidation/ volatile tokens?
+TODO: rework readme
 
 ## Phase 2: Correct
 - proper error handling
@@ -67,9 +72,6 @@ TODO: handle newComptroller event
 ## Refactor to alloy when alloy is done
 
 To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
-
-# Open questions
-- What is the best strategy to narrow down the number of accounts I'm searching through to be only the active accounts that are at risk of liquidation...
 
 # Sources
  - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452
