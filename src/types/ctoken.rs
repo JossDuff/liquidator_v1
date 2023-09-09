@@ -1,4 +1,4 @@
-use crate::types::db_traits::DBKey;
+use crate::types::db_traits::{DBKey, DBVal};
 use ethers::types::{Address, U256};
 use redis::RedisResult;
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,8 @@ pub struct CToken {
     pub collateral_factor: Option<U256>,
     pub accounts_in: Option<Vec<Address>>,
 }
+
+impl DBVal for CToken {}
 
 impl CToken {
     pub fn new(
@@ -61,8 +63,6 @@ pub struct CTokenKey {
 }
 
 impl DBKey for CTokenKey {
-    type Val = CToken;
-
     fn get(&self, connection: &redis::Connection) -> Option<CToken> {
         let res: RedisResult<String> =
             connection.hget("ctokens", serde_json::to_string(&self.address).unwrap());

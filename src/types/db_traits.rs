@@ -21,8 +21,8 @@ use serde::{Deserialize, Serialize};
 // }
 
 pub trait DBKey {
-    type Val;
-
-    fn get(&self, connection: &redis::Connection) -> Option<Self::Val>;
-    fn set(&self, val: Self::Val, connection: &redis::Connection);
+    fn get(&self, connection: &redis::Connection) -> Option<Box<dyn DBVal>>;
+    fn set(&self, val: Box<dyn DBVal>, connection: &redis::Connection);
 }
+
+pub trait DBVal {}

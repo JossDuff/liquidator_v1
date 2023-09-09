@@ -1,18 +1,20 @@
-use crate::types::{ctoken::CToken, db_traits::DBKey};
+use crate::types::{
+    ctoken::CToken,
+    db_traits::{DBKey, DBVal},
+};
 use tokio::sync::oneshot;
 
-pub enum Command<K: DBKey> {
-    // returns None if it doesn't exist
+// TODO: instead of generics it might be faster to use individual get/set commands
+// that call the respective functions
+pub enum Command {
     Get {
-        key: K,
-        resp: oneshot::Sender<Option<K::Val>>, // associated type LFG!!!
+        key: Box<dyn DBKey>,
+        resp: oneshot::Sender<Option<Box<dyn DBVal>>>,
     },
-    // doesn't check existence, overwrites. Panics on error
     Set {
-        key: K,
-        val: K::Val, // associated type LFG!!!
+        key: Box<dyn DBKey>,
+        val: Box<dyn DBVal>,
     },
-    // getallctokens
     GetAllCTokens {
         resp: oneshot::Sender<Option<Vec<CToken>>>,
     },

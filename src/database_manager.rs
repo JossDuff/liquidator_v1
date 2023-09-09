@@ -7,13 +7,13 @@ use tokio::sync::mpsc::Receiver;
 
 // TODO: this doesn't need to be a struct either
 pub struct DatabaseManager {
-    receiver: Receiver<Command<Box<dyn DBKey>>>,
+    receiver: Receiver<Command>,
     client: redis::Client,
     connection: redis::Connection,
 }
 
 impl DatabaseManager {
-    pub fn new(receiver: Receiver<Command<Box<dyn DBKey>>>) -> DatabaseManager {
+    pub fn new(receiver: Receiver<Command>) -> DatabaseManager {
         let client = Client::open("redis://127.0.0.1/")?; // Replace with your Redis connection details
         let connection = client.get_connection()?;
 

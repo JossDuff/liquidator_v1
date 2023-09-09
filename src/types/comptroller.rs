@@ -1,4 +1,4 @@
-use crate::types::db_traits::DBKey;
+use crate::types::db_traits::{DBKey, DBVal};
 use ethers::types::{Address, U256};
 use redis::RedisResult;
 use serde::{Deserialize, Serialize};
@@ -10,11 +10,11 @@ pub struct Comptroller {
     pub liquidation_incentive: Option<U256>,
 }
 
+impl DBVal for Comptroller {}
+
 pub struct ComptrollerKey {}
 
 impl DBKey for ComptrollerKey {
-    type Val = Comptroller;
-
     fn get(&self, connection: &redis::Connection) -> Option<Comptroller> {
         let res: RedisResult<String> = connection.get("comptroller");
         match res {

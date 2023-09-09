@@ -1,5 +1,5 @@
 use crate::types::account_ctoken_amount::AccountCTokenAmount;
-use crate::types::db_traits::DBKey;
+use crate::types::db_traits::{DBKey, DBVal};
 use ethers::types::Address;
 use redis::RedisResult;
 
@@ -8,6 +8,8 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account(HashMap<Address, AccountCTokenAmount>);
+
+impl DBVal for Account {}
 
 impl Account {
     pub fn new_empty() -> Self {
@@ -29,8 +31,6 @@ pub struct AccountKey {
 }
 
 impl DBKey for AccountKey {
-    type Val = Account;
-
     fn get(&self, connection: &redis::Connection) -> Option<Account> {
         let res: RedisResult<String> =
             connection.hget("accounts", serde_json::to_string(&self.address).unwrap());
