@@ -1,7 +1,40 @@
+use crate::types::db_traits::DBKey;
 use ethers::types::{Address, U256};
+use redis::RedisResult;
 use serde::{Deserialize, Serialize};
 
-// TODO: 'last_updated' fields where needed
+pub struct CTokenKey {
+    pub address: Address,
+}
+
+impl DBKey for CTokenKey {
+    type Val = CToken;
+
+    fn get(&self, connection: &redis::Connection) -> Option<CToken> {
+        let res: RedisResult<String> =
+            connection.hget("ctokens", serde_json::to_string(&self.address).unwrap());
+        match res {
+            Ok(ctoken_serialized) => {
+                let ctoken_deserialized: CToken = serde_json::from_str(&ctoken_serialized).unwrap();
+                return Some(ctoken_deserialized);
+            }
+            Err(_) => return None,
+        }
+    }
+
+    fn set(&self, ctoken: CToken, connection: &redis::Connection) {
+        let ctoken_serialized = serde_json::to_string(&ctoken).unwrap();
+        let ctoken_address_serialized: String = self.address.to_string();
+
+        let res: RedisResult<()> =
+            connection.hset("ctokens", ctoken_address_serialized, ctoken_serialized);
+
+        if let Err(err) = res {
+            panic!("Error setting ctoken: {:?}", err);
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CToken {
     pub address: Address,
