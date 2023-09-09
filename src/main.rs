@@ -1,6 +1,7 @@
 mod bindings;
 mod data_updater;
 mod database_manager;
+mod handlers;
 mod indexer;
 mod liquidation;
 mod types;
@@ -11,11 +12,11 @@ use crate::bindings::{
     erc20_bindings::Erc20,
     liquidator_bindings::Liquidator,
 };
-use crate::types::{account::Account, command::Command, ctoken::CToken};
-
 use crate::database_manager::DatabaseManager;
+use crate::handlers::*;
 use crate::indexer::Indexer;
 use crate::liquidation::Liquidation;
+use crate::types::{account::Account, command::Command, ctoken::CToken};
 
 use ethers::{
     contract::abigen,

@@ -1,4 +1,5 @@
 use crate::types::{
+    account::Account,
     account_ctoken_amount::AccountCTokenAmount,
     comptroller::Comptroller,
     ctoken::CToken,
@@ -51,15 +52,15 @@ impl Database {
                     Err(_) => return None,
                 }
             }
-            DBKey::AccountCTokens(account_address) => {
+            DBKey::Account(account_address) => {
                 let res: RedisResult<String> = self
                     .connection
                     .hget("accounts", serde_json::to_string(&account_address).unwrap());
                 match res {
                     Ok(account_ctokens_serialized) => {
-                        let account_ctokens_deserialized: HashMap<Address, AccountCTokenAmount> =
+                        let account_ctokens_deserialized: Account =
                             serde_json::from_str(&account_ctokens_serialized).unwrap();
-                        return Some(DBVal::AccountCTokens(account_ctokens_deserialized));
+                        return Some(DBVal::Account(account_ctokens_deserialized));
                     }
                     Err(_) => return None,
                 }
@@ -97,11 +98,11 @@ impl Database {
                     panic!("Error setting ctoken: {:?}", err);
                 }
             }
-            DBVal::AccountCTokens(account_ctokens) => {
+            DBVal::Account(account_ctokens) => {
                 let account_ctokens_serialized = serde_json::to_string(&account_ctokens).unwrap();
                 let account_address_serialized: String;
 
-                if let DBKey::AccountCTokens(account_address) = db_key {
+                if let DBKey::Account(account_address) = db_key {
                     account_address_serialized = serde_json::to_string(&account_address).unwrap();
                 } else {
                     panic!("Error setting account_ctokens: wrong key type");

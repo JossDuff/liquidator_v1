@@ -17,12 +17,12 @@ CToken (many instances):
         (Address borrower, U256 borrowAmount, U256 accountBorrows, U256 totalBorrows)
     RepayBorrow
         (Address payer, Address borrower, U256 repayAmount, U256 accountBorrows, U256 totalBorrows)
+    Transfer
+        (Address indexed from, Address indexed to, U256 amount)
     Mint (COVERED BY TRANSFER - NO HANDLER NEEDED)
         (Address minter, U256 mintAmount, U256 mintTokens)
     Redeem (COVERED BY TRANSFER - NO HANDLER NEEDED)
         (Address redeemer, U256 redeemAmount, U256 redeemTokens)
-    Transfer
-        (Address indexed from, Address indexed to, U256 amount)RepayBorrow(address payer, address borrower, uint repayAmount, uint accountBorrows, uint totalBorrows);
 */
 
 // lets put handlers in their own thread and follow "fetch" and "set" pattern
