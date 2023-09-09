@@ -34,6 +34,15 @@ impl DBKey for AccountKey {
     fn get(&self, connection: &redis::Connection) -> Option<Account> {
         let res: RedisResult<String> =
             connection.hget("accounts", serde_json::to_string(&self.address).unwrap());
+
+        match res {
+            Ok(account_serialized) => {
+                let account_deserialized: Account =
+                    serde_json::from_str(&account_serialized).unwrap();
+                return Some(account_deserialized);
+            }
+            Err(_) => return None,
+        }
     }
 
     fn set(&self, account: Account, connection: &redis::Connection) {
