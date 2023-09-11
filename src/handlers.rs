@@ -41,3 +41,7 @@ mod new_liquidation_incentive_handler;
 mod borrow_handler;
 mod repay_borrow_handler;
 mod transfer_handler;
+
+pub async fn run() {
+    println!("handlers::run()");
+}

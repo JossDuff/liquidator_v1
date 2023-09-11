@@ -1,28 +1,16 @@
 mod bindings;
 mod handlers;
 mod indexer;
+mod price_updater;
 mod types;
 
-use crate::bindings::{
-    c_erc20_bindings::CErc20,
-    comptroller_bindings::{Comptroller, ComptrollerEvents},
-    erc20_bindings::Erc20,
-    liquidator_bindings::Liquidator,
-};
 use crate::indexer::Indexer;
-use crate::types::{account::Account, command::Command, ctoken::CToken};
+use crate::price_updater::PriceUpdater;
 
-use ethers::{
-    contract::abigen,
-    core::types::Address,
-    providers::{Provider, Ws},
-};
+use ethers::providers::{Provider, Ws};
 extern crate redis; // TODO: why is this "extern crate" and not "use"?
-use std::{collections::HashMap, sync::Arc, thread};
-use tokio::{
-    runtime,
-    sync::mpsc::{channel, Receiver, Sender},
-};
+use std::{sync::Arc, thread};
+use tokio::runtime;
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
@@ -35,15 +23,9 @@ async fn main() -> eyre::Result<()> {
     let client_for_indexer = Arc::new(provider);
     let client_for_price_updater = client_for_indexer.clone();
 
-    // initialize contracts
-    // TODO: should I init contracts within each module instead?
-    // let comptroller_address: Address = COMPTROLLER_ETH_MAINNET.parse()?;
-    // let comptroller = Comptroller::new(comptroller_address, client_for_comptroller);
-
-    // let liquidator_address: Address = TEMP_LIQUIDATOR_ETH_MAINNET.parse()?;
-    // let liquidator = Liquidator::new(liquidator_address, client_for_liquidator);
-
     // initialize modules
+    let indexer = Indexer::new(client_for_indexer);
+    let price_updater = PriceUpdater::new(client_for_price_updater);
 
     // for threads
     let runtime = Arc::new(
