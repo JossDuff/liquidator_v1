@@ -3,7 +3,7 @@ use crate::types::{
     account_ctoken_amount::AccountCTokenAmount,
     comptroller::Comptroller,
     ctoken::CToken,
-    db_types::{DBKey, DBVal},
+    db_traits::{DBKey, DBVal},
 };
 use ethers::types::Address;
 use redis::{Client, Commands, RedisError, RedisResult};

@@ -11,9 +11,9 @@ Add account address to set of account addresses in "ctoken_to_accounts" Redis ke
 
 use crate::bindings::comptroller_bindings::MarketEnteredFilter;
 use crate::types::{
-    account::Account,
+    account::{Account, AccountKey},
     command::Command,
-    db_types::{DBKey, DBVal},
+    db_traits::{DBKey, DBVal},
 };
 
 use ethers::types::Address;
@@ -31,8 +31,11 @@ pub async fn fetch_account(
     account_address: Address,
 ) -> Account {
     let (resp_tx, resp_rx) = oneshot::channel();
+    let account_key = AccountKey {
+        address: account_address,
+    };
     let command = Command::Get {
-        key: DBKey::Account(account_address),
+        key: account_key,
         resp: (resp_tx),
     };
     sender_to_database_manager.send(command).await;
@@ -44,4 +47,20 @@ pub async fn fetch_account(
         },
         Err(_) => panic!("Error getting account from database in fetch_account"),
     }
+}
+
+// save account to db, overwriting
+pub async fn save_account(
+    sender_to_database_manager: Sender<Command>,
+    account_address: Address,
+    account: Account,
+) -> () {
+    let account_key = AccountKey {
+        address: account_address,
+    };
+    let command = Command::Set {
+        key: account_key,
+        val: account,
+    };
+    sender_to_database_manager.send(command).await;
 }

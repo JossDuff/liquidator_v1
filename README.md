@@ -4,7 +4,7 @@
 These diagrams are just for my reference, they don't comply to any standard
 
 ## Modules
-![modules diagram](liquidator_v1_1.png)
+![modules diagram](liquidator_v1_2.png)
 
 ## Database
 ![database diagram](liquidator_database_v1_1.png)
