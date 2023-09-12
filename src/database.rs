@@ -1,16 +1,14 @@
 use crate::types::{
     account::Account,
-    account_ctoken_amount::AccountCTokenAmount,
     comptroller::Comptroller,
     ctoken::CToken,
-    db_traits::{DBKey, DBVal},
+    db_types::{DBKey, DBVal},
 };
 use ethers::types::Address;
 use redis::{Client, Commands, RedisError, RedisResult};
 use std::{collections::HashMap, error::Error};
 
 pub struct Database {
-    pub client: redis::Client,
     pub connection: redis::Connection,
 }
 
@@ -21,11 +19,10 @@ impl Database {
         let client = Client::open("redis://127.0.0.1/")?; // Replace with your Redis connection details
         let connection = client.get_connection()?;
 
-        Ok(Database { client, connection })
+        Ok(Database { connection })
     }
 
     // TODO: handle different case for key not found vs redis error
-    // TODO: shouldn't return a DBVal, should return the actual type (traits?)
     pub fn get(&mut self, db_key: DBKey) -> Option<DBVal> {
         match db_key {
             DBKey::Comptroller() => {
