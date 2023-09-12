@@ -1,4 +1,4 @@
-use crate::types::db_traits::{DBKey, DBVal};
+use crate::types::db_types::{DBKey, DBVal};
 use ethers::types::{Address, U256};
 use redis::RedisResult;
 use serde::{Deserialize, Serialize};
@@ -10,30 +10,28 @@ pub struct Comptroller {
     pub liquidation_incentive: Option<U256>,
 }
 
-impl DBVal for Comptroller {}
+// pub struct ComptrollerKey {}
 
-pub struct ComptrollerKey {}
+// impl DBKey for ComptrollerKey {
+//     fn get(&self, connection: &redis::Connection) -> Option<Comptroller> {
+//         let res: RedisResult<String> = connection.get("comptroller");
+//         match res {
+//             Ok(comptroller_serialized) => {
+//                 let comptroller_deserialized: Comptroller =
+//                     serde_json::from_str(&comptroller_serialized).unwrap();
+//                 return Some(comptroller_deserialized);
+//             }
+//             Err(_) => return None,
+//         }
+//     }
 
-impl DBKey for ComptrollerKey {
-    fn get(&self, connection: &redis::Connection) -> Option<Comptroller> {
-        let res: RedisResult<String> = connection.get("comptroller");
-        match res {
-            Ok(comptroller_serialized) => {
-                let comptroller_deserialized: Comptroller =
-                    serde_json::from_str(&comptroller_serialized).unwrap();
-                return Some(comptroller_deserialized);
-            }
-            Err(_) => return None,
-        }
-    }
+//     fn set(&self, comptroller: Comptroller, connection: &redis::Connection) {
+//         let comptroller_serialized: String = serde_json::to_string(&comptroller).unwrap();
 
-    fn set(&self, comptroller: Comptroller, connection: &redis::Connection) {
-        let comptroller_serialized: String = serde_json::to_string(&comptroller).unwrap();
+//         let res: RedisResult<()> = connection.set("comptroller", comptroller_serialized);
 
-        let res: RedisResult<()> = connection.set("comptroller", comptroller_serialized);
-
-        if let Err(err) = res {
-            panic!("Error setting comptroller: {:?}", err);
-        }
-    }
-}
+//         if let Err(err) = res {
+//             panic!("Error setting comptroller: {:?}", err);
+//         }
+//     }
+// }

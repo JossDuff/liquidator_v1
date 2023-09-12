@@ -1,6 +1,6 @@
 use crate::types::{
     ctoken::CToken,
-    db_traits::{DBKey, DBVal},
+    db_types::{DBKey, DBVal},
 };
 use tokio::sync::oneshot;
 
