@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Account(HashMap<Address, AccountCTokenAmount>);
+pub struct Account(pub HashMap<Address, AccountCTokenAmount>);
 
 impl Account {
     pub fn new_empty() -> Self {

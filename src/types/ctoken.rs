@@ -1,14 +1,12 @@
-use crate::types::db_types::{DBKey, DBVal};
-use ethers::types::{Address, U256};
-use redis::{Commands, RedisResult};
+use ethers::types::Address;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CToken {
     pub address: Address,
     pub underlying_address: Option<Address>,
-    pub exchange_rate: Option<U256>,
-    pub collateral_factor: Option<U256>,
+    pub exchange_rate: Option<f64>,
+    pub collateral_factor: Option<f64>,
     pub accounts_in: Option<Vec<Address>>,
 }
 
@@ -16,8 +14,8 @@ impl CToken {
     pub fn new(
         address: Address,
         underlying_address: Option<Address>,
-        exchange_rate: Option<U256>,
-        collateral_factor: Option<U256>,
+        exchange_rate: Option<f64>,
+        collateral_factor: Option<f64>,
         accounts_in: Option<Vec<Address>>,
     ) -> CToken {
         Self {
@@ -38,50 +36,4 @@ impl CToken {
             accounts_in: None,
         }
     }
-
-    pub fn get_all_ctokens(connection: &redis::Connection) -> Option<Vec<CToken>> {
-        let res: RedisResult<Vec<String>> = connection.hvals("ctokens");
-        match res {
-            Ok(all_ctokens_serialized) => {
-                let all_ctokens_deserialized: Vec<CToken> = all_ctokens_serialized
-                    .iter()
-                    .filter_map(|ctoken_serialized| {
-                        serde_json::from_str(ctoken_serialized).unwrap()
-                    })
-                    .collect();
-                Some(all_ctokens_deserialized)
-            }
-            Err(_) => None,
-        }
-    }
 }
-
-// pub struct CTokenKey {
-//     pub address: Address,
-// }
-
-// impl DBKey for CTokenKey {
-//     fn get(&self, connection: &redis::Connection) -> Option<Box<dyn DBVal>> {
-//         let res: RedisResult<String> =
-//             connection.hget("ctokens", serde_json::to_string(&self.address).unwrap());
-//         match res {
-//             Ok(ctoken_serialized) => {
-//                 let ctoken_deserialized: CToken = serde_json::from_str(&ctoken_serialized).unwrap();
-//                 return Some(Box::new(ctoken_deserialized));
-//             }
-//             Err(_) => return None,
-//         }
-//     }
-
-//     fn set(&self, ctoken: Box<dyn DBVal>, connection: &redis::Connection) {
-//         let ctoken_serialized: String = serde_json::to_string(&ctoken).unwrap();
-//         let ctoken_address_serialized: String = self.address.to_string();
-
-//         let res: RedisResult<()> =
-//             connection.hset("ctokens", ctoken_address_serialized, ctoken_serialized);
-
-//         if let Err(err) = res {
-//             panic!("Error setting ctoken: {:?}", err);
-//         }
-//     }
-// }

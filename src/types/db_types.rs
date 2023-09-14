@@ -13,6 +13,15 @@ pub enum DBVal {
     Account(Account), // Address is address of ctoken
 }
 
+impl DBVal {
+    pub fn as_account(&self) -> Account {
+        match self {
+            DBVal::Account(account) => *account,
+            _ => panic!("DBVal is not Account"),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBKey {
     Comptroller(),

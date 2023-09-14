@@ -3,25 +3,29 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountCTokenAmount {
-    pub borrowed_amount: Option<U256>,
-    pub supplied_amount: Option<U256>,
+    pub borrowed_amount: Option<f64>,
+    pub collateral_amount: Option<f64>,
+    pub last_price_ctoken_liquidity: Option<f64>,
 }
 
 impl AccountCTokenAmount {
     pub fn new(
-        borrowed_amount: Option<U256>,
-        supplied_amount: Option<U256>,
+        borrowed_amount: Option<f64>,
+        collateral_amount: Option<f64>,
+        last_price_ctoken_liquidity: Option<f64>,
     ) -> AccountCTokenAmount {
         Self {
             borrowed_amount,
-            supplied_amount,
+            collateral_amount,
+            last_price_ctoken_liquidity,
         }
     }
 
     pub fn new_empty() -> AccountCTokenAmount {
         Self {
             borrowed_amount: None,
-            supplied_amount: None,
+            collateral_amount: None,
+            last_price_ctoken_liquidity: None,
         }
     }
 }
