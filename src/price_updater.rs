@@ -35,13 +35,12 @@ impl PriceUpdater {
             let all_ctokens: Vec<CToken> = self.get_db_ctokens().await;
 
             for ctoken in all_ctokens {
-                if !ctoken.has_values() {
-                    continue;
-                } // from this scope on, ctoken unwraps are safe
-
-                let underlying_address: Address = ctoken.underlying_address.unwrap();
+                let underlying_address: Address = ctoken.underlying_address;
                 let underlying_price: f64 = self.get_price(underlying_address).await.unwrap();
 
+                if ctoken.accounts_in == None {
+                    continue;
+                }
                 let accounts_in_ctoken: &Vec<Address> = ctoken.accounts_in.as_ref().unwrap();
 
                 for account_address in accounts_in_ctoken {
@@ -83,8 +82,8 @@ impl PriceUpdater {
                 let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
 
                 // Here's the liquidity equation that everything hinges on
-                collateral_usd = ctoken.collateral_factor.unwrap()
-                    * ctoken.exchange_rate.unwrap()
+                collateral_usd = ctoken.collateral_factor
+                    * ctoken.exchange_rate
                     * underlying_price
                     * collateral_amount;
                 borrowed_usd = underlying_price * borrowed_amount;

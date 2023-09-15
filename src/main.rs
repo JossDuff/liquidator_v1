@@ -19,15 +19,6 @@ const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    // initialize provider & clients
-    let provider = Provider::<Ws>::connect(WSS_URL).await?;
-    let client_for_indexer = Arc::new(provider);
-    let client_for_price_updater = client_for_indexer.clone();
-
-    // initialize modules
-    let indexer = Indexer::new(client_for_indexer);
-    let price_updater = PriceUpdater::new(client_for_price_updater);
-
     // for threads
     let runtime = Arc::new(
         runtime::Builder::new_multi_thread()
@@ -36,6 +27,15 @@ async fn main() -> eyre::Result<()> {
             .build()
             .unwrap(),
     );
+
+    // initialize provider & clients
+    let provider = Provider::<Ws>::connect(WSS_URL).await?;
+    let client_for_indexer = Arc::new(provider);
+    let client_for_price_updater = client_for_indexer.clone();
+
+    // initialize modules
+    let indexer = Indexer::new(client_for_indexer, COMPTROLLER_ETH_MAINNET.parse().unwrap());
+    let price_updater = PriceUpdater::new(client_for_price_updater);
 
     // let it rip
     thread::spawn(move || {

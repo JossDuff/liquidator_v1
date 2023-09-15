@@ -11,9 +11,8 @@ Add account address to set of account addresses in "ctoken_to_accounts" Redis ke
 
 use crate::bindings::comptroller_bindings::MarketEnteredFilter;
 use crate::types::{
-    account::{Account, AccountKey},
-    command::Command,
-    db_traits::{DBKey, DBVal},
+    account::Account,
+    db_types::{DBKey, DBVal},
 };
 
 use ethers::types::Address;

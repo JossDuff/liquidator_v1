@@ -6,6 +6,9 @@ use ethers::types::Address;
 use redis;
 use serde::{Deserialize, Serialize};
 
+// TODO: not sure why I originally thought that the
+// DBKey/Val types need to be wrapped in an identifier, but they
+// probably don't.  Will require a big refactor.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DBVal {
     Comptroller(Comptroller),
