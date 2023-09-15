@@ -15,6 +15,7 @@ use tokio::runtime;
 
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+const COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
 const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 
 #[tokio::main]
@@ -34,7 +35,11 @@ async fn main() -> eyre::Result<()> {
     let client_for_price_updater = client_for_indexer.clone();
 
     // initialize modules
-    let indexer = Indexer::new(client_for_indexer, COMPTROLLER_ETH_MAINNET.parse().unwrap());
+    let indexer = Indexer::new(
+        client_for_indexer,
+        COMPTROLLER_ETH_MAINNET.parse().unwrap(),
+        COMPTROLLER_CREATION_BLOCK,
+    );
     let price_updater = PriceUpdater::new(client_for_price_updater);
 
     // let it rip

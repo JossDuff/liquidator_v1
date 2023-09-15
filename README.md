@@ -27,6 +27,7 @@ check for liquidation/ volatile tokens?
 TODO: rework readme
 TODO: put shit in env
 TODO: support dynamic ctoken lists.  currently just getting all ctokens using comp.allMarkets, so this bot is unaware of new markets added
+TODO: make comptroller creation block a dynamic binary search
 
 ## Phase 2: Correct
 - proper error handling
