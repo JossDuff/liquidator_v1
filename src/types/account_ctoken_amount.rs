@@ -32,4 +32,20 @@ impl AccountCTokenAmount {
             collateral_usd: None,
         }
     }
+
+    pub fn has_amounts(&self) -> bool {
+        if self.collateral_amount != None && self.borrowed_amount != None {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn has_usd_values(&self) -> bool {
+        if self.collateral_usd != None && self.borrowed_usd != None {
+            true
+        } else {
+            false
+        }
+    }
 }

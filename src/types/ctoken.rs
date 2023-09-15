@@ -36,4 +36,16 @@ impl CToken {
             accounts_in: None,
         }
     }
+
+    pub fn has_values(&self) -> bool {
+        if (self.underlying_address != None
+            && self.exchange_rate != None
+            && self.collateral_factor != None
+            && self.accounts_in != None)
+        {
+            true
+        } else {
+            false
+        }
+    }
 }

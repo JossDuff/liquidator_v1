@@ -4,6 +4,7 @@ use crate::types::{
     account_ctoken_amount::AccountCTokenAmount,
     ctoken::CToken,
     db_types::{DBKey, DBVal},
+    liquidate_call_data::LiquidateCallData,
 };
 use ethers::{
     providers::{Provider, Ws},
@@ -27,118 +28,106 @@ impl PriceUpdater {
         }
     }
 
-    // TODO: clean this mfer up!
     pub async fn run(&mut self) {
         println!("PriceUpdater::run()");
 
         loop {
-            let all_ctokens: Vec<CToken>;
-
-            match self.database.get_all_ctokens() {
-                Some(ctokens_from_db) => {
-                    all_ctokens = ctokens_from_db;
-                }
-                None => {
-                    // case where database doesn't yet have ctokens
-                    tokio::time::sleep(Duration::from_secs(5)).await;
-                    continue;
-                }
-            }
+            let all_ctokens: Vec<CToken> = self.get_db_ctokens().await;
 
             for ctoken in all_ctokens {
-                // TODO: handle None for everything below.  just search for .unwrap
-                let ctoken_exchange_rate = ctoken.exchange_rate.unwrap();
-                let ctoken_collateral_factor = ctoken.collateral_factor.unwrap();
-                let updated_ctoken_address = ctoken.address;
-                let updated_ctoken_underlying_address = ctoken.underlying_address.unwrap();
-                let underlying_price = self
-                    .get_price(updated_ctoken_underlying_address)
-                    .await
-                    .unwrap();
+                if !ctoken.has_values() {
+                    continue;
+                } // from this scope on, ctoken unwraps are safe
 
-                let accounts_in_ctoken = ctoken.accounts_in.unwrap();
+                let underlying_address: Address = ctoken.underlying_address.unwrap();
+                let underlying_price: f64 = self.get_price(underlying_address).await.unwrap();
+
+                let accounts_in_ctoken: &Vec<Address> = ctoken.accounts_in.as_ref().unwrap();
 
                 for account_address in accounts_in_ctoken {
-                    let account_key = DBKey::Account(account_address);
-                    // TODO: handle none
-                    let mut account_ctokens: HashMap<Address, AccountCTokenAmount> =
-                        self.database.get(account_key).unwrap().as_account().0;
-
-                    // update_liquidity
-                    let mut account_liquidity: f64 = 0.0;
-                    let mut liquidity_is_whole: bool = true;
-                    let mut best_repay_ctoken: Address;
-                    let mut best_repay_amount: f64 = 0.0;
-                    let mut best_seize_ctoken: Address;
-                    let mut best_seize_amount: f64 = 0.0;
-
-                    for (account_ctoken_address, account_ctoken_amount) in &mut account_ctokens {
-                        let collateral_usd: f64;
-                        let borrowed_usd: f64;
-                        if *account_ctoken_address == updated_ctoken_address {
-                            // calculate new liquidity for this accounts ctoken position with the new price
-                            // TODO: handle option, don't unwrap
-                            let collateral_amount =
-                                account_ctoken_amount.collateral_amount.unwrap();
-                            let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
-
-                            // Here's the big fat liquidity equation that everything hinges on
-                            collateral_usd = ctoken_collateral_factor
-                                * ctoken_exchange_rate
-                                * underlying_price
-                                * collateral_amount;
-                            borrowed_usd = underlying_price * borrowed_amount;
-
-                            // change this value in the hash map to show the new price
-                            *account_ctoken_amount = AccountCTokenAmount::new(
-                                Some(borrowed_amount),
-                                Some(collateral_amount),
-                                Some(borrowed_usd),
-                                Some(collateral_usd),
-                            );
-
-                            account_liquidity += collateral_usd - borrowed_usd;
-                        } else {
-                            let maybe_collateral_usd = account_ctoken_amount.collateral_usd;
-                            let maybe_borrowed_usd = account_ctoken_amount.borrowed_usd;
-                            if maybe_collateral_usd == None || maybe_borrowed_usd == None {
-                                liquidity_is_whole = false;
-                                continue;
-                            } else {
-                                // these unwraps are safe because we just checked if either are None
-                                collateral_usd = maybe_collateral_usd.unwrap();
-                                borrowed_usd = maybe_borrowed_usd.unwrap();
-                                account_liquidity += collateral_usd - borrowed_usd;
-                            }
-                        }
-
-                        // find best repay/seize
-                        if collateral_usd > best_seize_amount {
-                            best_seize_amount = collateral_usd;
-                            best_seize_ctoken = *account_ctoken_address;
-                        }
-                        if borrowed_usd > best_repay_amount {
-                            best_repay_amount = borrowed_usd;
-                            best_repay_ctoken = *account_ctoken_address;
-                        }
-                    }
-
-                    if liquidity_is_whole && account_liquidity < 0.0 {
-                        // uses best_seize_ctoken and best_repay_ctoken
-                        // use ethers_client to make the call
-                        println!("LIQUIDATE:");
-                        println!(
-                            "account / liquidity: {} / {}",
-                            account_address, account_liquidity
-                        )
-                    }
-
-                    // update DB since we change last_price_ctoken_liquidity in one of the AccountCTokenAmounts
-                    let db_key = DBKey::Account(account_address);
-                    let db_val = DBVal::Account(Account(account_ctokens));
-                    self.database.set(db_key, db_val);
+                    self.update_liquidity_for_account(*account_address, underlying_price, &ctoken);
                 }
             }
+        }
+    }
+
+    fn update_liquidity_for_account(
+        &mut self,
+        account_address: Address,
+        underlying_price: f64,
+        ctoken: &CToken,
+    ) {
+        let account_key = DBKey::Account(account_address);
+        // TODO: handle none
+        let mut account_ctokens: HashMap<Address, AccountCTokenAmount> =
+            self.database.get(account_key).unwrap().as_account().0;
+
+        let mut account_liquidity: f64 = 0.0;
+        let mut liquidity_is_accurate: bool = true;
+        let mut liquidate_call_data: LiquidateCallData = LiquidateCallData::new(account_address);
+
+        // TODO: could clean this up further but I'm going to focus on getting other
+        // things from 0 to 1 for now.
+        for (account_ctoken_address, account_ctoken_amount) in &mut account_ctokens {
+            let collateral_usd: f64;
+            let borrowed_usd: f64;
+            // if this is the ctoken that we just got an updated price for
+            if *account_ctoken_address == ctoken.address {
+                if !account_ctoken_amount.has_amounts() {
+                    liquidity_is_accurate = false;
+                    continue;
+                } // from this scope on, account_ctoken_amount unwraps on amount fields are safe
+
+                // calculate new liquidity for this accounts ctoken position with the new price
+                let collateral_amount = account_ctoken_amount.collateral_amount.unwrap();
+                let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
+
+                // Here's the liquidity equation that everything hinges on
+                collateral_usd = ctoken.collateral_factor.unwrap()
+                    * ctoken.exchange_rate.unwrap()
+                    * underlying_price
+                    * collateral_amount;
+                borrowed_usd = underlying_price * borrowed_amount;
+
+                // change the value in the hash map to reflect the new price
+                account_ctoken_amount.borrowed_usd = Some(borrowed_usd);
+                account_ctoken_amount.collateral_usd = Some(collateral_usd);
+
+                // update the DB with the new value
+                // TODO: would it be better to do all this after we check liquidity?
+                let db_key = DBKey::Account(account_address);
+                let db_val = DBVal::Account(Account(account_ctokens));
+                self.database.set(db_key, db_val);
+
+                account_liquidity += collateral_usd - borrowed_usd;
+            } else {
+                // else this is NOT the ctoken that we just got an updated price for
+                if !account_ctoken_amount.has_usd_values() {
+                    liquidity_is_accurate = false;
+                    continue;
+                } // from this scope on, account_ctoken_amount unwraps on usd fields are safe
+
+                // unwraps are safe because we just checked for existence
+                collateral_usd = account_ctoken_amount.collateral_usd.unwrap();
+                borrowed_usd = account_ctoken_amount.borrowed_usd.unwrap();
+                account_liquidity += collateral_usd - borrowed_usd;
+            }
+
+            liquidate_call_data.compare_to_find_best_args(
+                borrowed_usd,
+                collateral_usd,
+                *account_ctoken_address,
+            );
+        }
+
+        if liquidity_is_accurate && account_liquidity < 0.0 {
+            // TODO:
+            // use liquidate_call_data and ethers_client to make the call
+            println!("LIQUIDATE:");
+            println!(
+                "account / liquidity: {} / {}",
+                account_address, account_liquidity
+            )
         }
     }
 
@@ -177,5 +166,19 @@ impl PriceUpdater {
 
         // was not able to get price
         None
+    }
+
+    // blocks until some ctokens are found
+    async fn get_db_ctokens(&mut self) -> Vec<CToken> {
+        loop {
+            match self.database.get_all_ctokens() {
+                Some(ctokens) => return ctokens,
+                None => {
+                    // case where database doesn't yet have any ctokens
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    continue;
+                }
+            }
+        }
     }
 }
