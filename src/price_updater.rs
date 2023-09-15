@@ -27,11 +27,11 @@ impl PriceUpdater {
         }
     }
 
+    // TODO: clean this mfer up!
     pub async fn run(&mut self) {
         println!("PriceUpdater::run()");
 
         loop {
-            // let all_ctokens: Option<Vec<CToken>> = self.database.get_all_ctokens();
             let all_ctokens: Vec<CToken>;
 
             match self.database.get_all_ctokens() {
@@ -39,14 +39,16 @@ impl PriceUpdater {
                     all_ctokens = ctokens_from_db;
                 }
                 None => {
+                    // case where database doesn't yet have ctokens
+                    tokio::time::sleep(Duration::from_secs(5)).await;
                     continue;
                 }
             }
 
             for ctoken in all_ctokens {
                 // TODO: handle None for everything below.  just search for .unwrap
-                let updated_ctoken_exchange_rate = ctoken.exchange_rate.unwrap();
-                let updated_ctoken_collateral_factor = ctoken.collateral_factor.unwrap();
+                let ctoken_exchange_rate = ctoken.exchange_rate.unwrap();
+                let ctoken_collateral_factor = ctoken.collateral_factor.unwrap();
                 let updated_ctoken_address = ctoken.address;
                 let updated_ctoken_underlying_address = ctoken.underlying_address.unwrap();
                 let underlying_price = self
@@ -62,46 +64,68 @@ impl PriceUpdater {
                     let mut account_ctokens: HashMap<Address, AccountCTokenAmount> =
                         self.database.get(account_key).unwrap().as_account().0;
 
+                    // update_liquidity
                     let mut account_liquidity: f64 = 0.0;
                     let mut liquidity_is_whole: bool = true;
-                    // TODO: set best seize/repay while we look over the account
+                    let mut best_repay_ctoken: Address;
+                    let mut best_repay_amount: f64 = 0.0;
+                    let mut best_seize_ctoken: Address;
+                    let mut best_seize_amount: f64 = 0.0;
+
                     for (account_ctoken_address, account_ctoken_amount) in &mut account_ctokens {
+                        let collateral_usd: f64;
+                        let borrowed_usd: f64;
                         if *account_ctoken_address == updated_ctoken_address {
-                            // calculate new liquidity for this ctoken with the new price
+                            // calculate new liquidity for this accounts ctoken position with the new price
                             // TODO: handle option, don't unwrap
                             let collateral_amount =
                                 account_ctoken_amount.collateral_amount.unwrap();
                             let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
 
                             // Here's the big fat liquidity equation that everything hinges on
-                            let collateral_usd = updated_ctoken_collateral_factor
-                                * updated_ctoken_exchange_rate
+                            collateral_usd = ctoken_collateral_factor
+                                * ctoken_exchange_rate
                                 * underlying_price
                                 * collateral_amount;
-                            let borrow_usd = underlying_price * borrowed_amount;
+                            borrowed_usd = underlying_price * borrowed_amount;
 
-                            let updated_ctoken_liquidity = collateral_usd - borrow_usd;
-
-                            // update the hash map with the new price
+                            // change this value in the hash map to show the new price
                             *account_ctoken_amount = AccountCTokenAmount::new(
                                 Some(borrowed_amount),
                                 Some(collateral_amount),
-                                Some(updated_ctoken_liquidity),
+                                Some(borrowed_usd),
+                                Some(collateral_usd),
                             );
 
-                            account_liquidity += updated_ctoken_liquidity;
+                            account_liquidity += collateral_usd - borrowed_usd;
                         } else {
-                            match account_ctoken_amount.last_price_ctoken_liquidity {
-                                Some(liquidity) => account_liquidity += liquidity,
-                                None => {
-                                    liquidity_is_whole = false;
-                                    continue;
-                                }
+                            let maybe_collateral_usd = account_ctoken_amount.collateral_usd;
+                            let maybe_borrowed_usd = account_ctoken_amount.borrowed_usd;
+                            if maybe_collateral_usd == None || maybe_borrowed_usd == None {
+                                liquidity_is_whole = false;
+                                continue;
+                            } else {
+                                // these unwraps are safe because we just checked if either are None
+                                collateral_usd = maybe_collateral_usd.unwrap();
+                                borrowed_usd = maybe_borrowed_usd.unwrap();
+                                account_liquidity += collateral_usd - borrowed_usd;
                             }
+                        }
+
+                        // find best repay/seize
+                        if collateral_usd > best_seize_amount {
+                            best_seize_amount = collateral_usd;
+                            best_seize_ctoken = *account_ctoken_address;
+                        }
+                        if borrowed_usd > best_repay_amount {
+                            best_repay_amount = borrowed_usd;
+                            best_repay_ctoken = *account_ctoken_address;
                         }
                     }
 
                     if liquidity_is_whole && account_liquidity < 0.0 {
+                        // uses best_seize_ctoken and best_repay_ctoken
+                        // use ethers_client to make the call
                         println!("LIQUIDATE:");
                         println!(
                             "account / liquidity: {} / {}",
@@ -115,9 +139,6 @@ impl PriceUpdater {
                     self.database.set(db_key, db_val);
                 }
             }
-
-            // TODO: maybe no need
-            tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
 
