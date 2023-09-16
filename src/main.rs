@@ -8,7 +8,7 @@ mod types;
 use crate::indexer::Indexer;
 use crate::price_updater::PriceUpdater;
 
-use ethers::providers::{Provider, Ws};
+use ethers::providers::{Http, Provider};
 extern crate redis; // TODO: why is this "extern crate" and not "use"?
 use std::{sync::Arc, thread};
 use tokio::runtime;
@@ -23,10 +23,10 @@ comptroller creation block
 */
 
 // current: sonne finance
-const CHAIN: &str = "optimism";
-const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
+const CHAIN: &str = "Optimism";
+const HTTP_URL: &str = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df";
 const COMPTROLLER: &str = "0xDb0C52f1F3892e179a69b19aa25dA2aECe5006ac";
-const COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
+const COMPTROLLER_CREATION_BLOCK: u64 = 26050051;
 //const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 
 #[tokio::main]
@@ -41,7 +41,7 @@ async fn main() -> eyre::Result<()> {
     );
 
     // initialize provider & clients
-    let provider = Provider::<Ws>::connect(WSS_URL).await?;
+    let provider = Provider::<Http>::try_from(HTTP_URL).unwrap();
     let client_for_indexer = Arc::new(provider);
     let client_for_price_updater = client_for_indexer.clone();
 

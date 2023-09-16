@@ -7,20 +7,20 @@ use crate::types::{
     liquidate_call_data::LiquidateCallData,
 };
 use ethers::{
-    providers::{Provider, Ws},
+    providers::{Http, Provider},
     types::Address,
 };
 use std::{collections::HashMap, sync::Arc};
 use tokio::time::Duration;
 
 pub struct PriceUpdater {
-    ethers_client: Arc<Provider<Ws>>,
+    ethers_client: Arc<Provider<Http>>,
     database: Database,
     chain: String,
 }
 
 impl PriceUpdater {
-    pub fn new(ethers_client: Arc<Provider<Ws>>, chain: String) -> PriceUpdater {
+    pub fn new(ethers_client: Arc<Provider<Http>>, chain: String) -> PriceUpdater {
         let database = Database::new().unwrap();
 
         PriceUpdater {
@@ -34,6 +34,7 @@ impl PriceUpdater {
         println!("PriceUpdater::run()");
 
         loop {
+            println!("updating ctoken prices");
             let all_ctokens: Vec<CToken> = self.get_db_ctokens().await;
 
             for ctoken in all_ctokens {
@@ -49,6 +50,7 @@ impl PriceUpdater {
                     self.update_liquidity_for_account(*account_address, underlying_price, &ctoken);
                 }
             }
+            println!("all ctoken prices updated");
         }
     }
 

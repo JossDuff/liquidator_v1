@@ -9,7 +9,7 @@ use crate::types::{
 };
 use ethers::{
     prelude::ContractError,
-    providers::{Middleware, Provider, StreamExt, Ws},
+    providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, U256},
 };
 use std::{collections::HashMap, sync::Arc};
@@ -18,16 +18,16 @@ const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 40000;
 
 pub struct Indexer {
-    client: Arc<Provider<Ws>>,
+    client: Arc<Provider<Http>>,
     database: Database,
     comptroller_address: Address,
     comptroller_creation_block: u64,
-    comptroller_instance: generated::Comptroller<Provider<Ws>>,
+    comptroller_instance: generated::Comptroller<Provider<Http>>,
 }
 
 impl Indexer {
     pub fn new(
-        ethers_client: Arc<Provider<Ws>>,
+        ethers_client: Arc<Provider<Http>>,
         comptroller_address: Address,
         comptroller_creation_block: u64,
     ) -> Indexer {
@@ -59,10 +59,10 @@ impl Indexer {
             .await
             .unwrap();
 
-        let mut ctoken_instances: HashMap<Address, CErc20<Provider<Ws>>> = HashMap::new();
+        let mut ctoken_instances: HashMap<Address, CErc20<Provider<Http>>> = HashMap::new();
         for ctoken_address in all_ctoken_addresses {
             addresses_to_watch.push(self.comptroller_address);
-            let ctoken_instance: CErc20<Provider<Ws>> =
+            let ctoken_instance: CErc20<Provider<Http>> =
                 CErc20::new(ctoken_address, self.client.clone());
             self.build_initial_db_ctoken(&ctoken_instance).await;
             ctoken_instances.insert(ctoken_address, ctoken_instance);
@@ -101,10 +101,10 @@ impl Indexer {
     }
 
     pub async fn subscribe_to_events(
-        comptroller_instance: generated::Comptroller<Provider<Ws>>,
+        comptroller_instance: generated::Comptroller<Provider<Http>>,
         comptroller_creation_block: u64,
         addresses_to_watch: Vec<Address>,
-        client: Arc<Provider<Ws>>,
+        client: Arc<Provider<Http>>,
     ) {
         // let comptroller_events = vec![
         //     "MarketEntered(address,address)",
@@ -131,6 +131,7 @@ impl Indexer {
             .event("NewLiquidationIncentive(uint256,uint256)");
         let mut event_stream = client.get_logs_paginated(&comptroller_event_filter, STEP_SIZE);
 
+        println!("Streaming logs");
         while let Some(log) = event_stream.next().await {
             match log {
                 Ok(log) => {
@@ -139,13 +140,14 @@ impl Indexer {
                 Err(e) => panic!("error while polling events: {}", e),
             }
         }
+        println!("Done streaming logs");
     }
     pub async fn read_past_events(reading_start_block: u64, reading_end_block: u64) {}
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
     // also comptroller.markets(ctoken) for collateral factor
     // create ctoken in DB
-    async fn build_initial_db_ctoken(&mut self, ctoken_instance: &CErc20<Provider<Ws>>) {
+    async fn build_initial_db_ctoken(&mut self, ctoken_instance: &CErc20<Provider<Http>>) {
         // TODO: put these in multicalls
         // TODO: error on ceth calls.
         let underlying_address: Address = match ctoken_instance.underlying().call().await {
@@ -155,7 +157,7 @@ impl Indexer {
                 return;
             }
         };
-        let underlying_instance: Erc20<Provider<Ws>> =
+        let underlying_instance: Erc20<Provider<Http>> =
             Erc20::new(underlying_address, self.client.clone());
         let underlying_decimals: u32 = underlying_instance.decimals().call().await.unwrap() as u32;
         let exchange_rate_mantissa = ctoken_instance.exchange_rate_stored().call().await.unwrap();
