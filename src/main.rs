@@ -13,10 +13,21 @@ extern crate redis; // TODO: why is this "extern crate" and not "use"?
 use std::{sync::Arc, thread};
 use tokio::runtime;
 
+/* To switch for a different compound fork:
+
+chain name (for price oracle)
+wss url
+comptroller address
+comptroller creation block
+
+*/
+
+// current: sonne finance
+const CHAIN: &str = "optimism";
 const WSS_URL: &str = "wss://mainnet.infura.io/ws/v3/4824addf02ec4a6c8618043ea418e6df";
-const COMPTROLLER_ETH_MAINNET: &str = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+const COMPTROLLER: &str = "0xDb0C52f1F3892e179a69b19aa25dA2aECe5006ac";
 const COMPTROLLER_CREATION_BLOCK: u64 = 7710671;
-const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+//const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -37,10 +48,10 @@ async fn main() -> eyre::Result<()> {
     // initialize modules
     let mut indexer = Indexer::new(
         client_for_indexer,
-        COMPTROLLER_ETH_MAINNET.parse().unwrap(),
+        COMPTROLLER.parse().unwrap(),
         COMPTROLLER_CREATION_BLOCK,
     );
-    let mut price_updater = PriceUpdater::new(client_for_price_updater);
+    let mut price_updater = PriceUpdater::new(client_for_price_updater, CHAIN.to_string());
 
     // let it rip
     thread::spawn(move || {

@@ -28,6 +28,7 @@ TODO: rework readme
 TODO: put shit in env
 TODO: support dynamic ctoken lists.  currently just getting all ctokens using comp.allMarkets, so this bot is unaware of new markets added
 TODO: make comptroller creation block a dynamic binary search
+TODO: allow for either Https or websocket connections
 
 ## Phase 2: Correct
 - proper error handling

@@ -14,7 +14,6 @@ use ethers::{
 };
 use std::{collections::HashMap, sync::Arc};
 
-const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 40000;
 
