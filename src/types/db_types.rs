@@ -5,6 +5,7 @@ use crate::types::{
 use ethers::types::Address;
 use redis;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // TODO: not sure why I originally thought that the
 // DBKey/Val types need to be wrapped in an identifier, but they
@@ -17,9 +18,9 @@ pub enum DBVal {
 }
 
 impl DBVal {
-    pub fn as_account(&self) -> Account {
+    pub fn account_to_hashmap(&mut self) -> HashMap<Address, AccountCTokenAmount> {
         match self {
-            DBVal::Account(account) => *account,
+            DBVal::Account(account) => account.0.clone(),
             _ => panic!("DBVal is not Account"),
         }
     }

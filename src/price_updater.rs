@@ -58,8 +58,7 @@ impl PriceUpdater {
     ) {
         let account_key = DBKey::Account(account_address);
         // TODO: handle none
-        let mut account_ctokens: HashMap<Address, AccountCTokenAmount> =
-            self.database.get(account_key).unwrap().as_account().0;
+        let mut account_ctokens = self.database.get(account_key).unwrap().account_to_hashmap();
 
         let mut account_liquidity: f64 = 0.0;
         let mut liquidity_is_accurate: bool = true;
@@ -67,6 +66,7 @@ impl PriceUpdater {
 
         // TODO: could clean this up further but I'm going to focus on getting other
         // things from 0 to 1 for now.
+        let mut updated_account_ctoken_amount: Option<AccountCTokenAmount> = None;
         for (account_ctoken_address, account_ctoken_amount) in &mut account_ctokens {
             let collateral_usd: f64;
             let borrowed_usd: f64;
@@ -88,15 +88,13 @@ impl PriceUpdater {
                     * collateral_amount;
                 borrowed_usd = underlying_price * borrowed_amount;
 
-                // change the value in the hash map to reflect the new price
-                account_ctoken_amount.borrowed_usd = Some(borrowed_usd);
-                account_ctoken_amount.collateral_usd = Some(collateral_usd);
-
-                // update the DB with the new value
-                // TODO: would it be better to do all this after we check liquidity?
-                let db_key = DBKey::Account(account_address);
-                let db_val = DBVal::Account(Account(account_ctokens));
-                self.database.set(db_key, db_val);
+                // update the collateral_usd and borrowed_usd to later save back to database
+                updated_account_ctoken_amount = Some(AccountCTokenAmount::new(
+                    Some(borrowed_amount),
+                    Some(collateral_amount),
+                    Some(borrowed_usd),
+                    Some(collateral_usd),
+                ));
 
                 account_liquidity += collateral_usd - borrowed_usd;
             } else {
@@ -128,6 +126,14 @@ impl PriceUpdater {
                 account_address, account_liquidity
             )
         }
+
+        // update the DB with the freshly calculated borrowed_usd and collateral_usd for the accountCTokenAmount
+        // Something went very wrong if updated_account_ctoken_amount is still None
+        account_ctokens.insert(ctoken.address, updated_account_ctoken_amount.unwrap());
+        let db_key = DBKey::Account(account_address);
+        //let db_val = DBVal::Account(Account(account_ctokens));
+        self.database
+            .set(db_key, DBVal::Account(Account(account_ctokens)));
     }
 
     // blocks until we can get next price
@@ -149,8 +155,8 @@ impl PriceUpdater {
 
         let mut response = reqwest::get(&url).await.unwrap();
         while let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
-            println!("Hit rate limit, waiting 61 seconds...");
-            tokio::time::sleep(Duration::from_secs(61)).await; // TODO: how to sleep only this thread?
+            println!("Hit rate limit for price api, waiting 61 seconds...");
+            tokio::time::sleep(Duration::from_secs(61)).await;
             response = reqwest::get(&url).await.unwrap();
         }
 

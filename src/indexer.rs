@@ -9,7 +9,8 @@ use crate::types::{
 };
 use crate::COMPTROLLER_CREATION_BLOCK;
 use ethers::{
-    providers::{Middleware, Provider, Ws},
+    abi,
+    providers::{Middleware, Provider, StreamExt, Ws},
     types::{Address, Filter, U256},
 };
 use std::{collections::HashMap, sync::Arc};
@@ -18,7 +19,7 @@ const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 40000;
 
 pub struct Indexer {
-    ethers_client: Arc<Provider<Ws>>,
+    client: Arc<Provider<Ws>>,
     database: Database,
     comptroller_address: Address,
     comptroller_creation_block: u64,
@@ -36,7 +37,7 @@ impl Indexer {
             generated::Comptroller::new(comptroller_address, ethers_client.clone());
 
         Indexer {
-            ethers_client,
+            client: ethers_client,
             database,
             comptroller_address,
             comptroller_creation_block,
@@ -46,6 +47,9 @@ impl Indexer {
 
     pub async fn run(&mut self) {
         println!("Indexer::run()");
+
+        let mut addresses_to_watch: Vec<Address> = Vec::new();
+        addresses_to_watch.push(self.comptroller_address);
 
         self.build_initial_db_comptroller();
 
@@ -58,18 +62,14 @@ impl Indexer {
 
         let mut ctoken_instances: HashMap<Address, CErc20<Provider<Ws>>> = HashMap::new();
         for ctoken_address in all_ctoken_addresses {
+            addresses_to_watch.push(self.comptroller_address);
             let ctoken_instance: CErc20<Provider<Ws>> =
-                CErc20::new(ctoken_address, self.ethers_client.clone());
+                CErc20::new(ctoken_address, self.client.clone());
             self.build_initial_db_ctoken(&ctoken_instance);
             ctoken_instances.insert(ctoken_address, ctoken_instance);
         }
 
-        let bot_start_block = self
-            .ethers_client
-            .get_block_number()
-            .await
-            .unwrap()
-            .as_u64();
+        let bot_start_block = self.client.get_block_number().await.unwrap().as_u64();
 
         // start indexing processes for account and balance discovery
         // watch for on all ctoken instances:
@@ -77,8 +77,16 @@ impl Indexer {
         // watch for on comptroller:
         //      marketEntered, marketExited, NewCollateralFactor, NewCloseFactor, NewLiqudationIncentive
         let comptroller_instance = self.comptroller_instance.clone();
+        let comptroller_creation_block = self.comptroller_creation_block;
+        let client_2 = self.client.clone();
         let subscribe_to_events = tokio::spawn(async move {
-            Self::subscribe_to_events(comptroller_instance).await;
+            Self::subscribe_to_events(
+                comptroller_instance,
+                comptroller_creation_block,
+                addresses_to_watch,
+                client_2,
+            )
+            .await;
         });
 
         let reading_start_block: u64 = self.comptroller_creation_block;
@@ -93,15 +101,45 @@ impl Indexer {
         subscribe_to_events.await.unwrap();
     }
 
-    pub async fn subscribe_to_events(comptroller_instance: generated::Comptroller<Provider<Ws>>) {
-        let comptroller_events = vec![
-            "MarketEntered(address,address)",
-            "MarketExited(address,address)",
-            "NewCollateralFactor(address,uint256,uin256)",
-            "NewCloseFactor(uint256,uint256)",
-            "NewLiquidationIncentive(uint256,uint256)",
-        ];
-        // let comptroller_filter = Filter::new().events(comptroller_events);
+    pub async fn subscribe_to_events(
+        comptroller_instance: generated::Comptroller<Provider<Ws>>,
+        comptroller_creation_block: u64,
+        addresses_to_watch: Vec<Address>,
+        client: Arc<Provider<Ws>>,
+    ) {
+        // let comptroller_events = vec![
+        //     "MarketEntered(address,address)",
+        //     "MarketExited(address,address)",
+        //     "NewCollateralFactor(address,uint256,uin256)",
+        //     "NewCloseFactor(uint256,uint256)",
+        //     "NewLiquidationIncentive(uint256,uint256)",
+        // ];
+
+        // TODO: would it be faster to just receive all events on comptroller and filter for the ones we want?
+        //let ctoken_events = vec!["Borrow(address,uint256,uint256,uint256)"];
+
+        // let event_filter = Filter::new().address(addresses_to_watch);
+        // let event_stream = client.watch(&event_filter);
+
+        // TODO: does this poll up to present?  Or past events only?
+        let comptroller_event_filter: Filter = Filter::new()
+            .address(comptroller_instance.address())
+            .from_block(comptroller_creation_block)
+            .event("MarketEntered(address,address)")
+            .event("MarketExited(address,address)")
+            .event("NewCollateralFactor(address,uint256,uin256)")
+            .event("NewCloseFactor(uint256,uint256)")
+            .event("NewLiquidationIncentive(uint256,uint256)");
+        let mut event_stream = client.get_logs_paginated(&comptroller_event_filter, STEP_SIZE);
+
+        while let Some(log) = event_stream.next().await {
+            match log {
+                Ok(log) => {
+                    println!("Got a log: {:?}", log);
+                }
+                Err(e) => panic!("error while polling events: {}", e),
+            }
+        }
     }
     pub async fn read_past_events(reading_start_block: u64, reading_end_block: u64) {}
 
@@ -112,7 +150,7 @@ impl Indexer {
         // TODO: put these in multicalls
         let underlying_address: Address = ctoken_instance.underlying().call().await.unwrap();
         let underlying_instance: Erc20<Provider<Ws>> =
-            Erc20::new(underlying_address, self.ethers_client.clone());
+            Erc20::new(underlying_address, self.client.clone());
         let underlying_decimals: u32 = underlying_instance.decimals().call().await.unwrap() as u32;
         let exchange_rate_mantissa = ctoken_instance.exchange_rate_stored().call().await.unwrap();
         // TODO: this conversion is just an educated guess, couldn't confirm it in compound code

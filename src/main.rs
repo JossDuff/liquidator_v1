@@ -35,12 +35,12 @@ async fn main() -> eyre::Result<()> {
     let client_for_price_updater = client_for_indexer.clone();
 
     // initialize modules
-    let indexer = Indexer::new(
+    let mut indexer = Indexer::new(
         client_for_indexer,
         COMPTROLLER_ETH_MAINNET.parse().unwrap(),
         COMPTROLLER_CREATION_BLOCK,
     );
-    let price_updater = PriceUpdater::new(client_for_price_updater);
+    let mut price_updater = PriceUpdater::new(client_for_price_updater);
 
     // let it rip
     thread::spawn(move || {
