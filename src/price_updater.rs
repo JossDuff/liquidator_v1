@@ -154,7 +154,7 @@ impl PriceUpdater {
                            self.chain, asset_address, currency
                        );
 
-        println!("Querying token price for {}", asset_address);
+        // println!("Querying token price for {}", asset_address);
 
         let mut response = reqwest::get(&url).await.unwrap();
         while let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
@@ -163,11 +163,14 @@ impl PriceUpdater {
             response = reqwest::get(&url).await.unwrap();
         }
 
-        let json: HashMap<String, HashMap<String, f64>> = response.json().await.unwrap();
+        let json: HashMap<String, HashMap<String, f64>> = response
+            .json()
+            .await
+            .expect(&format!("error getting token price for {}", asset_address));
 
         if let Some(asset_prices) = json.get(asset_address) {
             if let Some(price) = asset_prices.get(currency) {
-                println!("Got a price");
+                // println!("Got a price");
                 // successfully got price
                 return Some(*price);
             }

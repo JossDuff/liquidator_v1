@@ -1,3 +1,4 @@
+use crate::bindings::comptroller_bindings::{ComptrollerEvents, MarketEnteredFilter};
 use crate::bindings::{
     c_erc20_bindings::CErc20, comptroller_bindings as generated, erc20_bindings::Erc20,
 };
@@ -8,14 +9,15 @@ use crate::types::{
     db_types::{DBKey, DBVal},
 };
 use ethers::{
-    prelude::ContractError,
+    abi::Token,
+    prelude::{ContractError, RpcError as EthersRpcError},
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, U256},
 };
 use std::{collections::HashMap, sync::Arc};
 
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
-const STEP_SIZE: u64 = 40000;
+const STEP_SIZE: u64 = 500_000;
 
 pub struct Indexer {
     client: Arc<Provider<Http>>,
@@ -92,9 +94,11 @@ impl Indexer {
             .await;
         });
 
+        let comptroller_instance = self.comptroller_instance.clone();
         let reading_start_block: u64 = self.comptroller_creation_block;
         let read_past_events = tokio::spawn(async move {
-            Self::read_past_events(reading_start_block, bot_start_block).await;
+            Self::read_past_events(comptroller_instance, reading_start_block, bot_start_block)
+                .await;
         });
 
         // returns eventually
@@ -110,6 +114,9 @@ impl Indexer {
         addresses_to_watch: Vec<Address>,
         client: Arc<Provider<Http>>,
     ) {
+        //let market_entered = comptroller_instance.market_entered_filter().filter();
+        //let event = comptroller_instance.market_entered_filter().from_block(1);
+        //let mut events = market_entered.stream.await.unwrap().ok();
         // let comptroller_events = vec![
         //     "MarketEntered(address,address)",
         //     "MarketExited(address,address)",
@@ -125,28 +132,80 @@ impl Indexer {
         // let event_stream = client.watch(&event_filter);
 
         // TODO: does this poll up to present?  Or past events only?
-        let comptroller_event_filter: Filter = Filter::new()
-            .address(comptroller_instance.address())
-            .from_block(comptroller_creation_block)
-            .event("MarketEntered(address,address)")
-            .event("MarketExited(address,address)")
-            .event("NewCollateralFactor(address,uint256,uin256)")
-            .event("NewCloseFactor(uint256,uint256)")
-            .event("NewLiquidationIncentive(uint256,uint256)");
-        let mut event_stream = client.get_logs_paginated(&comptroller_event_filter, STEP_SIZE);
+        // let comptroller_event_filter: Filter = Filter::new()
+        //     .address(comptroller_instance.address())
+        //     .from_block(comptroller_creation_block)
+        //     .event("MarketEntered(address,address)")
+        //     .event("MarketExited(address,address)")
+        //     .event("NewCollateralFactor(address,uint256,uint256)")
+        //     .event("NewCloseFactor(uint256,uint256)")
+        //     .event("NewLiquidationIncentive(uint256,uint256)");
+        // let market_entered_filter = comptroller_instance.market_entered_filter();
 
-        println!("Streaming logs");
-        while let Some(log) = event_stream.next().await {
-            match log {
-                Ok(log) => {
-                    println!("Got a log: {:?}", log);
+        // let mut event_stream = client.get_logs_paginated(&comptroller_event_filter, STEP_SIZE);
+
+        // println!("Streaming logs");
+        // while let Some(log) = event_stream.next().await {
+        //     match log {
+        //         Ok(log) => {
+        //             println!("Got a log: {:?}", log);
+        //         }
+        //         Err(e) => panic!("error while polling events: {}", e),
+        //     }
+        // }
+        //println!("Done streaming logs");
+    }
+
+    pub async fn read_past_events(
+        comptroller_instance: generated::Comptroller<Provider<Http>>,
+        start_block: u64,
+        end_block: u64,
+    ) {
+        let mut step_size = STEP_SIZE;
+        // for mut i in (start_block..end_block).step_by(step_size as usize) {
+        let mut i = start_block;
+        while i < end_block {
+            print_progress_percent(i, start_block, end_block);
+
+            // try the query
+            let logs = comptroller_instance
+                .market_entered_filter()
+                .from_block(i)
+                .to_block(i + step_size)
+                .query()
+                .await;
+
+            match logs {
+                Ok(logs) => {
+                    i += step_size;
+                    println!("Got {} events", logs.len());
+                    for log in logs {
+                        //let account_addr: Address = Address::from(log.account);
+                    }
                 }
-                Err(e) => panic!("error while polling events: {}", e),
+                // TODO: resolve logging error
+                Err(err) => {
+                    // println!("Error: {}", err);
+                    if err
+                        .to_string()
+                        .contains("query returned more than 10000 results")
+                    {
+                        let old_step_size = step_size;
+                        // and retry the query at half size
+                        step_size = (step_size as f64 * 0.75) as u64;
+                        println!(
+                            "too many results. previous range: {} blocks, new range: {} blocks",
+                            old_step_size, step_size
+                        );
+                    } else {
+                        i += step_size;
+                        // TODO: figure out what invalid data is
+                        println!("Error: {}", err);
+                    }
+                }
             }
         }
-        println!("Done streaming logs");
     }
-    pub async fn read_past_events(reading_start_block: u64, reading_end_block: u64) {}
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
     // also comptroller.markets(ctoken) for collateral factor
@@ -233,4 +292,11 @@ impl Indexer {
         let db_val: DBVal = DBVal::Comptroller(new_comptroller);
         self.database.set(db_key, db_val);
     }
+}
+
+fn print_progress_percent(i: u64, start_block: u64, end_block: u64) -> () {
+    let progress_percent =
+        ((i - start_block) as f64 / (end_block - start_block) as f64) * 100 as f64;
+
+    println!("loading past events {}%", progress_percent);
 }
