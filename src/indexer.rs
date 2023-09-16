@@ -10,9 +10,9 @@ use crate::types::{
 };
 use ethers::{
     abi::Token,
-    prelude::{ContractError, RpcError as EthersRpcError},
+    prelude::{ContractError, ProviderError},
     providers::{Http, Middleware, Provider, StreamExt},
-    types::{Address, Filter, U256},
+    types::{Address, Filter, Log, U256},
 };
 use std::{collections::HashMap, sync::Arc};
 
@@ -83,22 +83,28 @@ impl Indexer {
         //      marketEntered, marketExited, NewCollateralFactor, NewCloseFactor, NewLiqudationIncentive
         let comptroller_instance = self.comptroller_instance.clone();
         let comptroller_creation_block = self.comptroller_creation_block;
-        let client_2 = self.client.clone();
+        let client = self.client.clone();
         let subscribe_to_events = tokio::spawn(async move {
             Self::subscribe_to_events(
                 comptroller_instance,
                 comptroller_creation_block,
                 addresses_to_watch,
-                client_2,
+                client,
             )
             .await;
         });
 
+        let client = self.client.clone();
         let comptroller_instance = self.comptroller_instance.clone();
         let reading_start_block: u64 = self.comptroller_creation_block;
         let read_past_events = tokio::spawn(async move {
-            Self::read_past_events(comptroller_instance, reading_start_block, bot_start_block)
-                .await;
+            Self::read_past_events(
+                client,
+                comptroller_instance,
+                reading_start_block,
+                bot_start_block,
+            )
+            .await;
         });
 
         // returns eventually
@@ -157,42 +163,53 @@ impl Indexer {
     }
 
     pub async fn read_past_events(
+        client: Arc<Provider<Http>>,
         comptroller_instance: generated::Comptroller<Provider<Http>>,
         start_block: u64,
         end_block: u64,
     ) {
+        let comptroller_events = vec![
+            "MarketEntered(address,address)",
+            "MarketExited(address,address)",
+            "NewCollateralFactor(address,uint256,uin256)",
+            "NewCloseFactor(uint256,uint256)",
+            "NewLiquidationIncentive(uint256,uint256)",
+        ];
+        let just_market_entered = vec!["MarketEntered(address,address)"];
         let mut step_size = STEP_SIZE;
-        // for mut i in (start_block..end_block).step_by(step_size as usize) {
         let mut i = start_block;
         while i < end_block {
             print_progress_percent(i, start_block, end_block);
 
-            // try the query
-            let logs = comptroller_instance
-                .market_entered_filter()
-                .from_block(i)
-                .to_block(i + step_size)
-                .query()
-                .await;
+            let filters: Vec<Filter> = comptroller_events
+                .iter()
+                .map(|event_signature| {
+                    Filter::new()
+                        .address(comptroller_instance.address())
+                        .event(event_signature)
+                        .from_block(i)
+                        .to_block(i + step_size)
+                })
+                .collect();
 
-            match logs {
-                Ok(logs) => {
-                    i += step_size;
-                    println!("Got {} events", logs.len());
-                    for log in logs {
-                        //let account_addr: Address = Address::from(log.account);
-                    }
-                }
-                // TODO: resolve logging error
-                Err(err) => {
-                    // println!("Error: {}", err);
+            let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
+            for filter in filters {
+                let logs = client.get_logs(&filter).await;
+                results.push(logs);
+            }
+
+            let mut retry_query = false;
+            for result in results.iter() {
+                if let Err(err) = result {
                     if err
                         .to_string()
                         .contains("query returned more than 10000 results")
                     {
                         let old_step_size = step_size;
-                        // and retry the query at half size
+                        // and retry the query at smaller size
                         step_size = (step_size as f64 * 0.75) as u64;
+                        i += step_size;
+                        retry_query = true;
                         println!(
                             "too many results. previous range: {} blocks, new range: {} blocks",
                             old_step_size, step_size
@@ -204,6 +221,30 @@ impl Indexer {
                     }
                 }
             }
+
+            if retry_query {
+                continue;
+            }
+
+            for result in results.iter() {
+                if let Ok(logs) = result {
+                    let logs_len: usize = logs.len();
+                    // THIS WILL BE SO COOL IF IT WORKS
+                    let headspace: f64 = 0.8;
+                    let step_factor = (10000.0 * headspace) / logs_len as f64;
+                    println!("step_factor: {}", step_factor);
+                    step_size *= step_factor as u64;
+                    println!("Got {} events", logs_len);
+                    for log in logs {
+                        //let account_addr: Address = Address::from(log.account);
+                    }
+                } else {
+                    panic!("Didn't catch an error in logs");
+                }
+            }
+            println!("step_size: {}", step_size);
+
+            i += step_size;
         }
     }
 
