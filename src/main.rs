@@ -23,9 +23,9 @@ comptroller creation block
 */
 
 // current: sonne finance
-const CHAIN: &str = "Optimism";
+const CHAIN: &str = "optimistic-ethereum";
 const HTTP_URL: &str = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df";
-const COMPTROLLER: &str = "0xDb0C52f1F3892e179a69b19aa25dA2aECe5006ac";
+const COMPTROLLER: &str = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58";
 const COMPTROLLER_CREATION_BLOCK: u64 = 26050051;
 //const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 

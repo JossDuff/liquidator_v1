@@ -58,6 +58,10 @@ impl Indexer {
             .call()
             .await
             .unwrap();
+        println!(
+            "Got all {} ctokens from comptroller.getAllMarkets()",
+            all_ctoken_addresses.len()
+        );
 
         let mut ctoken_instances: HashMap<Address, CErc20<Provider<Http>>> = HashMap::new();
         for ctoken_address in all_ctoken_addresses {

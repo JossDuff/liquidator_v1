@@ -34,7 +34,7 @@ impl PriceUpdater {
         println!("PriceUpdater::run()");
 
         loop {
-            println!("updating ctoken prices");
+            // println!("updating ctoken prices");
             let all_ctokens: Vec<CToken> = self.get_db_ctokens().await;
 
             for ctoken in all_ctokens {
@@ -50,7 +50,7 @@ impl PriceUpdater {
                     self.update_liquidity_for_account(*account_address, underlying_price, &ctoken);
                 }
             }
-            println!("all ctoken prices updated");
+            // println!("all ctoken prices updated");
         }
     }
 
@@ -167,6 +167,7 @@ impl PriceUpdater {
 
         if let Some(asset_prices) = json.get(asset_address) {
             if let Some(price) = asset_prices.get(currency) {
+                println!("Got a price");
                 // successfully got price
                 return Some(*price);
             }
