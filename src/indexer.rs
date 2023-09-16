@@ -7,9 +7,8 @@ use crate::types::{
     ctoken::CToken,
     db_types::{DBKey, DBVal},
 };
-use crate::COMPTROLLER_CREATION_BLOCK;
 use ethers::{
-    abi,
+    prelude::ContractError,
     providers::{Middleware, Provider, StreamExt, Ws},
     types::{Address, Filter, U256},
 };
@@ -51,7 +50,7 @@ impl Indexer {
         let mut addresses_to_watch: Vec<Address> = Vec::new();
         addresses_to_watch.push(self.comptroller_address);
 
-        self.build_initial_db_comptroller();
+        self.build_initial_db_comptroller().await;
 
         let all_ctoken_addresses: Vec<Address> = self
             .comptroller_instance
@@ -65,7 +64,7 @@ impl Indexer {
             addresses_to_watch.push(self.comptroller_address);
             let ctoken_instance: CErc20<Provider<Ws>> =
                 CErc20::new(ctoken_address, self.client.clone());
-            self.build_initial_db_ctoken(&ctoken_instance);
+            self.build_initial_db_ctoken(&ctoken_instance).await;
             ctoken_instances.insert(ctoken_address, ctoken_instance);
         }
 
@@ -148,7 +147,13 @@ impl Indexer {
     // create ctoken in DB
     async fn build_initial_db_ctoken(&mut self, ctoken_instance: &CErc20<Provider<Ws>>) {
         // TODO: put these in multicalls
-        let underlying_address: Address = ctoken_instance.underlying().call().await.unwrap();
+        let underlying_address: Address = match ctoken_instance.underlying().call().await {
+            Ok(x) => x,
+            Err(err) => {
+                println!("contract doesn't exist: {}", ctoken_instance.address());
+                return;
+            }
+        };
         let underlying_instance: Erc20<Provider<Ws>> =
             Erc20::new(underlying_address, self.client.clone());
         let underlying_decimals: u32 = underlying_instance.decimals().call().await.unwrap() as u32;
@@ -156,9 +161,15 @@ impl Indexer {
         // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
         // TODO: the typing is horrendus
         // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
+        println!("about to calculate infernal exchange rate");
+        // / 10u64.pow(10u32 + underlying_decimals) as f64
+        let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
+        let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
         let exchange_rate: f64 = 1.0
-            + (exchange_rate_mantissa.as_u64() as f64
-                / 10u64.pow(10u32 + underlying_decimals) as f64);
+            + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
+                .expect("exchange rate rekt me")
+                .as_u64() as f64;
+        println!("ez exchange rate gg");
 
         let (_, collateral_factor_mantissa, _) = self
             .comptroller_instance
@@ -196,7 +207,9 @@ impl Indexer {
             .await
             .unwrap();
         // ex: close_factor_mantissa = 500,000,000,000,000,000 -> close_factor = 0.5
+        println!("about to cast close factor");
         let close_factor: f64 = close_factor_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
+        println!("ez close factor gg");
         let liquidation_incentive_mantissa: U256 = self
             .comptroller_instance
             .liquidation_incentive_mantissa()
