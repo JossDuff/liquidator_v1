@@ -14,6 +14,7 @@ use ethers::{
 };
 use std::{collections::HashMap, sync::Arc};
 
+const CETH_ADDRESS_MAINNET: &str = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5";
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 40000;
 
@@ -147,6 +148,7 @@ impl Indexer {
     // create ctoken in DB
     async fn build_initial_db_ctoken(&mut self, ctoken_instance: &CErc20<Provider<Ws>>) {
         // TODO: put these in multicalls
+        // TODO: error on ceth calls.
         let underlying_address: Address = match ctoken_instance.underlying().call().await {
             Ok(x) => x,
             Err(err) => {
@@ -161,7 +163,6 @@ impl Indexer {
         // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
         // TODO: the typing is horrendus
         // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
-        println!("about to calculate infernal exchange rate");
         // / 10u64.pow(10u32 + underlying_decimals) as f64
         let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
         let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
@@ -169,7 +170,6 @@ impl Indexer {
             + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
                 .expect("exchange rate rekt me")
                 .as_u64() as f64;
-        println!("ez exchange rate gg");
 
         let (_, collateral_factor_mantissa, _) = self
             .comptroller_instance
@@ -207,9 +207,7 @@ impl Indexer {
             .await
             .unwrap();
         // ex: close_factor_mantissa = 500,000,000,000,000,000 -> close_factor = 0.5
-        println!("about to cast close factor");
         let close_factor: f64 = close_factor_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
-        println!("ez close factor gg");
         let liquidation_incentive_mantissa: U256 = self
             .comptroller_instance
             .liquidation_incentive_mantissa()
