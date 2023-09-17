@@ -178,7 +178,8 @@ impl Indexer {
         let just_market_entered = vec!["MarketEntered(address,address)"];
         let mut step_size = STEP_SIZE;
         let mut i = start_block;
-        while i < end_block {
+        let mut temp_total_events: u64 = 0;
+        while i <= end_block {
             print_progress_percent(i, start_block, end_block);
 
             let filters: Vec<Filter> = comptroller_events
@@ -192,12 +193,14 @@ impl Indexer {
                 })
                 .collect();
 
+            println!("querying...");
             let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
             for filter in filters {
                 let logs = client.get_logs(&filter).await;
                 results.push(logs);
             }
 
+            println!("scanning query for errors...");
             let mut retry_query = false;
             for result in results.iter() {
                 if let Err(err) = result {
@@ -207,7 +210,7 @@ impl Indexer {
                     {
                         let old_step_size = step_size;
                         // and retry the query at smaller size
-                        step_size = (step_size as f64 * 0.75) as u64;
+                        step_size = (step_size as f64 * 0.5) as u64;
                         i += step_size;
                         retry_query = true;
                         println!(
@@ -226,14 +229,15 @@ impl Indexer {
                 continue;
             }
 
+            println!("handling logs...");
+            let mut largest_log: u64 = 0;
             for result in results.iter() {
                 if let Ok(logs) = result {
-                    let logs_len: usize = logs.len();
-                    // THIS WILL BE SO COOL IF IT WORKS
-                    let headspace: f64 = 0.8;
-                    let step_factor = (10000.0 * headspace) / logs_len as f64;
-                    println!("step_factor: {}", step_factor);
-                    step_size *= step_factor as u64;
+                    let logs_len: u64 = logs.len() as u64;
+                    temp_total_events += logs_len;
+                    if logs_len > largest_log {
+                        largest_log = logs_len;
+                    }
                     println!("Got {} events", logs_len);
                     for log in logs {
                         //let account_addr: Address = Address::from(log.account);
@@ -244,8 +248,37 @@ impl Indexer {
             }
             println!("step_size: {}", step_size);
 
+            // THIS WILL BE SO COOL IF IT WORKS
+            // if largest_log <= 0 {
+            //     i += step_size;
+            //     continue;
+            // }
+
+            // let wiggle_room: f64 = 0.5;
+            // let numerator: u64 = (10000.0 * (1.0 - wiggle_room)) as u64;
+            // let step_factor: u64 = numerator / largest_log;
+            // println!(
+            //     "numerator: {}, denominator: {}, step_factor: {}",
+            //     numerator, largest_log, step_factor
+            // );
+            // step_size *= step_factor as u64;
+
+            step_size = (step_size as f64 * 1.25) as u64;
+
+            if i == end_block {
+                break;
+            }
+            let old_i = i;
+            if i + step_size > end_block {
+                step_size = end_block - i;
+            }
             i += step_size;
+            println!(
+                "i: {}, step_size: {}, end_block: {}",
+                old_i, step_size, end_block
+            );
         }
+        println!("got all events: {}", temp_total_events);
     }
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
