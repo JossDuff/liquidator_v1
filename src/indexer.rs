@@ -179,6 +179,7 @@ impl Indexer {
         let mut step_size = STEP_SIZE;
         let mut i = start_block;
         let mut temp_total_events: u64 = 0;
+        let mut last_run_failure: bool = false;
         while i <= end_block {
             print_progress_percent(i, start_block, end_block);
 
@@ -213,6 +214,7 @@ impl Indexer {
                         step_size = (step_size as f64 * 0.5) as u64;
                         i += step_size;
                         retry_query = true;
+                        last_run_failure = true;
                         println!(
                             "too many results. previous range: {} blocks, new range: {} blocks",
                             old_step_size, step_size
@@ -238,6 +240,10 @@ impl Indexer {
                     if logs_len > largest_log {
                         largest_log = logs_len;
                     }
+                    if last_run_failure {
+                        step_size *= 2;
+                    }
+                    last_run_failure = false;
                     println!("Got {} events", logs_len);
                     for log in logs {
                         //let account_addr: Address = Address::from(log.account);
@@ -263,7 +269,7 @@ impl Indexer {
             // );
             // step_size *= step_factor as u64;
 
-            step_size = (step_size as f64 * 1.25) as u64;
+            //step_size = (step_size as f64 * 1.25) as u64;
 
             if i == end_block {
                 break;
