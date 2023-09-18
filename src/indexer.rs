@@ -120,46 +120,6 @@ impl Indexer {
         addresses_to_watch: Vec<Address>,
         client: Arc<Provider<Http>>,
     ) {
-        //let market_entered = comptroller_instance.market_entered_filter().filter();
-        //let event = comptroller_instance.market_entered_filter().from_block(1);
-        //let mut events = market_entered.stream.await.unwrap().ok();
-        // let comptroller_events = vec![
-        //     "MarketEntered(address,address)",
-        //     "MarketExited(address,address)",
-        //     "NewCollateralFactor(address,uint256,uin256)",
-        //     "NewCloseFactor(uint256,uint256)",
-        //     "NewLiquidationIncentive(uint256,uint256)",
-        // ];
-
-        // TODO: would it be faster to just receive all events on comptroller and filter for the ones we want?
-        //let ctoken_events = vec!["Borrow(address,uint256,uint256,uint256)"];
-
-        // let event_filter = Filter::new().address(addresses_to_watch);
-        // let event_stream = client.watch(&event_filter);
-
-        // TODO: does this poll up to present?  Or past events only?
-        // let comptroller_event_filter: Filter = Filter::new()
-        //     .address(comptroller_instance.address())
-        //     .from_block(comptroller_creation_block)
-        //     .event("MarketEntered(address,address)")
-        //     .event("MarketExited(address,address)")
-        //     .event("NewCollateralFactor(address,uint256,uint256)")
-        //     .event("NewCloseFactor(uint256,uint256)")
-        //     .event("NewLiquidationIncentive(uint256,uint256)");
-        // let market_entered_filter = comptroller_instance.market_entered_filter();
-
-        // let mut event_stream = client.get_logs_paginated(&comptroller_event_filter, STEP_SIZE);
-
-        // println!("Streaming logs");
-        // while let Some(log) = event_stream.next().await {
-        //     match log {
-        //         Ok(log) => {
-        //             println!("Got a log: {:?}", log);
-        //         }
-        //         Err(e) => panic!("error while polling events: {}", e),
-        //     }
-        // }
-        //println!("Done streaming logs");
     }
 
     pub async fn read_past_events(
@@ -183,7 +143,7 @@ impl Indexer {
         while i <= end_block {
             print_progress_percent(i, start_block, end_block);
 
-            let filters: Vec<Filter> = comptroller_events
+            let comptroller_filters: Vec<Filter> = comptroller_events
                 .iter()
                 .map(|event_signature| {
                     Filter::new()
@@ -194,9 +154,9 @@ impl Indexer {
                 })
                 .collect();
 
-            println!("querying...");
+            let ctoken_filters: Vec<Filter> = println!("querying...");
             let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
-            for filter in filters {
+            for filter in comptroller_filters {
                 let logs = client.get_logs(&filter).await;
                 results.push(logs);
             }
@@ -253,23 +213,6 @@ impl Indexer {
                 }
             }
             println!("step_size: {}", step_size);
-
-            // THIS WILL BE SO COOL IF IT WORKS
-            // if largest_log <= 0 {
-            //     i += step_size;
-            //     continue;
-            // }
-
-            // let wiggle_room: f64 = 0.5;
-            // let numerator: u64 = (10000.0 * (1.0 - wiggle_room)) as u64;
-            // let step_factor: u64 = numerator / largest_log;
-            // println!(
-            //     "numerator: {}, denominator: {}, step_factor: {}",
-            //     numerator, largest_log, step_factor
-            // );
-            // step_size *= step_factor as u64;
-
-            //step_size = (step_size as f64 * 1.25) as u64;
 
             if i == end_block {
                 break;
