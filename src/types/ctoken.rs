@@ -1,13 +1,13 @@
-use ethers::types::Address;
+use ethers::types::{Address, U256};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CToken {
     pub address: Address,
     pub underlying_address: Address,
-    pub underlying_decimals: u32,
-    pub exchange_rate: f64,
-    pub collateral_factor: f64,
+    pub underlying_decimals: U256,
+    pub exchange_rate: U256,
+    pub collateral_factor: U256,
     pub accounts_in: Option<Vec<Address>>,
 }
 
@@ -15,9 +15,9 @@ impl CToken {
     pub fn new(
         address: Address,
         underlying_address: Address,
-        underlying_decimals: u32,
-        exchange_rate: f64,
-        collateral_factor: f64,
+        underlying_decimals: U256,
+        exchange_rate: U256,
+        collateral_factor: U256,
         accounts_in: Option<Vec<Address>>,
     ) -> CToken {
         Self {

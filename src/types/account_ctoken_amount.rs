@@ -3,18 +3,18 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountCTokenAmount {
-    pub borrowed_amount: Option<f64>,
-    pub collateral_amount: Option<f64>,
-    pub borrowed_usd: Option<f64>,
-    pub collateral_usd: Option<f64>,
+    pub borrowed_amount: Option<U256>,
+    pub collateral_amount: Option<U256>,
+    pub borrowed_usd: Option<U256>,
+    pub collateral_usd: Option<U256>,
 }
 
 impl AccountCTokenAmount {
     pub fn new(
-        borrowed_amount: Option<f64>,
-        collateral_amount: Option<f64>,
-        borrowed_usd: Option<f64>,
-        collateral_usd: Option<f64>,
+        borrowed_amount: Option<U256>,
+        collateral_amount: Option<U256>,
+        borrowed_usd: Option<U256>,
+        collateral_usd: Option<U256>,
     ) -> AccountCTokenAmount {
         Self {
             borrowed_amount,

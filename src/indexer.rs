@@ -293,7 +293,7 @@ impl Indexer {
         };
         let underlying_instance: Erc20<Provider<Http>> =
             Erc20::new(underlying_address, self.client.clone());
-        let underlying_decimals: u32 = underlying_instance.decimals().call().await.unwrap() as u32;
+        let underlying_decimals = underlying_instance.decimals().call().await.unwrap();
         let exchange_rate_mantissa = ctoken_instance.exchange_rate_stored().call().await.unwrap();
         // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
         // TODO: the typing is horrendus
@@ -434,14 +434,12 @@ async fn build_initial_db_account_ctoken_amounts(
                 .call()
                 .await
                 .unwrap();
-            let borrowed_amount: f64 = borrowed_amount.as_u64() as f64;
 
             let collateral_amount = ctoken_instance
                 .balance_of(*account_address)
                 .call()
                 .await
                 .unwrap();
-            let collateral_amount: f64 = collateral_amount.as_u64() as f64;
 
             let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
                 Some(borrowed_amount),

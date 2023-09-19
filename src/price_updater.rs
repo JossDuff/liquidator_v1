@@ -93,6 +93,7 @@ impl PriceUpdater {
                     * ctoken.exchange_rate
                     * underlying_price
                     * collateral_amount;
+
                 borrowed_usd = underlying_price * borrowed_amount;
 
                 // update the collateral_usd and borrowed_usd to later save back to database
