@@ -88,6 +88,7 @@ impl PriceUpdater {
                 let collateral_amount = account_ctoken_amount.collateral_amount.unwrap();
                 let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
 
+                // TODO: will have to do additional calculations on exchanage rate
                 // Here's the liquidity equation that everything hinges on
                 collateral_usd = ctoken.collateral_factor
                     * ctoken.exchange_rate
@@ -112,7 +113,6 @@ impl PriceUpdater {
                     continue;
                 } // from this scope on, account_ctoken_amount unwraps on usd fields are safe
 
-                // unwraps are safe because we just checked for existence
                 collateral_usd = account_ctoken_amount.collateral_usd.unwrap();
                 borrowed_usd = account_ctoken_amount.borrowed_usd.unwrap();
                 account_liquidity += collateral_usd - borrowed_usd;

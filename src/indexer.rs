@@ -296,15 +296,14 @@ impl Indexer {
         let underlying_decimals = underlying_instance.decimals().call().await.unwrap();
         let exchange_rate_mantissa = ctoken_instance.exchange_rate_stored().call().await.unwrap();
         // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
-        // TODO: the typing is horrendus
         // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
         // / 10u64.pow(10u32 + underlying_decimals) as f64
-        let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
-        let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
-        let exchange_rate: f64 = 1.0
-            + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
-                .expect("exchange rate rekt me")
-                .as_u64() as f64;
+        // let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
+        // let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
+        // let exchange_rate: f64 = 1.0
+        //     + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
+        //         .expect("exchange rate rekt me")
+        //         .as_u64() as f64;
 
         let (_, collateral_factor_mantissa, _) = self
             .comptroller_instance
@@ -313,16 +312,13 @@ impl Indexer {
             .await
             .unwrap();
 
-        let collateral_factor: f64 =
-            collateral_factor_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
-
         // set ctoken in DB
         let new_ctoken: CToken = CToken::new(
             ctoken_instance.address(),
             underlying_address,
             underlying_decimals,
-            exchange_rate,
-            collateral_factor,
+            exchange_rate_mantissa,
+            collateral_factor_mantissa,
             None,
         );
         let db_key: DBKey = DBKey::CToken(ctoken_instance.address());
@@ -342,7 +338,7 @@ impl Indexer {
             .await
             .unwrap();
         // ex: close_factor_mantissa = 500,000,000,000,000,000 -> close_factor = 0.5
-        let close_factor: f64 = close_factor_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
+        // let close_factor: f64 = close_factor_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
         let liquidation_incentive_mantissa: U256 = self
             .comptroller_instance
             .liquidation_incentive_mantissa()
@@ -350,14 +346,14 @@ impl Indexer {
             .await
             .unwrap();
         // ex: liquidation_incentive_mantissa = 1,080,000,000,000,000,000 -> liquidation_incentive = 1.08
-        let liquidation_incentive: f64 =
-            liquidation_incentive_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
+        // let liquidation_incentive: f64 =
+        //     liquidation_incentive_mantissa.as_u64() as f64 / ONE_ETHER_IN_WEI as f64;
 
         // set comptroller in DB
         let new_comptroller = Comptroller::new(
             self.comptroller_address,
-            close_factor,
-            liquidation_incentive,
+            close_factor_mantissa,
+            liquidation_incentive_mantissa,
         );
         let db_key: DBKey = DBKey::Comptroller();
         let db_val: DBVal = DBVal::Comptroller(new_comptroller);
