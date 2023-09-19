@@ -30,16 +30,6 @@ impl CToken {
         }
     }
 
-    // pub fn new_empty(address: Address) -> CToken {
-    //     Self {
-    //         address,
-    //         underlying_address: None,
-    //         exchange_rate: None,
-    //         collateral_factor: None,
-    //         accounts_in: None,
-    //     }
-    // }
-
     pub fn has_accounts(&self) -> bool {
         if (self.accounts_in != None) {
             true

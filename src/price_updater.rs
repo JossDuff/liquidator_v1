@@ -62,7 +62,11 @@ impl PriceUpdater {
     ) {
         let account_key = DBKey::Account(account_address);
         // TODO: handle none
-        let mut account_ctokens = self.database.get(account_key).unwrap().account_to_hashmap();
+        let mut account_ctokens = self
+            .database
+            .get(&account_key)
+            .unwrap()
+            .account_to_hashmap();
 
         let mut account_liquidity: f64 = 0.0;
         let mut liquidity_is_accurate: bool = true;
@@ -135,9 +139,8 @@ impl PriceUpdater {
         // Something went very wrong if updated_account_ctoken_amount is still None
         account_ctokens.insert(ctoken.address, updated_account_ctoken_amount.unwrap());
         let db_key = DBKey::Account(account_address);
-        //let db_val = DBVal::Account(Account(account_ctokens));
-        self.database
-            .set(db_key, DBVal::Account(Account(account_ctokens)));
+        let db_val = DBVal::Account(Account(account_ctokens));
+        self.database.set(&db_key, &db_val);
     }
 
     // blocks until we can get next price

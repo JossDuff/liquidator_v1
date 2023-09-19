@@ -17,7 +17,7 @@ use ethers::{
 };
 use std::{
     collections::{HashMap, HashSet},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
@@ -25,10 +25,10 @@ const STEP_SIZE: u64 = 500_000;
 
 pub struct Indexer {
     client: Arc<Provider<Http>>,
-    database: Database,
+    database: Arc<Mutex<Database>>,
     comptroller_address: Address,
     comptroller_creation_block: u64,
-    comptroller_instance: generated::Comptroller<Provider<Http>>,
+    comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
 }
 
 impl Indexer {
@@ -37,9 +37,10 @@ impl Indexer {
         comptroller_address: Address,
         comptroller_creation_block: u64,
     ) -> Indexer {
-        let database = Database::new().unwrap();
-        let comptroller_instance =
-            generated::Comptroller::new(comptroller_address, ethers_client.clone());
+        let database: Arc<Mutex<Database>> = Arc::new(Mutex::new(Database::new().unwrap()));
+        let comptroller_instance: Arc<generated::Comptroller<Provider<Http>>> = Arc::new(
+            generated::Comptroller::new(comptroller_address, ethers_client.clone()),
+        );
 
         Indexer {
             client: ethers_client,
@@ -101,12 +102,14 @@ impl Indexer {
         let client = self.client.clone();
         let comptroller_instance = self.comptroller_instance.clone();
         let reading_start_block: u64 = self.comptroller_creation_block;
+        let database: Arc<Mutex<Database>> = self.database.clone();
         let read_past_events = tokio::spawn(async move {
             Self::read_past_events(
                 client,
                 comptroller_instance,
                 reading_start_block,
                 bot_start_block,
+                database,
             )
             .await;
         });
@@ -119,7 +122,7 @@ impl Indexer {
     }
 
     pub async fn subscribe_to_events(
-        comptroller_instance: generated::Comptroller<Provider<Http>>,
+        comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
         comptroller_creation_block: u64,
         addresses_to_watch: Vec<Address>,
         client: Arc<Provider<Http>>,
@@ -128,9 +131,10 @@ impl Indexer {
 
     pub async fn read_past_events(
         client: Arc<Provider<Http>>,
-        comptroller_instance: generated::Comptroller<Provider<Http>>,
+        comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
         start_block: u64,
         end_block: u64,
+        database: Arc<Mutex<Database>>,
     ) {
         let comptroller_events = vec![
             "MarketEntered(address,address)",
@@ -249,11 +253,15 @@ impl Indexer {
         println!("ctokens found: {}", ctoken_accounts_in.len());
 
         // TODO: a bunch of contract calls to fill out the last info
-        // at this point we should have all accounts in ctokens, we just need to build AccountCTokenAmounts
-        // with some calls to ctoken.balanceOf() and ctoken.borrow(whatever the call is)
-        // and also update CToken.accounts_in
+
+        // update CToken.accounts_in for each ctoken
+        build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, database);
 
         // also get comptroller's closefactor, collateral factor, and liquidation incentive
+
+        // at this point we should have all accounts in ctokens, we just need to build AccountCTokenAmounts
+        // with some calls to ctoken.balanceOf() and ctoken.borrow(whatever the call is)
+
         println!("db up to date");
     }
 
@@ -306,7 +314,8 @@ impl Indexer {
         );
         let db_key: DBKey = DBKey::CToken(ctoken_instance.address());
         let db_val: DBVal = DBVal::CToken(new_ctoken);
-        self.database.set(db_key, db_val);
+        let mut database = self.database.lock().unwrap();
+        database.set(&db_key, &db_val);
     }
 
     // make comptroller instance
@@ -340,7 +349,8 @@ impl Indexer {
         );
         let db_key: DBKey = DBKey::Comptroller();
         let db_val: DBVal = DBVal::Comptroller(new_comptroller);
-        self.database.set(db_key, db_val);
+        let mut database = self.database.lock().unwrap();
+        database.set(&db_key, &db_val);
     }
 }
 
@@ -395,5 +405,30 @@ fn handle_past_market_enter_event(
         let mut accounts: HashSet<Address> = HashSet::new();
         accounts.insert(account);
         ctoken_accounts_in.insert(ctoken, accounts);
+    }
+}
+
+fn build_initial_db_ctokens_accounts_in(
+    ctoken_accounts_in: &HashMap<Address, HashSet<Address>>,
+    database: Arc<Mutex<Database>>,
+) {
+    // for each ctoken, get it's CToken entry from the database
+    // set the db Ctoken.accounts_in to the HashSet of addresses
+    // set the updated CToken entry to database
+    let mut database = database.lock().unwrap();
+    for (ctoken, accounts_set) in ctoken_accounts_in {
+        let db_key = DBKey::CToken(*ctoken);
+
+        let mut db_ctoken: CToken = match database.get(&db_key).unwrap() {
+            DBVal::CToken(ctoken) => ctoken,
+            _ => panic!("Requested a ctoken from db, didn't get a ctoken"),
+        };
+
+        // turns a HashSet into a Vec
+        let accounts_vec: Vec<Address> = accounts_set.iter().cloned().collect();
+        db_ctoken.accounts_in = Some(accounts_vec);
+
+        let db_val = DBVal::CToken(db_ctoken);
+        database.set(&db_key, &db_val);
     }
 }

@@ -23,7 +23,7 @@ impl Database {
     }
 
     // TODO: handle different case for key not found vs redis error
-    pub fn get(&mut self, db_key: DBKey) -> Option<DBVal> {
+    pub fn get(&mut self, db_key: &DBKey) -> Option<DBVal> {
         match db_key {
             DBKey::Comptroller() => {
                 let res: RedisResult<String> = self.connection.get("comptroller");
@@ -39,7 +39,7 @@ impl Database {
             DBKey::CToken(ctoken_address) => {
                 let res: RedisResult<String> = self
                     .connection
-                    .hget("ctokens", serde_json::to_string(&ctoken_address).unwrap());
+                    .hget("ctokens", serde_json::to_string(ctoken_address).unwrap());
                 match res {
                     Ok(ctoken_serialized) => {
                         let ctoken_deserialized: CToken =
@@ -52,7 +52,7 @@ impl Database {
             DBKey::Account(account_address) => {
                 let res: RedisResult<String> = self
                     .connection
-                    .hget("accounts", serde_json::to_string(&account_address).unwrap());
+                    .hget("accounts", serde_json::to_string(account_address).unwrap());
                 match res {
                     Ok(account_ctokens_serialized) => {
                         let account_ctokens_deserialized: Account =
@@ -65,10 +65,10 @@ impl Database {
         }
     }
 
-    pub fn set(&mut self, db_key: DBKey, db_val: DBVal) {
+    pub fn set(&mut self, db_key: &DBKey, db_val: &DBVal) {
         match db_val {
             DBVal::Comptroller(comptroller) => {
-                let comptroller_serialized = serde_json::to_string(&comptroller).unwrap();
+                let comptroller_serialized = serde_json::to_string(comptroller).unwrap();
 
                 let res: RedisResult<()> =
                     self.connection.set("comptroller", comptroller_serialized);
@@ -78,11 +78,11 @@ impl Database {
                 }
             }
             DBVal::CToken(ctoken) => {
-                let ctoken_serialized = serde_json::to_string(&ctoken).unwrap();
+                let ctoken_serialized = serde_json::to_string(ctoken).unwrap();
                 let ctoken_address_serialized: String;
 
                 if let DBKey::CToken(ctoken_address) = db_key {
-                    ctoken_address_serialized = serde_json::to_string(&ctoken_address).unwrap();
+                    ctoken_address_serialized = serde_json::to_string(ctoken_address).unwrap();
                 } else {
                     panic!("Error setting ctoken: wrong key type");
                 }
@@ -96,11 +96,11 @@ impl Database {
                 }
             }
             DBVal::Account(account_ctokens) => {
-                let account_ctokens_serialized = serde_json::to_string(&account_ctokens).unwrap();
+                let account_ctokens_serialized = serde_json::to_string(account_ctokens).unwrap();
                 let account_address_serialized: String;
 
                 if let DBKey::Account(account_address) = db_key {
-                    account_address_serialized = serde_json::to_string(&account_address).unwrap();
+                    account_address_serialized = serde_json::to_string(account_address).unwrap();
                 } else {
                     panic!("Error setting account_ctokens: wrong key type");
                 }
