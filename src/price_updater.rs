@@ -61,12 +61,11 @@ impl PriceUpdater {
         ctoken: &CToken,
     ) {
         let account_key = DBKey::Account(account_address);
-        // TODO: handle none
-        let mut account_ctokens = self
-            .database
-            .get(&account_key)
-            .unwrap()
-            .account_to_hashmap();
+
+        let mut account_ctokens = match self.database.get(&account_key) {
+            Some(mut account_ctokens) => account_ctokens.account_to_hashmap(),
+            None => return,
+        };
 
         let mut account_liquidity: f64 = 0.0;
         let mut liquidity_is_accurate: bool = true;

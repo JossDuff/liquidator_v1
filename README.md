@@ -29,6 +29,8 @@ TODO: put shit in env
 TODO: support dynamic ctoken lists.  currently just getting all ctokens using comp.allMarkets, so this bot is unaware of new markets added
 TODO: make comptroller creation block a dynamic binary search
 TODO: allow for either Https or websocket connections
+TODO: big refactor from storing f64 to storing U256.  converting to f64 results in loss of precision
+TODO: we can simplify a lot of things if we run the price updater AFTER we're done getting historical data
 
 ## Phase 2: Correct
 - proper error handling

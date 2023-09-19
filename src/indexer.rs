@@ -3,7 +3,9 @@ use crate::bindings::{
     c_erc20_bindings::CErc20, comptroller_bindings as generated, erc20_bindings::Erc20,
 };
 use crate::database::Database;
+use crate::types::account_ctoken_amount::AccountCTokenAmount;
 use crate::types::{
+    account::Account,
     comptroller::Comptroller,
     ctoken::CToken,
     db_types::{DBKey, DBVal},
@@ -25,10 +27,10 @@ const STEP_SIZE: u64 = 500_000;
 
 pub struct Indexer {
     client: Arc<Provider<Http>>,
-    database: Arc<Mutex<Database>>,
     comptroller_address: Address,
     comptroller_creation_block: u64,
     comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
+    ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
 }
 
 impl Indexer {
@@ -37,27 +39,30 @@ impl Indexer {
         comptroller_address: Address,
         comptroller_creation_block: u64,
     ) -> Indexer {
-        let database: Arc<Mutex<Database>> = Arc::new(Mutex::new(Database::new().unwrap()));
         let comptroller_instance: Arc<generated::Comptroller<Provider<Http>>> = Arc::new(
             generated::Comptroller::new(comptroller_address, ethers_client.clone()),
         );
+        // TODO: is it bad practice for this to be un-initialized?
+        let ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>> =
+            Arc::new(HashMap::new());
 
         Indexer {
             client: ethers_client,
-            database,
             comptroller_address,
             comptroller_creation_block,
             comptroller_instance,
+            ctoken_instances,
         }
     }
 
     pub async fn run(&mut self) {
         println!("Indexer::run()");
 
+        let mut database = Database::new().unwrap();
         let mut addresses_to_watch: Vec<Address> = Vec::new();
         addresses_to_watch.push(self.comptroller_address);
 
-        self.build_initial_db_comptroller().await;
+        self.build_initial_db_comptroller(&mut database).await;
 
         let all_ctoken_addresses: Vec<Address> = self
             .comptroller_instance
@@ -70,14 +75,18 @@ impl Indexer {
             all_ctoken_addresses.len()
         );
 
+        // TODO: maybe move this inside new()?
         let mut ctoken_instances: HashMap<Address, CErc20<Provider<Http>>> = HashMap::new();
         for ctoken_address in all_ctoken_addresses {
             addresses_to_watch.push(self.comptroller_address);
             let ctoken_instance: CErc20<Provider<Http>> =
                 CErc20::new(ctoken_address, self.client.clone());
-            self.build_initial_db_ctoken(&ctoken_instance).await;
+            self.build_initial_db_ctoken(&ctoken_instance, &mut database)
+                .await;
             ctoken_instances.insert(ctoken_address, ctoken_instance);
         }
+
+        self.ctoken_instances = Arc::new(ctoken_instances);
 
         let bot_start_block = self.client.get_block_number().await.unwrap().as_u64();
 
@@ -102,14 +111,15 @@ impl Indexer {
         let client = self.client.clone();
         let comptroller_instance = self.comptroller_instance.clone();
         let reading_start_block: u64 = self.comptroller_creation_block;
-        let database: Arc<Mutex<Database>> = self.database.clone();
+        let ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>> =
+            self.ctoken_instances.clone();
         let read_past_events = tokio::spawn(async move {
             Self::read_past_events(
                 client,
                 comptroller_instance,
+                ctoken_instances,
                 reading_start_block,
                 bot_start_block,
-                database,
             )
             .await;
         });
@@ -132,14 +142,16 @@ impl Indexer {
     pub async fn read_past_events(
         client: Arc<Provider<Http>>,
         comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
+        ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
         start_block: u64,
         end_block: u64,
-        database: Arc<Mutex<Database>>,
     ) {
         let comptroller_events = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
         ];
+
+        let mut database = Database::new().unwrap();
 
         // address ctoken to set of accounts in
         let mut ctoken_accounts_in: HashMap<Address, HashSet<Address>> = HashMap::new();
@@ -169,7 +181,6 @@ impl Indexer {
                 results.push(logs);
             }
 
-            println!("scanning query for errors...");
             let mut retry_query = false;
             for result in results.iter() {
                 if let Err(err) = result {
@@ -209,8 +220,6 @@ impl Indexer {
 
             // Sort by block number
             logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
-
-            println!("handling logs...");
 
             for log in logs {
                 let raw_log = RawLog::from(log.clone());
@@ -252,15 +261,15 @@ impl Indexer {
         println!("accounts found: {}", account_ctokens_in.len());
         println!("ctokens found: {}", ctoken_accounts_in.len());
 
-        // TODO: a bunch of contract calls to fill out the last info
+        // fill in the rest of the db info
+        build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, &mut database);
 
-        // update CToken.accounts_in for each ctoken
-        build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, database);
-
-        // also get comptroller's closefactor, collateral factor, and liquidation incentive
-
-        // at this point we should have all accounts in ctokens, we just need to build AccountCTokenAmounts
-        // with some calls to ctoken.balanceOf() and ctoken.borrow(whatever the call is)
+        build_initial_db_account_ctoken_amounts(
+            &account_ctokens_in,
+            &mut database,
+            ctoken_instances.clone(),
+        )
+        .await;
 
         println!("db up to date");
     }
@@ -268,7 +277,11 @@ impl Indexer {
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
     // also comptroller.markets(ctoken) for collateral factor
     // create ctoken in DB
-    async fn build_initial_db_ctoken(&mut self, ctoken_instance: &CErc20<Provider<Http>>) {
+    async fn build_initial_db_ctoken(
+        &mut self,
+        ctoken_instance: &CErc20<Provider<Http>>,
+        database: &mut Database,
+    ) {
         // TODO: put these in multicalls
         // TODO: error on ceth calls.
         let underlying_address: Address = match ctoken_instance.underlying().call().await {
@@ -314,7 +327,6 @@ impl Indexer {
         );
         let db_key: DBKey = DBKey::CToken(ctoken_instance.address());
         let db_val: DBVal = DBVal::CToken(new_ctoken);
-        let mut database = self.database.lock().unwrap();
         database.set(&db_key, &db_val);
     }
 
@@ -322,7 +334,7 @@ impl Indexer {
     // initial comptroller calls:
     // closeFactor
     // liquidationIncentive
-    async fn build_initial_db_comptroller(&mut self) {
+    async fn build_initial_db_comptroller(&mut self, database: &mut Database) {
         let close_factor_mantissa: U256 = self
             .comptroller_instance
             .close_factor_mantissa()
@@ -349,7 +361,6 @@ impl Indexer {
         );
         let db_key: DBKey = DBKey::Comptroller();
         let db_val: DBVal = DBVal::Comptroller(new_comptroller);
-        let mut database = self.database.lock().unwrap();
         database.set(&db_key, &db_val);
     }
 }
@@ -408,14 +419,53 @@ fn handle_past_market_enter_event(
     }
 }
 
+async fn build_initial_db_account_ctoken_amounts(
+    account_ctokens_in: &HashMap<Address, HashSet<Address>>,
+    database: &mut Database,
+    ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
+) {
+    for (account_address, ctokens) in account_ctokens_in {
+        let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
+        for ctoken_address in ctokens {
+            let ctoken_instance = ctoken_instances.get(ctoken_address).unwrap();
+
+            let borrowed_amount = ctoken_instance
+                .borrow_balance_stored(*account_address)
+                .call()
+                .await
+                .unwrap();
+            let borrowed_amount: f64 = borrowed_amount.as_u64() as f64;
+
+            let collateral_amount = ctoken_instance
+                .balance_of(*account_address)
+                .call()
+                .await
+                .unwrap();
+            let collateral_amount: f64 = collateral_amount.as_u64() as f64;
+
+            let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
+                Some(borrowed_amount),
+                Some(collateral_amount),
+                None,
+                None,
+            );
+
+            account.insert(*ctoken_address, account_ctoken_amount);
+        }
+        let db_key = DBKey::Account(*account_address);
+        let db_val = DBVal::Account(Account(account));
+        database.set(&db_key, &db_val);
+    }
+    println!("DB accounts are all filled in !!!");
+}
+
 fn build_initial_db_ctokens_accounts_in(
     ctoken_accounts_in: &HashMap<Address, HashSet<Address>>,
-    database: Arc<Mutex<Database>>,
+    database: &mut Database,
 ) {
     // for each ctoken, get it's CToken entry from the database
     // set the db Ctoken.accounts_in to the HashSet of addresses
     // set the updated CToken entry to database
-    let mut database = database.lock().unwrap();
     for (ctoken, accounts_set) in ctoken_accounts_in {
         let db_key = DBKey::CToken(*ctoken);
 
@@ -431,4 +481,5 @@ fn build_initial_db_ctokens_accounts_in(
         let db_val = DBVal::CToken(db_ctoken);
         database.set(&db_key, &db_val);
     }
+    println!("DB ctokens all have accounts_in !!!!");
 }
