@@ -9,7 +9,8 @@ use crate::types::{
     db_types::{DBKey, DBVal},
 };
 use ethers::{
-    abi::Token,
+    abi::RawLog,
+    contract::EthLogDecode,
     prelude::{ContractError, ProviderError},
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, Log, U256},
@@ -202,7 +203,28 @@ impl Indexer {
                     // }
                     println!("Got {} events", logs_len);
                     for log in logs {
+                        let raw_log = RawLog::from(log.clone());
+                        let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
+                        match decoded {
+                            ComptrollerEvents::MarketEnteredFilter(_) => {
+                                // println!("market entered!");
+                            }
+                            ComptrollerEvents::MarketExitedFilter(_) => {
+                                // println!("market exited!");
+                            }
+                            ComptrollerEvents::NewCollateralFactorFilter(_) => {
+                                println!("new collateral factor!");
+                            }
+                            ComptrollerEvents::NewCloseFactorFilter(_) => {
+                                println!("new close factor!");
+                            }
+                            ComptrollerEvents::NewLiquidationIncentiveFilter(_) => {
+                                println!("new liquidation incentive!");
+                            }
+                            _ => panic!("Somehow not an event we want..."),
+                        }
                         //let account_addr: Address = Address::from(log.account);
+                        // println!("log: {:?}", *log);
                     }
                 } else {
                     panic!("Didn't catch an error in logs");
