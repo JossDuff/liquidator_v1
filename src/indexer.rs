@@ -195,68 +195,69 @@ impl Indexer {
                 continue;
             }
 
+            // turns Vec<Result<Vec<Log>, ProviderError>>
+            // into Vec<Log>
+            let mut logs: Vec<Log> = results
+                .into_iter()
+                .filter_map(|result| result.ok()) // Filter out errors and unwrap results
+                .flatten() // Flatten the nested Vec<Vec<Log>> into a single Vec<Log>
+                .collect(); // Collect the results into a single Vec<Log>
+
+            // Sort by block number
+            logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
+
             println!("handling logs...");
             // sort into order.  This takes some time but it's a sacrifice
             // I have to make because of my shitty code structure
             // let mut largest_log: u64 = 0;
-            for result in results.iter() {
-                if let Ok(logs) = result {
-                    for log in logs {
-                        let raw_log = RawLog::from(log.clone());
-                        let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
-                        match decoded {
-                            ComptrollerEvents::MarketEnteredFilter(market_entered) => {
-                                let account: Address = market_entered.account;
-                                let ctoken: Address = market_entered.c_token;
 
-                                // add_ctoken_to_account();
-                                if let Some(ctokens) = account_ctokens_in.get_mut(&account) {
-                                    ctokens.insert(ctoken);
-                                } else {
-                                    let mut ctokens: HashSet<Address> = HashSet::new();
-                                    ctokens.insert(ctoken);
-                                    account_ctokens_in.insert(account, ctokens);
-                                }
+            for log in logs {
+                let raw_log = RawLog::from(log.clone());
+                let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
+                match decoded {
+                    ComptrollerEvents::MarketEnteredFilter(market_entered) => {
+                        let account: Address = market_entered.account;
+                        let ctoken: Address = market_entered.c_token;
 
-                                // add_account_to_ctoken();
-                                if let Some(accounts) = ctoken_accounts_in.get_mut(&ctoken) {
-                                    accounts.insert(account);
-                                } else {
-                                    let mut accounts: HashSet<Address> = HashSet::new();
-                                    accounts.insert(account);
-                                    ctoken_accounts_in.insert(ctoken, accounts);
-                                }
-                            }
-                            ComptrollerEvents::MarketExitedFilter(market_exited) => {
-                                let account: Address = market_exited.account;
-                                let ctoken: Address = market_exited.c_token;
+                        // add_ctoken_to_account();
+                        if let Some(ctokens) = account_ctokens_in.get_mut(&account) {
+                            ctokens.insert(ctoken);
+                        } else {
+                            let mut ctokens: HashSet<Address> = HashSet::new();
+                            ctokens.insert(ctoken);
+                            account_ctokens_in.insert(account, ctokens);
+                        }
 
-                                // remove ctoken from account
-                                // delete account entirely if it's now empty
-                                let ctokens = account_ctokens_in.get_mut(&account);
-                                match ctokens {
-                                    None => panic!("account {} hasn't been found yet", account),
-                                    Some(ctokens) => {
-                                        if !ctokens.remove(&ctoken) {
-                                            panic!("removed a ctoken that wasn't caught in market enter");
-                                        }
-                                        if ctokens.is_empty() {
-                                            account_ctokens_in.remove(&account);
-                                        }
-                                    }
-                                }
-
-                                // remove account from ctoken
-                                let accounts = ctoken_accounts_in.get_mut(&ctoken).unwrap();
-                                if !accounts.remove(&account) {
-                                    panic!("removed an account that wasn't caught in market enter")
-                                }
-                            }
-                            _ => panic!("Somehow not an event we want..."),
+                        // add_account_to_ctoken();
+                        if let Some(accounts) = ctoken_accounts_in.get_mut(&ctoken) {
+                            accounts.insert(account);
+                        } else {
+                            let mut accounts: HashSet<Address> = HashSet::new();
+                            accounts.insert(account);
+                            ctoken_accounts_in.insert(ctoken, accounts);
                         }
                     }
-                } else {
-                    panic!("Didn't catch an error in logs");
+                    ComptrollerEvents::MarketExitedFilter(market_exited) => {
+                        let account: Address = market_exited.account;
+                        let ctoken: Address = market_exited.c_token;
+
+                        // remove ctoken from account
+                        // delete account entirely if it's now empty
+                        let ctokens = account_ctokens_in.get_mut(&account).unwrap();
+                        if !ctokens.remove(&ctoken) {
+                            panic!("removed a ctoken that wasn't caught in market enter");
+                        }
+                        if ctokens.is_empty() {
+                            account_ctokens_in.remove(&account);
+                        }
+
+                        // remove account from ctoken
+                        let accounts = ctoken_accounts_in.get_mut(&ctoken).unwrap();
+                        if !accounts.remove(&account) {
+                            panic!("removed an account that wasn't caught in market enter")
+                        }
+                    }
+                    _ => panic!("Somehow not an event we want..."),
                 }
             }
 
