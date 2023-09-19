@@ -135,10 +135,9 @@ impl Indexer {
             "NewCloseFactor(uint256,uint256)",
             "NewLiquidationIncentive(uint256,uint256)",
         ];
-        let just_market_entered = vec!["MarketEntered(address,address)"];
         let mut step_size = STEP_SIZE;
         let mut i = start_block;
-        let mut temp_total_events: u64 = 0;
+        // let mut temp_total_events: u64 = 0;
         let mut last_run_failure: bool = false;
         while i <= end_block {
             print_progress_percent(i, start_block, end_block);
@@ -154,7 +153,6 @@ impl Indexer {
                 })
                 .collect();
 
-            let ctoken_filters: Vec<Filter> = println!("querying...");
             let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
             for filter in comptroller_filters {
                 let logs = client.get_logs(&filter).await;
@@ -172,9 +170,9 @@ impl Indexer {
                         let old_step_size = step_size;
                         // and retry the query at smaller size
                         step_size = (step_size as f64 * 0.5) as u64;
+                        i -= old_step_size;
                         i += step_size;
                         retry_query = true;
-                        last_run_failure = true;
                         println!(
                             "too many results. previous range: {} blocks, new range: {} blocks",
                             old_step_size, step_size
@@ -187,7 +185,9 @@ impl Indexer {
                 }
             }
 
+            // there was a failed query.  Gotta re-try
             if retry_query {
+                last_run_failure = true;
                 continue;
             }
 
@@ -196,14 +196,10 @@ impl Indexer {
             for result in results.iter() {
                 if let Ok(logs) = result {
                     let logs_len: u64 = logs.len() as u64;
-                    temp_total_events += logs_len;
-                    if logs_len > largest_log {
-                        largest_log = logs_len;
-                    }
-                    if last_run_failure {
-                        step_size *= 2;
-                    }
-                    last_run_failure = false;
+                    // temp_total_events += logs_len;
+                    // if logs_len > largest_log {
+                    //     largest_log = logs_len;
+                    // }
                     println!("Got {} events", logs_len);
                     for log in logs {
                         //let account_addr: Address = Address::from(log.account);
@@ -212,22 +208,31 @@ impl Indexer {
                     panic!("Didn't catch an error in logs");
                 }
             }
-            println!("step_size: {}", step_size);
+            //println!("step_size: {}", step_size);
 
             if i == end_block {
                 break;
             }
+            if last_run_failure {
+                step_size *= 2;
+            }
+            last_run_failure = false;
             let old_i = i;
             if i + step_size > end_block {
                 step_size = end_block - i;
             }
             i += step_size;
-            println!(
-                "i: {}, step_size: {}, end_block: {}",
-                old_i, step_size, end_block
-            );
+            // println!(
+            //     "i: {}, step_size: {}, end_block: {}",
+            //     old_i, step_size, end_block
+            // );
         }
-        println!("got all events: {}", temp_total_events);
+        // at this point we should have all accounts in ctokens, we just need to build AccountCTokenAmounts
+        // with some calls to ctoken.balanceOf() and ctoken.borrow(whatever the call is)
+        // and also update CToken.accounts_in
+
+        // println!("got all events: {}", temp_total_events);
+        println!("got all events");
     }
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
