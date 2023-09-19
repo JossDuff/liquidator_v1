@@ -15,7 +15,10 @@ use ethers::{
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, Log, U256},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 500_000;
@@ -132,10 +135,12 @@ impl Indexer {
         let comptroller_events = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
-            "NewCollateralFactor(address,uint256,uin256)",
-            "NewCloseFactor(uint256,uint256)",
-            "NewLiquidationIncentive(uint256,uint256)",
         ];
+
+        // address ctoken to set of accounts in
+        let mut ctoken_accounts_in: HashMap<Address, HashSet<Address>> = HashMap::new();
+        // address account to set of ctokens in
+        let mut account_ctokens_in: HashMap<Address, HashSet<Address>> = HashMap::new();
         let mut step_size = STEP_SIZE;
         let mut i = start_block;
         // let mut temp_total_events: u64 = 0;
@@ -179,9 +184,7 @@ impl Indexer {
                             old_step_size, step_size
                         );
                     } else {
-                        i += step_size;
-                        // TODO: figure out what invalid data is
-                        println!("Error: {}", err);
+                        panic!("historical event query error: {}", err);
                     }
                 }
             }
@@ -193,44 +196,69 @@ impl Indexer {
             }
 
             println!("handling logs...");
-            let mut largest_log: u64 = 0;
+            // sort into order.  This takes some time but it's a sacrifice
+            // I have to make because of my shitty code structure
+            // let mut largest_log: u64 = 0;
             for result in results.iter() {
                 if let Ok(logs) = result {
-                    let logs_len: u64 = logs.len() as u64;
-                    // temp_total_events += logs_len;
-                    // if logs_len > largest_log {
-                    //     largest_log = logs_len;
-                    // }
-                    println!("Got {} events", logs_len);
                     for log in logs {
                         let raw_log = RawLog::from(log.clone());
                         let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
                         match decoded {
-                            ComptrollerEvents::MarketEnteredFilter(_) => {
-                                // println!("market entered!");
+                            ComptrollerEvents::MarketEnteredFilter(market_entered) => {
+                                let account: Address = market_entered.account;
+                                let ctoken: Address = market_entered.c_token;
+
+                                // add_ctoken_to_account();
+                                if let Some(ctokens) = account_ctokens_in.get_mut(&account) {
+                                    ctokens.insert(ctoken);
+                                } else {
+                                    let mut ctokens: HashSet<Address> = HashSet::new();
+                                    ctokens.insert(ctoken);
+                                    account_ctokens_in.insert(account, ctokens);
+                                }
+
+                                // add_account_to_ctoken();
+                                if let Some(accounts) = ctoken_accounts_in.get_mut(&ctoken) {
+                                    accounts.insert(account);
+                                } else {
+                                    let mut accounts: HashSet<Address> = HashSet::new();
+                                    accounts.insert(account);
+                                    ctoken_accounts_in.insert(ctoken, accounts);
+                                }
                             }
-                            ComptrollerEvents::MarketExitedFilter(_) => {
-                                // println!("market exited!");
-                            }
-                            ComptrollerEvents::NewCollateralFactorFilter(_) => {
-                                println!("new collateral factor!");
-                            }
-                            ComptrollerEvents::NewCloseFactorFilter(_) => {
-                                println!("new close factor!");
-                            }
-                            ComptrollerEvents::NewLiquidationIncentiveFilter(_) => {
-                                println!("new liquidation incentive!");
+                            ComptrollerEvents::MarketExitedFilter(market_exited) => {
+                                let account: Address = market_exited.account;
+                                let ctoken: Address = market_exited.c_token;
+
+                                // remove ctoken from account
+                                // delete account entirely if it's now empty
+                                let ctokens = account_ctokens_in.get_mut(&account);
+                                match ctokens {
+                                    None => panic!("account {} hasn't been found yet", account),
+                                    Some(ctokens) => {
+                                        if !ctokens.remove(&ctoken) {
+                                            panic!("removed a ctoken that wasn't caught in market enter");
+                                        }
+                                        if ctokens.is_empty() {
+                                            account_ctokens_in.remove(&account);
+                                        }
+                                    }
+                                }
+
+                                // remove account from ctoken
+                                let accounts = ctoken_accounts_in.get_mut(&ctoken).unwrap();
+                                if !accounts.remove(&account) {
+                                    panic!("removed an account that wasn't caught in market enter")
+                                }
                             }
                             _ => panic!("Somehow not an event we want..."),
                         }
-                        //let account_addr: Address = Address::from(log.account);
-                        // println!("log: {:?}", *log);
                     }
                 } else {
                     panic!("Didn't catch an error in logs");
                 }
             }
-            //println!("step_size: {}", step_size);
 
             if i == end_block {
                 break;
@@ -239,22 +267,22 @@ impl Indexer {
                 step_size *= 2;
             }
             last_run_failure = false;
-            let old_i = i;
             if i + step_size > end_block {
                 step_size = end_block - i;
             }
             i += step_size;
-            // println!(
-            //     "i: {}, step_size: {}, end_block: {}",
-            //     old_i, step_size, end_block
-            // );
         }
+        println!("got all events");
+        println!("accounts found: {}", account_ctokens_in.len());
+        println!("ctokens found: {}", ctoken_accounts_in.len());
+
+        // TODO: a bunch of contract calls to fill out the last info
         // at this point we should have all accounts in ctokens, we just need to build AccountCTokenAmounts
         // with some calls to ctoken.balanceOf() and ctoken.borrow(whatever the call is)
         // and also update CToken.accounts_in
 
-        // println!("got all events: {}", temp_total_events);
-        println!("got all events");
+        // also get comptroller's closefactor, collateral factor, and liquidation incentive
+        println!("db up to date");
     }
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored
