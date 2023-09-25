@@ -295,15 +295,6 @@ impl Indexer {
             Erc20::new(underlying_address, self.client.clone());
         let underlying_decimals = underlying_instance.decimals().call().await.unwrap();
         let exchange_rate_mantissa = ctoken_instance.exchange_rate_stored().call().await.unwrap();
-        // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
-        // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
-        // / 10u64.pow(10u32 + underlying_decimals) as f64
-        // let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
-        // let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
-        // let exchange_rate: f64 = 1.0
-        //     + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
-        //         .expect("exchange rate rekt me")
-        //         .as_u64() as f64;
 
         let (_, collateral_factor_mantissa, _) = self
             .comptroller_instance

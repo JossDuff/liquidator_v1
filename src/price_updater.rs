@@ -8,7 +8,7 @@ use crate::types::{
 };
 use ethers::{
     providers::{Http, Provider},
-    types::Address,
+    types::{Address, U256},
 };
 use std::{collections::HashMap, sync::Arc};
 use tokio::time::Duration;
@@ -67,7 +67,7 @@ impl PriceUpdater {
             None => return,
         };
 
-        let mut account_liquidity: f64 = 0.0;
+        let mut account_liquidity: U256 = U256::from(0);
         let mut liquidity_is_accurate: bool = true;
         let mut liquidate_call_data: LiquidateCallData = LiquidateCallData::new(account_address);
 
@@ -75,8 +75,8 @@ impl PriceUpdater {
         // things from 0 to 1 for now.
         let mut updated_account_ctoken_amount: Option<AccountCTokenAmount> = None;
         for (account_ctoken_address, account_ctoken_amount) in &mut account_ctokens {
-            let collateral_usd: f64;
-            let borrowed_usd: f64;
+            let collateral_usd: U256;
+            let borrowed_usd: U256;
             // if this is the ctoken that we just got an updated price for
             if *account_ctoken_address == ctoken.address {
                 if !account_ctoken_amount.has_amounts() {
@@ -84,18 +84,17 @@ impl PriceUpdater {
                     continue;
                 } // from this scope on, account_ctoken_amount unwraps on amount fields are safe
 
-                // calculate new liquidity for this accounts ctoken position with the new price
                 let collateral_amount = account_ctoken_amount.collateral_amount.unwrap();
                 let borrowed_amount = account_ctoken_amount.borrowed_amount.unwrap();
 
-                // TODO: will have to do additional calculations on exchanage rate
-                // Here's the liquidity equation that everything hinges on
-                collateral_usd = ctoken.collateral_factor
-                    * ctoken.exchange_rate
-                    * underlying_price
-                    * collateral_amount;
-
-                borrowed_usd = underlying_price * borrowed_amount;
+                // calculate new liquidity for this accounts ctoken position with the new price
+                (borrowed_usd, collateral_usd) = infernal_math(
+                    collateral_amount,
+                    borrowed_amount,
+                    ctoken.collateral_factor_mantissa,
+                    ctoken.exchange_rate_mantissa,
+                    underlying_price,
+                );
 
                 // update the collateral_usd and borrowed_usd to later save back to database
                 updated_account_ctoken_amount = Some(AccountCTokenAmount::new(
@@ -196,4 +195,46 @@ impl PriceUpdater {
             }
         }
     }
+}
+
+// TODO: fucking math
+fn infernal_math(
+    collateral_amount: U256,
+    borrowed_amount: U256,
+    collateral_factor_mantissa: U256,
+    exchange_rate_mantissa: U256,
+    underlying_price: f64,
+) -> (U256, U256) {
+    // TODO: will have to do additional calculations on exchanage rate
+    // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
+    // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
+    // / 10u64.pow(10u32 + underlying_decimals) as f64
+    // let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
+    // let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
+    // let exchange_rate: f64 = 1.0
+    //     + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
+    //         .expect("exchange rate rekt me")
+    //         .as_u64() as f64;
+
+    // ex: cYFI exchange rate
+    // 204 070 541 968 105 063 843 554 538
+    // (scale by 1e18)
+
+    // ex: cWBTC exchange rate
+    // 0.020 204 487 907 213 122 / 1*10^(10+8)
+    // (scale by 1e18)
+    // exchange rate * price of underlying = price of ctoken
+
+    // Here's the liquidity equation that everything hinges on
+    let base = U256::from(10).pow(18.into());
+
+    let collateral_factor = ctoken.collateral_factor_mantissa
+        * ctoken.exchange_rate_mantissa
+        * underlying_price
+        * collateral_amount;
+
+    borrowed_usd = underlying_price * borrowed_amount;
+    // collateral usd
+
+    (U256::from(0), U256::from(0))
 }
