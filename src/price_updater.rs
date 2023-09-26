@@ -89,6 +89,7 @@ impl PriceUpdater {
 
                 // calculate new liquidity for this accounts ctoken position with the new price
                 (borrowed_usd, collateral_usd) = infernal_math(
+                    ctoken.underlying_decimals,
                     collateral_amount,
                     borrowed_amount,
                     ctoken.collateral_factor_mantissa,
@@ -124,7 +125,7 @@ impl PriceUpdater {
             );
         }
 
-        if liquidity_is_accurate && account_liquidity < 0.0 {
+        if liquidity_is_accurate && account_liquidity < U256::from(0) {
             // TODO:
             // use liquidate_call_data and ethers_client to make the call
             println!("LIQUIDATE:");
@@ -199,42 +200,85 @@ impl PriceUpdater {
 
 // TODO: fucking math
 fn infernal_math(
+    underlying_decimals: u8,
     collateral_amount: U256,
     borrowed_amount: U256,
     collateral_factor_mantissa: U256,
     exchange_rate_mantissa: U256,
     underlying_price: f64,
 ) -> (U256, U256) {
-    // TODO: will have to do additional calculations on exchanage rate
-    // TODO: this conversion is just an educated guess, couldn't confirm it in compound code
-    // exchange_rate = 1 + ( exchange_rate_mantissa / (1*10^(10+underlying_decimals)) )
-    // / 10u64.pow(10u32 + underlying_decimals) as f64
-    // let pow: U256 = U256::from(underlying_decimals) + U256::from(10);
-    // let exchange_rate_denominator: U256 = U256::from(10).pow(pow);
-    // let exchange_rate: f64 = 1.0
-    //     + (exchange_rate_mantissa.checked_div(exchange_rate_denominator))
-    //         .expect("exchange rate rekt me")
-    //         .as_u64() as f64;
+    // collateral_factor_mantissa is scaled by 1e18
+    let collateral_factor_precision: u8 = 18;
+    let collateral_factor_scale_factor = U256::from(10).pow(collateral_factor_precision.into());
+    // exchange_rate_mantissa is scaled by 1e(10+underlying_decimals)
+    let exchange_rate_precision: u8 = 10 + underlying_decimals;
+    let exchange_rate_scale_factor = U256::from(10).pow(exchange_rate_precision.into());
 
-    // ex: cYFI exchange rate
-    // 204 070 541 968 105 063 843 554 538
-    // (scale by 1e18)
+    // so we need to scale everything by a scale factor and divide out the scale factor at the end
+    // exchange_rate_precision is larger
+    if collateral_factor_precision < exchange_rate_precision {
+        let scale_factor = U256::from(10).pow(exchange_rate_precision.into());
+        let scale_difference: u8 = exchange_rate_precision - collateral_factor_precision;
+        let scaled_collateral_factor_mantissa =
+            collateral_factor_mantissa * U256::from(10).pow(scale_difference.into());
 
-    // ex: cWBTC exchange rate
-    // 0.020 204 487 907 213 122 / 1*10^(10+8)
-    // (scale by 1e18)
-    // exchange rate * price of underlying = price of ctoken
+        let scaled_underlying_price: U256 = U256::from(
+            (underlying_price * 10u64.pow(exchange_rate_precision.into()) as f64) as u64,
+        );
+        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
+        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
 
-    // Here's the liquidity equation that everything hinges on
-    let base = U256::from(10).pow(18.into());
+        let scaled_collateral_usd: U256 = scaled_collateral_factor_mantissa
+            * exchange_rate_mantissa
+            * scaled_underlying_price
+            * scaled_collateral_amount;
 
-    let collateral_factor = ctoken.collateral_factor_mantissa
-        * ctoken.exchange_rate_mantissa
-        * underlying_price
-        * collateral_amount;
+        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
 
-    borrowed_usd = underlying_price * borrowed_amount;
-    // collateral usd
+        let collateral_usd = scaled_collateral_usd / scale_factor;
+        let borrowed_usd = scaled_borrowed_usd / scale_factor;
+        return (borrowed_usd, collateral_usd);
+    } else if collateral_factor_precision > exchange_rate_precision {
+        let scale_factor = U256::from(10).pow(collateral_factor_precision.into());
+        let scale_difference: u8 = collateral_factor_precision - exchange_rate_precision;
 
-    (U256::from(0), U256::from(0))
+        let scaled_exchange_rate_mantissa =
+            exchange_rate_mantissa * U256::from(10).pow(scale_difference.into());
+
+        let scaled_underlying_price: U256 = U256::from(
+            (underlying_price * 10u64.pow(exchange_rate_precision.into()) as f64) as u64,
+        );
+        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
+        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
+
+        let scaled_collateral_usd: U256 = collateral_factor_mantissa
+            * scaled_exchange_rate_mantissa
+            * scaled_underlying_price
+            * scaled_collateral_amount;
+
+        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
+
+        let collateral_usd = scaled_collateral_usd / scale_factor;
+        let borrowed_usd = scaled_borrowed_usd / scale_factor;
+        return (borrowed_usd, collateral_usd);
+    } else {
+        // they are equal and both = 18
+        let scale_factor = U256::from(10).pow(18.into());
+        // TODO: clean up the casting when we can test if it's correct
+        let scaled_underlying_price: U256 =
+            U256::from((underlying_price * 10u64.pow(18) as f64) as u64);
+        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
+        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
+
+        let scaled_collateral_usd: U256 = collateral_factor_mantissa
+            * exchange_rate_mantissa
+            * scaled_underlying_price
+            * scaled_collateral_amount;
+
+        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
+
+        let collateral_usd = scaled_collateral_usd / scale_factor;
+        let borrowed_usd = scaled_borrowed_usd / scale_factor;
+        return (borrowed_usd, collateral_usd);
+    }
 }
