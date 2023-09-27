@@ -97,6 +97,12 @@ impl PriceUpdater {
                     underlying_price,
                 );
 
+                // TODO: possibly overwrites new AccountCTokenAmount data from indexer if indexer
+                // finds a new borrowed_amount and collateral_amount during the time this function
+                // is calculating liquidity.
+                // could implement a db function that updates only the AccountCTokenAmount
+                // instead of overwriting with potentially old borrowed_amount and collateral_amount
+
                 // update the collateral_usd and borrowed_usd to later save back to database
                 updated_account_ctoken_amount = Some(AccountCTokenAmount::new(
                     Some(borrowed_amount),
@@ -199,6 +205,8 @@ impl PriceUpdater {
 }
 
 // TODO: always could verify this.  Especially exchange rate seems sketchy
+// It's really not that infernal.  It's just annoying casting and making sure we
+// don't lose any accuracy during liquidity calculations
 fn infernal_math(
     underlying_decimals: u8,
     collateral_amount: U256,
