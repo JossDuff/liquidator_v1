@@ -198,7 +198,7 @@ impl PriceUpdater {
     }
 }
 
-// TODO: fucking math
+// TODO: always could verify this.  Especially exchange rate seems sketchy
 fn infernal_math(
     underlying_decimals: u8,
     collateral_amount: U256,
@@ -207,78 +207,57 @@ fn infernal_math(
     exchange_rate_mantissa: U256,
     underlying_price: f64,
 ) -> (U256, U256) {
+    // so we need to scale everything by a scale factor and divide out the scale factor at the end.
+    // the two mantissas might be pre-scaled by different amounts, so we have to get them into the same
+    // scale and then multiple everything by that scale
+
     // collateral_factor_mantissa is scaled by 1e18
     let collateral_factor_precision: u8 = 18;
-    let collateral_factor_scale_factor = U256::from(10).pow(collateral_factor_precision.into());
     // exchange_rate_mantissa is scaled by 1e(10+underlying_decimals)
     let exchange_rate_precision: u8 = 10 + underlying_decimals;
-    let exchange_rate_scale_factor = U256::from(10).pow(exchange_rate_precision.into());
 
-    // so we need to scale everything by a scale factor and divide out the scale factor at the end
-    // exchange_rate_precision is larger
+    let precision: u8;
+    let scaled_exchange_rate_mantissa: U256;
+    let scaled_collateral_factor_mantissa: U256;
+    // decide precision and set proper scaling for exchange rate and collateral factor mantissas
     if collateral_factor_precision < exchange_rate_precision {
-        let scale_factor = U256::from(10).pow(exchange_rate_precision.into());
-        let scale_difference: u8 = exchange_rate_precision - collateral_factor_precision;
-        let scaled_collateral_factor_mantissa =
-            collateral_factor_mantissa * U256::from(10).pow(scale_difference.into());
+        precision = exchange_rate_precision;
+        let precision_difference: u8 = exchange_rate_precision - collateral_factor_precision;
 
-        let scaled_underlying_price: U256 = U256::from(
-            (underlying_price * 10u64.pow(exchange_rate_precision.into()) as f64) as u64,
-        );
-        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
-        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
-
-        let scaled_collateral_usd: U256 = scaled_collateral_factor_mantissa
-            * exchange_rate_mantissa
-            * scaled_underlying_price
-            * scaled_collateral_amount;
-
-        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
-
-        let collateral_usd = scaled_collateral_usd / scale_factor;
-        let borrowed_usd = scaled_borrowed_usd / scale_factor;
-        return (borrowed_usd, collateral_usd);
+        scaled_exchange_rate_mantissa = exchange_rate_mantissa;
+        scaled_collateral_factor_mantissa =
+            collateral_factor_mantissa * U256::from(10).pow(precision_difference.into());
     } else if collateral_factor_precision > exchange_rate_precision {
-        let scale_factor = U256::from(10).pow(collateral_factor_precision.into());
-        let scale_difference: u8 = collateral_factor_precision - exchange_rate_precision;
+        precision = collateral_factor_precision;
+        let precision_difference: u8 = collateral_factor_precision - exchange_rate_precision;
 
-        let scaled_exchange_rate_mantissa =
-            exchange_rate_mantissa * U256::from(10).pow(scale_difference.into());
-
-        let scaled_underlying_price: U256 = U256::from(
-            (underlying_price * 10u64.pow(exchange_rate_precision.into()) as f64) as u64,
-        );
-        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
-        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
-
-        let scaled_collateral_usd: U256 = collateral_factor_mantissa
-            * scaled_exchange_rate_mantissa
-            * scaled_underlying_price
-            * scaled_collateral_amount;
-
-        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
-
-        let collateral_usd = scaled_collateral_usd / scale_factor;
-        let borrowed_usd = scaled_borrowed_usd / scale_factor;
-        return (borrowed_usd, collateral_usd);
+        scaled_collateral_factor_mantissa = collateral_factor_mantissa;
+        scaled_exchange_rate_mantissa =
+            exchange_rate_mantissa * U256::from(10).pow(precision_difference.into());
     } else {
-        // they are equal and both = 18
-        let scale_factor = U256::from(10).pow(18.into());
-        // TODO: clean up the casting when we can test if it's correct
-        let scaled_underlying_price: U256 =
-            U256::from((underlying_price * 10u64.pow(18) as f64) as u64);
-        let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
-        let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
-
-        let scaled_collateral_usd: U256 = collateral_factor_mantissa
-            * exchange_rate_mantissa
-            * scaled_underlying_price
-            * scaled_collateral_amount;
-
-        let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
-
-        let collateral_usd = scaled_collateral_usd / scale_factor;
-        let borrowed_usd = scaled_borrowed_usd / scale_factor;
-        return (borrowed_usd, collateral_usd);
+        // they are both = 18
+        precision = 18;
+        scaled_exchange_rate_mantissa = exchange_rate_mantissa;
+        scaled_collateral_factor_mantissa = collateral_factor_mantissa;
     }
+
+    // scale_factor = 10^(precision)
+    let scale_factor: U256 = U256::from(10).pow(precision.into());
+    // TODO: fix smelly casting
+    let scaled_underlying_price: U256 =
+        U256::from((underlying_price * 10u64.pow(precision.into()) as f64) as u64);
+    let scaled_collateral_amount: U256 = collateral_amount * scale_factor;
+    let scaled_borrowed_amount: U256 = borrowed_amount * scale_factor;
+
+    // Here's the key components for the liquidity calculation
+    let scaled_collateral_usd: U256 = scaled_collateral_factor_mantissa
+        * scaled_exchange_rate_mantissa
+        * scaled_underlying_price
+        * scaled_collateral_amount;
+    let scaled_borrowed_usd: U256 = scaled_underlying_price * scaled_borrowed_amount;
+
+    // divide out scale_factor to get the amount
+    let collateral_usd = scaled_collateral_usd / scale_factor;
+    let borrowed_usd = scaled_borrowed_usd / scale_factor;
+    (borrowed_usd, collateral_usd)
 }
