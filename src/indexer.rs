@@ -27,7 +27,6 @@ const STEP_SIZE: u64 = 500_000;
 
 pub struct Indexer {
     client: Arc<Provider<Http>>,
-    comptroller_address: Address,
     comptroller_creation_block: u64,
     comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
     ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
@@ -48,7 +47,6 @@ impl Indexer {
 
         Indexer {
             client: ethers_client,
-            comptroller_address,
             comptroller_creation_block,
             comptroller_instance,
             ctoken_instances,
@@ -60,7 +58,7 @@ impl Indexer {
 
         let mut database = Database::new().unwrap();
         let mut addresses_to_watch: Vec<Address> = Vec::new();
-        addresses_to_watch.push(self.comptroller_address);
+        addresses_to_watch.push(self.comptroller_instance.address());
 
         self.build_initial_db_comptroller(&mut database).await;
 
@@ -78,7 +76,7 @@ impl Indexer {
         // TODO: maybe move this inside new()?
         let mut ctoken_instances: HashMap<Address, CErc20<Provider<Http>>> = HashMap::new();
         for ctoken_address in all_ctoken_addresses {
-            addresses_to_watch.push(self.comptroller_address);
+            addresses_to_watch.push(self.comptroller_instance.address());
             let ctoken_instance: CErc20<Provider<Http>> =
                 CErc20::new(ctoken_address, self.client.clone());
             self.build_initial_db_ctoken(&ctoken_instance, &mut database)
@@ -89,69 +87,15 @@ impl Indexer {
         self.ctoken_instances = Arc::new(ctoken_instances);
 
         let bot_start_block = self.client.get_block_number().await.unwrap().as_u64();
-
-        // start indexing processes for account and balance discovery
-        // watch for on all ctoken instances:
-        //      borrow, repayborrow, transfer
-        // watch for on comptroller:
-        //      marketEntered, marketExited, NewCollateralFactor, NewCloseFactor, NewLiqudationIncentive
-        let comptroller_instance = self.comptroller_instance.clone();
-        let comptroller_creation_block = self.comptroller_creation_block;
-        let client = self.client.clone();
-        let subscribe_to_events = tokio::spawn(async move {
-            Self::subscribe_to_events(
-                comptroller_instance,
-                comptroller_creation_block,
-                addresses_to_watch,
-                client,
-            )
-            .await;
-        });
-
-        let client = self.client.clone();
-        let comptroller_instance = self.comptroller_instance.clone();
         let reading_start_block: u64 = self.comptroller_creation_block;
-        let ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>> =
-            self.ctoken_instances.clone();
-        let read_past_events = tokio::spawn(async move {
-            Self::read_past_events(
-                client,
-                comptroller_instance,
-                ctoken_instances,
-                reading_start_block,
-                bot_start_block,
-            )
-            .await;
-        });
-
-        // returns eventually
-        read_past_events.await.unwrap();
-
-        // never returns
-        subscribe_to_events.await.unwrap();
+        self.read_events(reading_start_block, bot_start_block).await;
     }
 
-    pub async fn subscribe_to_events(
-        comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
-        comptroller_creation_block: u64,
-        addresses_to_watch: Vec<Address>,
-        client: Arc<Provider<Http>>,
-    ) {
-    }
-
-    pub async fn read_past_events(
-        client: Arc<Provider<Http>>,
-        comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>,
-        ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
-        start_block: u64,
-        end_block: u64,
-    ) {
+    pub async fn read_events(&mut self, start_block: u64, end_block: u64) {
         let comptroller_events = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
         ];
-
-        let mut database = Database::new().unwrap();
 
         // address ctoken to set of accounts in
         let mut ctoken_accounts_in: HashMap<Address, HashSet<Address>> = HashMap::new();
@@ -168,7 +112,7 @@ impl Indexer {
                 .iter()
                 .map(|event_signature| {
                     Filter::new()
-                        .address(comptroller_instance.address())
+                        .address(self.comptroller_instance.address())
                         .event(event_signature)
                         .from_block(i)
                         .to_block(i + step_size)
@@ -177,7 +121,7 @@ impl Indexer {
 
             let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
             for filter in comptroller_filters {
-                let logs = client.get_logs(&filter).await;
+                let logs = self.client.get_logs(&filter).await;
                 results.push(logs);
             }
 
@@ -261,16 +205,6 @@ impl Indexer {
         println!("accounts found: {}", account_ctokens_in.len());
         println!("ctokens found: {}", ctoken_accounts_in.len());
 
-        // fill in the rest of the db info
-        build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, &mut database);
-
-        build_initial_db_account_ctoken_amounts(
-            &account_ctokens_in,
-            &mut database,
-            ctoken_instances.clone(),
-        )
-        .await;
-
         println!("db up to date");
     }
 
@@ -342,7 +276,7 @@ impl Indexer {
 
         // set comptroller in DB
         let new_comptroller = Comptroller::new(
-            self.comptroller_address,
+            self.comptroller_instance.address(),
             close_factor_mantissa,
             liquidation_incentive_mantissa,
         );
