@@ -119,94 +119,27 @@ impl Indexer {
         let mut ctoken_accounts_in: HashMap<Address, HashSet<Address>> = HashMap::new();
         // address account to set of ctokens in
         let mut account_ctokens_in: HashMap<Address, HashSet<Address>> = HashMap::new();
-        let mut step_size = STEP_SIZE;
+
         // start at comptroller_creation_block
-        let mut i = self.comptroller_creation_block;
-        // let mut temp_total_events: u64 = 0;
+        let mut i: u64 = self.comptroller_creation_block;
         let mut last_run_failure: bool = false;
+        let mut step_size: u64 = STEP_SIZE;
         while i <= end_block {
             print_progress_percent(i, self.comptroller_creation_block, end_block);
 
-            let comptroller_filters: Vec<Filter> = comptroller_events
-                .iter()
-                .map(|event_signature| {
-                    Filter::new()
-                        .address(self.comptroller_instance.address())
-                        .event(event_signature)
-                        .from_block(i)
-                        .to_block(i + step_size)
-                })
-                .collect();
+            let results: Vec<Result<Vec<Log>, ProviderError>> = self
+                .find_events_in_range(&comptroller_events, i, step_size)
+                .await;
 
-            let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
-            for filter in comptroller_filters {
-                let logs = self.client.get_logs(&filter).await;
-                results.push(logs);
-            }
-
-            let mut retry_query = false;
-            for result in results.iter() {
-                if let Err(err) = result {
-                    if err
-                        .to_string()
-                        .contains("query returned more than 10000 results")
-                    {
-                        let old_step_size = step_size;
-                        // and retry the query at smaller size
-                        step_size = (step_size as f64 * 0.5) as u64;
-                        i -= old_step_size;
-                        i += step_size;
-                        retry_query = true;
-                        println!(
-                            "too many results. previous range: {} blocks, new range: {} blocks",
-                            old_step_size, step_size
-                        );
-                    } else {
-                        panic!("historical event query error: {}", err);
-                    }
-                }
-            }
-
-            // there was a failed query.  Gotta re-try this block range
-            if retry_query {
+            // if there was a failed query we need to retry
+            if !validate_query_data(&results) {
+                i -= step_size;
+                step_size = step_size / 2;
                 last_run_failure = true;
                 continue;
             }
 
-            // turns Vec<Result<Vec<Log>, ProviderError>>
-            // into Vec<Log>
-            let mut logs: Vec<Log> = results
-                .into_iter()
-                .filter_map(|result| result.ok()) // Filter out errors and unwrap results
-                .flatten() // Flatten the nested Vec<Vec<Log>> into a single Vec<Log>
-                .collect(); // Collect the results into a single Vec<Log>
-
-            // Sort by block number
-            logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
-
-            for log in logs {
-                let raw_log = RawLog::from(log.clone());
-                let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
-                match decoded {
-                    ComptrollerEvents::MarketEnteredFilter(market_entered) => {
-                        handle_past_market_enter_event(
-                            &mut ctoken_accounts_in,
-                            &mut account_ctokens_in,
-                            market_entered.account,
-                            market_entered.c_token,
-                        );
-                    }
-                    ComptrollerEvents::MarketExitedFilter(market_exited) => {
-                        handle_past_market_exited_event(
-                            &mut ctoken_accounts_in,
-                            &mut account_ctokens_in,
-                            market_exited.account,
-                            market_exited.c_token,
-                        );
-                    }
-                    _ => panic!("Somehow not an event we want..."),
-                }
-            }
+            handle_results(results, &mut ctoken_accounts_in, &mut account_ctokens_in);
 
             if i == end_block {
                 break;
@@ -226,16 +159,11 @@ impl Indexer {
         println!("ctokens found: {}", ctoken_accounts_in.len());
 
         // fill in the rest of the db info
-        // build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, &mut database);
+        self.db_initialize_ctokens_accounts_in(&ctoken_accounts_in);
+        self.db_initialize_accounts_ctoken_amounts(&account_ctokens_in)
+            .await;
 
-        // build_initial_db_account_ctoken_amounts(
-        //     &account_ctokens_in,
-        //     &mut database,
-        //     ctoken_instances.clone(),
-        // )
-        // .await;
-
-        // println!("db up to date");
+        println!("db up to date");
     }
 
     async fn db_initialize_all_ctokens(&mut self) {
@@ -290,7 +218,6 @@ impl Indexer {
             .await
             .unwrap();
 
-        // set ctoken in DB
         let new_ctoken: CToken = CToken::new(
             ctoken_instance.address(),
             underlying_address,
@@ -332,6 +259,95 @@ impl Indexer {
         let db_key: DBKey = DBKey::Comptroller();
         let db_val: DBVal = DBVal::Comptroller(new_comptroller);
         self.database.set(&db_key, &db_val);
+    }
+
+    async fn find_events_in_range(
+        &mut self,
+        comptroller_events: &Vec<&str>,
+        i: u64,
+        step_size: u64,
+    ) -> Vec<Result<Vec<Log>, ProviderError>> {
+        let comptroller_filters: Vec<Filter> = comptroller_events
+            .iter()
+            .map(|event_signature| {
+                Filter::new()
+                    .address(self.comptroller_instance.address())
+                    .event(event_signature)
+                    .from_block(i)
+                    .to_block(i + step_size)
+            })
+            .collect();
+
+        let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
+        for filter in comptroller_filters {
+            // TODO: optimize by using tokio join_all to run all queries in parallel
+            let logs = self.client.get_logs(&filter).await;
+            results.push(logs);
+        }
+
+        results
+    }
+
+    fn db_initialize_ctokens_accounts_in(
+        &mut self,
+        ctoken_accounts_in: &HashMap<Address, HashSet<Address>>,
+    ) {
+        // for each ctoken, get it's CToken entry from the database
+        // set the db Ctoken.accounts_in to the HashSet of addresses
+        // set the updated CToken entry to database
+        for (ctoken, accounts_set) in ctoken_accounts_in {
+            let db_key = DBKey::CToken(*ctoken);
+
+            let mut db_ctoken: CToken = match self.database.get(&db_key).unwrap() {
+                DBVal::CToken(ctoken) => ctoken,
+                _ => panic!("Requested a ctoken from db, didn't get a ctoken"),
+            };
+
+            // turns a HashSet into a Vec
+            let accounts_vec: Vec<Address> = accounts_set.iter().cloned().collect();
+            db_ctoken.accounts_in = Some(accounts_vec);
+
+            let db_val = DBVal::CToken(db_ctoken);
+            self.database.set(&db_key, &db_val);
+        }
+        println!("DB ctokens all have accounts_in !!!!");
+    }
+
+    async fn db_initialize_accounts_ctoken_amounts(
+        &mut self,
+        account_ctokens_in: &HashMap<Address, HashSet<Address>>,
+    ) {
+        for (account_address, ctokens) in account_ctokens_in {
+            let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
+            for ctoken_address in ctokens {
+                let ctoken_instance = self.ctoken_instances.get(ctoken_address).unwrap();
+
+                let borrowed_amount = ctoken_instance
+                    .borrow_balance_stored(*account_address)
+                    .call()
+                    .await
+                    .unwrap();
+
+                let collateral_amount = ctoken_instance
+                    .balance_of(*account_address)
+                    .call()
+                    .await
+                    .unwrap();
+
+                let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
+                    Some(borrowed_amount),
+                    Some(collateral_amount),
+                    None,
+                    None,
+                );
+
+                account.insert(*ctoken_address, account_ctoken_amount);
+            }
+            let db_key = DBKey::Account(*account_address);
+            let db_val = DBVal::Account(Account(account));
+            self.database.set(&db_key, &db_val);
+        }
+        println!("DB accounts are all filled in !!!");
     }
 }
 
@@ -389,65 +405,59 @@ fn handle_past_market_enter_event(
     }
 }
 
-async fn build_initial_db_account_ctoken_amounts(
-    account_ctokens_in: &HashMap<Address, HashSet<Address>>,
-    database: &mut Database,
-    ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
-) {
-    for (account_address, ctokens) in account_ctokens_in {
-        let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
-        for ctoken_address in ctokens {
-            let ctoken_instance = ctoken_instances.get(ctoken_address).unwrap();
-
-            let borrowed_amount = ctoken_instance
-                .borrow_balance_stored(*account_address)
-                .call()
-                .await
-                .unwrap();
-
-            let collateral_amount = ctoken_instance
-                .balance_of(*account_address)
-                .call()
-                .await
-                .unwrap();
-
-            let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
-                Some(borrowed_amount),
-                Some(collateral_amount),
-                None,
-                None,
-            );
-
-            account.insert(*ctoken_address, account_ctoken_amount);
+fn validate_query_data(results: &Vec<Result<Vec<Log>, ProviderError>>) -> bool {
+    for result in results.iter() {
+        if let Err(err) = result {
+            if err
+                .to_string()
+                .contains("query returned more than 10000 results")
+            {
+                println!("too many results. re-trying query with smaller block range");
+                return false;
+            } else {
+                panic!("historical event query error: {}", err);
+            }
         }
-        let db_key = DBKey::Account(*account_address);
-        let db_val = DBVal::Account(Account(account));
-        database.set(&db_key, &db_val);
     }
-    println!("DB accounts are all filled in !!!");
+    return true;
 }
 
-fn build_initial_db_ctokens_accounts_in(
-    ctoken_accounts_in: &HashMap<Address, HashSet<Address>>,
-    database: &mut Database,
+fn handle_results(
+    results: Vec<Result<Vec<Log>, ProviderError>>,
+    ctoken_accounts_in: &mut HashMap<Address, HashSet<Address>>,
+    account_ctokens_in: &mut HashMap<Address, HashSet<Address>>,
 ) {
-    // for each ctoken, get it's CToken entry from the database
-    // set the db Ctoken.accounts_in to the HashSet of addresses
-    // set the updated CToken entry to database
-    for (ctoken, accounts_set) in ctoken_accounts_in {
-        let db_key = DBKey::CToken(*ctoken);
+    // turns Vec<Result<Vec<Log>, ProviderError>> into Vec<Log>
+    let mut logs: Vec<Log> = results
+        .into_iter()
+        .filter_map(|result| result.ok())
+        .flatten()
+        .collect();
 
-        let mut db_ctoken: CToken = match database.get(&db_key).unwrap() {
-            DBVal::CToken(ctoken) => ctoken,
-            _ => panic!("Requested a ctoken from db, didn't get a ctoken"),
-        };
+    // Sort by block number
+    logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
 
-        // turns a HashSet into a Vec
-        let accounts_vec: Vec<Address> = accounts_set.iter().cloned().collect();
-        db_ctoken.accounts_in = Some(accounts_vec);
-
-        let db_val = DBVal::CToken(db_ctoken);
-        database.set(&db_key, &db_val);
+    for log in logs {
+        let raw_log = RawLog::from(log.clone());
+        let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
+        match decoded {
+            ComptrollerEvents::MarketEnteredFilter(market_entered) => {
+                handle_past_market_enter_event(
+                    ctoken_accounts_in,
+                    account_ctokens_in,
+                    market_entered.account,
+                    market_entered.c_token,
+                );
+            }
+            ComptrollerEvents::MarketExitedFilter(market_exited) => {
+                handle_past_market_exited_event(
+                    ctoken_accounts_in,
+                    account_ctokens_in,
+                    market_exited.account,
+                    market_exited.c_token,
+                );
+            }
+            _ => panic!("Somehow not an event we want..."),
+        }
     }
-    println!("DB ctokens all have accounts_in !!!!");
 }
