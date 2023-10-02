@@ -21,6 +21,7 @@ use std::{
     collections::{HashMap, HashSet},
     sync::{Arc, Mutex},
 };
+use tokio::time::Duration;
 
 const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 500_000;
@@ -86,13 +87,62 @@ impl Indexer {
 
         self.ctoken_instances = Arc::new(ctoken_instances);
 
+        // Ok
+        // we're going to sequentially run 2 processes
+        // first, from comptroller creation block to bot start block watch all market enter/exit to get a list of all accounts
+        // then do a query every 10 blocks for ALL of the other events we need to handle
         let bot_start_block = self.client.get_block_number().await.unwrap().as_u64();
         let reading_start_block: u64 = self.comptroller_creation_block;
-        self.read_events(reading_start_block, bot_start_block).await;
+        // this pass of past events just finds marketenter/exit events to build a list of all active accounts
+        // to initialize the database
+        self.read_past_events(reading_start_block, bot_start_block)
+            .await;
+        self.read_current_events(bot_start_block).await;
     }
 
-    pub async fn read_events(&mut self, start_block: u64, end_block: u64) {
-        let comptroller_events = vec![
+    async fn read_current_events(&mut self, start_block: u64) {
+        let comptroller_events: Vec<&str> = vec![
+            "MarketEntered(address,address)",
+            "MarketExited(address,address)",
+            "NewCollateralFactor(address,address)",
+            "NewCloseFactor(uint256,uint256)",
+            "NewLiquidationIncentive(uint256,uint256)",
+        ];
+
+        let ctoken_events: Vec<&str> = vec![
+            "Borrow(address,uint256,uint256,uint256)",
+            "RepayBorrow(address,address,uint256,uint256,uint256)",
+            "Transfer(address,address,uint256)",
+        ];
+
+        let mut current_block: u64 = self.client.get_block_number().await.unwrap().as_u64();
+        let mut i: u64 = start_block;
+
+        loop {
+            // block until at least 10 blocks have passed (to make sure block is confirmed)
+            while current_block - i < 10 {
+                // tokio::time::sleep(Duration::from_secs(1)).await;
+                current_block = self.client.get_block_number().await.unwrap().as_u64();
+            }
+
+            let comptroller_filters: Vec<Filter> = comptroller_events
+                .iter()
+                .map(|event_signature| {
+                    Filter::new()
+                        .address(self.comptroller_instance.address())
+                        .event(event_signature)
+                        .from_block(i)
+                        .to_block(i)
+                })
+                .collect();
+
+            // ctoken filters are annoying because we need to make a filter for each event at each
+            // ctoken address
+        }
+    }
+
+    async fn read_past_events(&mut self, start_block: u64, end_block: u64) {
+        let comptroller_events: Vec<&str> = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
         ];
@@ -148,7 +198,7 @@ impl Indexer {
                 }
             }
 
-            // there was a failed query.  Gotta re-try
+            // there was a failed query.  Gotta re-try this block range
             if retry_query {
                 last_run_failure = true;
                 continue;
@@ -201,11 +251,22 @@ impl Indexer {
             }
             i += step_size;
         }
+
         println!("got all events");
         println!("accounts found: {}", account_ctokens_in.len());
         println!("ctokens found: {}", ctoken_accounts_in.len());
 
-        println!("db up to date");
+        // fill in the rest of the db info
+        // build_initial_db_ctokens_accounts_in(&ctoken_accounts_in, &mut database);
+
+        // build_initial_db_account_ctoken_amounts(
+        //     &account_ctokens_in,
+        //     &mut database,
+        //     ctoken_instances.clone(),
+        // )
+        // .await;
+
+        // println!("db up to date");
     }
 
     // make initial calls for ctokens: underlyingAddress, exchangeRateStored

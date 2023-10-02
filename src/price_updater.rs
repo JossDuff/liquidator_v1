@@ -143,6 +143,7 @@ impl PriceUpdater {
 
         // update the DB with the freshly calculated borrowed_usd and collateral_usd for the accountCTokenAmount
         // Something went very wrong if updated_account_ctoken_amount is still None
+        // TODO: make an "update" command so we don't accidentally overwrite some amount
         account_ctokens.insert(ctoken.address, updated_account_ctoken_amount.unwrap());
         let db_key = DBKey::Account(account_address);
         let db_val = DBVal::Account(Account(account_ctokens));
