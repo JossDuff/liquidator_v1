@@ -216,6 +216,7 @@ fn infernal_math(
     exchange_rate_mantissa: U256,
     underlying_price: f64,
 ) -> (U256, U256) {
+    println!("doing dangerous math");
     // so we need to scale everything by a scale factor and divide out the scale factor at the end.
     // the two mantissas might be pre-scaled by different amounts, so we have to get them into the same
     // scale and then multiple everything by that scale

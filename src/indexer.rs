@@ -70,6 +70,7 @@ impl Indexer {
     }
 
     async fn read_current_events(&mut self, start_block: u64) {
+        println!("Watching current events");
         let comptroller_events: Vec<&str> = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
@@ -306,10 +307,12 @@ impl Indexer {
         println!("DB ctokens all have accounts_in !!!!");
     }
 
+    // TODO: this is so slow.  Can speed up with multicalls and tokio join_all
     async fn db_initialize_accounts_ctoken_amounts(
         &mut self,
         account_ctokens_in: &HashMap<Address, HashSet<Address>>,
     ) {
+        println!("initializing accounts_ctoken_amounts");
         for (account_address, ctokens) in account_ctokens_in {
             let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
             for ctoken_address in ctokens {

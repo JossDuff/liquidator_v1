@@ -56,11 +56,12 @@ async fn main() -> eyre::Result<()> {
     // let it rip
     thread::spawn(move || {
         runtime.block_on(async {
-            let _ = indexer.run().await;
+            // TODO: uncomment and move back into main thread.  This was just for testing indexer
+            //let _ = price_updater.run().await;
         });
     });
     // this can run in the main thread
-    let _ = price_updater.run().await;
+    let _ = indexer.run().await;
 
     /*  Not sure why these aren't working any more but it's fine since we already generated them.  problem for later
     // generate comptroller bindings
