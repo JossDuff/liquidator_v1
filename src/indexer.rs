@@ -87,7 +87,6 @@ impl Indexer {
         let mut current_block: u64 = self.client.get_block_number().await.unwrap().as_u64();
         let mut i: u64 = start_block;
 
-        // TODO: loop iteration logic
         loop {
             // wait until at least 10 blocks have passed (to make sure block is confirmed)
             while current_block - i < 10 {
@@ -162,6 +161,8 @@ impl Indexer {
                     },
                 }
             }
+
+            i = i + 1;
         }
     }
 
