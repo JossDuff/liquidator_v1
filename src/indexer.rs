@@ -16,7 +16,7 @@ use crate::types::{
 use ethers::{
     abi::RawLog,
     contract::EthLogDecode,
-    prelude::{ContractError, ProviderError},
+    prelude::{ContractError, Multicall, ProviderError},
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, Log, U256},
 };
@@ -170,7 +170,7 @@ impl Indexer {
 
         // fill in the rest of the db info
         self.db_initialize_ctokens_accounts_in(&ctoken_accounts_in);
-        self.db_initialize_accounts_ctoken_amounts(&account_ctokens_in)
+        self.db_initialize_accounts_ctoken_amounts_with_calls(&account_ctokens_in)
             .await;
 
         println!("db up to date");
@@ -308,27 +308,45 @@ impl Indexer {
     }
 
     // TODO: this is so slow.  Can speed up with multicalls and tokio join_all
-    async fn db_initialize_accounts_ctoken_amounts(
+    async fn db_initialize_accounts_ctoken_amounts_with_calls(
         &mut self,
         account_ctokens_in: &HashMap<Address, HashSet<Address>>,
     ) {
+        // build vec of multicalls
+        // execute all multicalls
+        // handle results
+
         println!("initializing accounts_ctoken_amounts");
+        let mut multicall = Multicall::<Provider<Http>>::new(self.client.clone(), None)
+            .await
+            .unwrap();
+        println!("iterating through {} accounts", account_ctokens_in.len());
+        let mut accounts_done: u8 = 0;
+        let total_accounts: u8 = account_ctokens_in.len() as u8;
         for (account_address, ctokens) in account_ctokens_in {
             let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
+            println!("{}%", accounts_done as f64 / total_accounts as f64);
+
             for ctoken_address in ctokens {
                 let ctoken_instance = self.ctoken_instances.get(ctoken_address).unwrap();
 
-                let borrowed_amount = ctoken_instance
-                    .borrow_balance_stored(*account_address)
-                    .call()
-                    .await
-                    .unwrap();
+                // let test_call = ctoken_instance.borrow_balance_stored(*account_address);
+                // multicall.add_call(test_call, false);
 
-                let collateral_amount = ctoken_instance
-                    .balance_of(*account_address)
-                    .call()
-                    .await
-                    .unwrap();
+                // let returned_data = multicall.call::<U256>().await.unwrap();
+
+                let borrowed_amount_call = ctoken_instance.borrow_balance_stored(*account_address);
+
+                let collateral_amount_call = ctoken_instance.balance_of(*account_address);
+
+                multicall
+                    .clear_calls()
+                    .add_call(borrowed_amount_call, false)
+                    .add_call(collateral_amount_call, false);
+
+                // TODO: does this return in the same order as the calls were added?
+                let (borrowed_amount, collateral_amount) =
+                    multicall.call::<(U256, U256)>().await.unwrap();
 
                 let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
                     Some(borrowed_amount),
@@ -342,6 +360,8 @@ impl Indexer {
             let db_key = DBKey::Account(*account_address);
             let db_val = DBVal::Account(Account(account));
             self.database.set(&db_key, &db_val);
+
+            accounts_done = accounts_done + 1;
         }
         println!("DB accounts are all filled in !!!");
     }
@@ -373,7 +393,7 @@ fn handle_past_market_exited_event(
     // remove account from ctoken
     let accounts = ctoken_accounts_in.get_mut(&ctoken).unwrap();
     if !accounts.remove(&account) {
-        panic!("removed an account that wasn't caught in market enter")
+        panic!("removed an account that wasn't caught in market enter");
     }
 }
 
