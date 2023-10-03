@@ -84,84 +84,30 @@ impl Indexer {
             "Transfer(address,address,uint256)",
         ];
 
-        let mut current_block: u64 = self.client.get_block_number().await.unwrap().as_u64();
         let mut i: u64 = start_block;
-
         loop {
             // wait until at least 10 blocks have passed (to make sure block is confirmed)
-            while current_block - i < 10 {
-                // tokio::time::sleep(Duration::from_secs(1)).await;
-                current_block = self.client.get_block_number().await.unwrap().as_u64();
-            }
+            while self.client.get_block_number().await.unwrap().as_u64() - i < 10 {}
 
-            let mut comptroller_filters: Vec<Filter> = comptroller_events
-                .iter()
-                .map(|event_signature| {
-                    Filter::new()
-                        .address(self.comptroller_instance.address())
-                        .event(event_signature)
-                        .from_block(i)
-                        .to_block(i)
-                })
-                .collect();
+            let mut comptroller_filters: Vec<Filter> = build_comptroller_filters(
+                &comptroller_events,
+                self.comptroller_instance.address(),
+                i,
+                i,
+            );
 
-            let mut ctoken_filters: Vec<Filter> = self
-                .ctoken_instances
-                .iter()
-                .flat_map(|(ctoken_address, _)| {
-                    ctoken_events.iter().map(move |event_signature| {
-                        Filter::new()
-                            .address(*ctoken_address)
-                            .event(event_signature)
-                            .from_block(i)
-                            .to_block(i)
-                    })
-                })
-                .collect();
+            let mut ctoken_filters: Vec<Filter> =
+                build_ctoken_filters(&ctoken_events, self.ctoken_instances.keys().collect(), i, i);
 
+            // combine both filter Vectors into one Vec
             comptroller_filters.append(&mut ctoken_filters);
             let all_filters = comptroller_filters;
 
-            let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
-            for filter in all_filters {
-                // TODO: optimize by using tokio join_all to run all queries in parallel
-                let logs = self.client.get_logs(&filter).await;
-                results.push(logs);
-            }
+            let results: Vec<Result<Vec<Log>, ProviderError>> = self.get_logs(all_filters).await;
 
-            let logs: Vec<Log> = results
-                .into_iter()
-                .filter_map(|result| result.ok())
-                .flatten()
-                .collect();
+            handle_current_events(results);
 
-            for log in logs {
-                let raw_log = RawLog::from(log);
-                let decoded: TargetEvents = match CErc20Events::decode_log(&raw_log) {
-                    Ok(event) => TargetEvents::CTokenEvent(event),
-                    Err(_) => match ComptrollerEvents::decode_log(&raw_log) {
-                        Ok(event) => TargetEvents::ComptrollerEvent(event),
-                        Err(err) => panic!("error decoding event: {}", err),
-                    },
-                };
-                match decoded {
-                    TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
-                        ComptrollerEvents::MarketEnteredFilter(event) => {}
-                        ComptrollerEvents::MarketExitedFilter(event) => {}
-                        ComptrollerEvents::NewCollateralFactorFilter(event) => {}
-                        ComptrollerEvents::NewCloseFactorFilter(event) => {}
-                        ComptrollerEvents::NewLiquidationIncentiveFilter(event) => {}
-                        _ => panic!("Somehow not an event we want..."),
-                    },
-                    TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
-                        CErc20Events::BorrowFilter(event) => {}
-                        CErc20Events::RepayBorrowFilter(event) => {}
-                        CErc20Events::TransferFilter(event) => {}
-                        _ => panic!("Somehow not an event we want..."),
-                    },
-                }
-            }
-
+            println!("processed block {}", i);
             i = i + 1;
         }
     }
@@ -184,9 +130,15 @@ impl Indexer {
         while i <= end_block {
             print_progress_percent(i, self.comptroller_creation_block, end_block);
 
-            let results: Vec<Result<Vec<Log>, ProviderError>> = self
-                .find_events_in_range(&comptroller_events, i, step_size)
-                .await;
+            let comptroller_filters: Vec<Filter> = build_comptroller_filters(
+                &comptroller_events,
+                self.comptroller_instance.address(),
+                i,
+                i + step_size,
+            );
+
+            let results: Vec<Result<Vec<Log>, ProviderError>> =
+                self.get_logs(comptroller_filters).await;
 
             // if there was a failed query we need to retry
             if !validate_query_data(&results) {
@@ -196,7 +148,7 @@ impl Indexer {
                 continue;
             }
 
-            handle_results(results, &mut ctoken_accounts_in, &mut account_ctokens_in);
+            handle_past_events(results, &mut ctoken_accounts_in, &mut account_ctokens_in);
 
             if i == end_block {
                 break;
@@ -318,25 +270,9 @@ impl Indexer {
         self.database.set(&db_key, &db_val);
     }
 
-    async fn find_events_in_range(
-        &mut self,
-        comptroller_events: &Vec<&str>,
-        i: u64,
-        step_size: u64,
-    ) -> Vec<Result<Vec<Log>, ProviderError>> {
-        let comptroller_filters: Vec<Filter> = comptroller_events
-            .iter()
-            .map(|event_signature| {
-                Filter::new()
-                    .address(self.comptroller_instance.address())
-                    .event(event_signature)
-                    .from_block(i)
-                    .to_block(i + step_size)
-            })
-            .collect();
-
+    async fn get_logs(&mut self, filters: Vec<Filter>) -> Vec<Result<Vec<Log>, ProviderError>> {
         let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
-        for filter in comptroller_filters {
+        for filter in filters {
             // TODO: optimize by using tokio join_all to run all queries in parallel
             let logs = self.client.get_logs(&filter).await;
             results.push(logs);
@@ -479,7 +415,45 @@ fn validate_query_data(results: &Vec<Result<Vec<Log>, ProviderError>>) -> bool {
     return true;
 }
 
-fn handle_results(
+fn build_comptroller_filters(
+    comptroller_events: &Vec<&str>,
+    comptroller_address: Address,
+    from_block: u64,
+    to_block: u64,
+) -> Vec<Filter> {
+    comptroller_events
+        .iter()
+        .map(|event_signature| {
+            Filter::new()
+                .address(comptroller_address)
+                .event(event_signature)
+                .from_block(from_block)
+                .to_block(to_block)
+        })
+        .collect()
+}
+
+fn build_ctoken_filters(
+    ctoken_events: &Vec<&str>,
+    ctoken_addresses: Vec<&Address>,
+    from_block: u64,
+    to_block: u64,
+) -> Vec<Filter> {
+    ctoken_addresses
+        .iter()
+        .flat_map(|ctoken_address| {
+            ctoken_events.iter().map(move |event_signature| {
+                Filter::new()
+                    .address(**ctoken_address)
+                    .event(event_signature)
+                    .from_block(from_block)
+                    .to_block(to_block)
+            })
+        })
+        .collect()
+}
+
+fn handle_past_events(
     results: Vec<Result<Vec<Log>, ProviderError>>,
     ctoken_accounts_in: &mut HashMap<Address, HashSet<Address>>,
     account_ctokens_in: &mut HashMap<Address, HashSet<Address>>,
@@ -515,6 +489,41 @@ fn handle_results(
                 );
             }
             _ => panic!("Somehow not an event we want..."),
+        }
+    }
+}
+
+fn handle_current_events(results: Vec<Result<Vec<Log>, ProviderError>>) {
+    let logs: Vec<Log> = results
+        .into_iter()
+        .filter_map(|result| result.ok())
+        .flatten()
+        .collect();
+
+    for log in logs {
+        let raw_log = RawLog::from(log);
+        let decoded: TargetEvents = match CErc20Events::decode_log(&raw_log) {
+            Ok(event) => TargetEvents::CTokenEvent(event),
+            Err(_) => match ComptrollerEvents::decode_log(&raw_log) {
+                Ok(event) => TargetEvents::ComptrollerEvent(event),
+                Err(err) => panic!("error decoding event: {}", err),
+            },
+        };
+        match decoded {
+            TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
+                ComptrollerEvents::MarketEnteredFilter(event) => {}
+                ComptrollerEvents::MarketExitedFilter(event) => {}
+                ComptrollerEvents::NewCollateralFactorFilter(event) => {}
+                ComptrollerEvents::NewCloseFactorFilter(event) => {}
+                ComptrollerEvents::NewLiquidationIncentiveFilter(event) => {}
+                _ => panic!("Somehow not an event we want..."),
+            },
+            TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
+                CErc20Events::BorrowFilter(event) => {}
+                CErc20Events::RepayBorrowFilter(event) => {}
+                CErc20Events::TransferFilter(event) => {}
+                _ => panic!("Somehow not an event we want..."),
+            },
         }
     }
 }
