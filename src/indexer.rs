@@ -26,7 +26,6 @@ use std::{
 };
 use tokio::time::Duration;
 
-const ONE_ETHER_IN_WEI: u64 = 1000000000000000000;
 const STEP_SIZE: u64 = 500_000;
 
 pub struct Indexer {
@@ -307,10 +306,11 @@ impl Indexer {
         println!("DB ctokens all have accounts_in !!!!");
     }
 
-    // TODO: this is so slow.  Can speed up with multicalls and tokio join_all
+    // TODO: this is so slow
     // Okay maybe the better approach is to just get balances by watching all events.
     // There's a chance its slower, but it will probably clean up a lot of this code.
-    //
+    // There's also a chance it misses some events resulting in inaccurate accounts, which we
+    // can't chance
     async fn db_initialize_accounts_ctoken_amounts_with_calls(
         &mut self,
         account_ctokens_in: &HashMap<Address, HashSet<Address>>,
@@ -332,11 +332,6 @@ impl Indexer {
 
             for ctoken_address in ctokens {
                 let ctoken_instance = self.ctoken_instances.get(ctoken_address).unwrap();
-
-                // let test_call = ctoken_instance.borrow_balance_stored(*account_address);
-                // multicall.add_call(test_call, false);
-
-                // let returned_data = multicall.call::<U256>().await.unwrap();
 
                 let borrowed_amount_call = ctoken_instance.borrow_balance_stored(*account_address);
 
