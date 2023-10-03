@@ -1,6 +1,8 @@
-use crate::bindings::comptroller_bindings::{ComptrollerEvents, MarketEnteredFilter};
+use crate::bindings::comptroller_bindings::ComptrollerEvents;
 use crate::bindings::{
-    c_erc20_bindings::CErc20, comptroller_bindings as generated, erc20_bindings::Erc20,
+    c_erc20_bindings::{CErc20, CErc20Events},
+    comptroller_bindings as generated,
+    erc20_bindings::Erc20,
 };
 use crate::database::Database;
 use crate::types::account_ctoken_amount::AccountCTokenAmount;
@@ -9,6 +11,7 @@ use crate::types::{
     comptroller::Comptroller,
     ctoken::CToken,
     db_types::{DBKey, DBVal},
+    target_events::TargetEvents,
 };
 use ethers::{
     abi::RawLog,
@@ -30,8 +33,8 @@ pub struct Indexer {
     client: Arc<Provider<Http>>,
     database: Database,
     comptroller_creation_block: u64,
-    comptroller_instance: Arc<generated::Comptroller<Provider<Http>>>, // TODO: is it best practice to share these instances?  Or should I just initialize each time?
-    ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>>,
+    comptroller_instance: generated::Comptroller<Provider<Http>>, // TODO: is it best practice to share these instances?  Or should I just initialize each time?
+    ctoken_instances: HashMap<Address, CErc20<Provider<Http>>>,
 }
 
 impl Indexer {
@@ -41,12 +44,10 @@ impl Indexer {
         comptroller_creation_block: u64,
     ) -> Indexer {
         let database = Database::new().unwrap();
-        let comptroller_instance: Arc<generated::Comptroller<Provider<Http>>> = Arc::new(
-            generated::Comptroller::new(comptroller_address, client.clone()),
-        );
+        let comptroller_instance: generated::Comptroller<Provider<Http>> =
+            generated::Comptroller::new(comptroller_address, client.clone());
         // TODO: is it bad practice for this to be un-initialized?
-        let ctoken_instances: Arc<HashMap<Address, CErc20<Provider<Http>>>> =
-            Arc::new(HashMap::new());
+        let ctoken_instances: HashMap<Address, CErc20<Provider<Http>>> = HashMap::new();
 
         Indexer {
             client,
@@ -86,14 +87,15 @@ impl Indexer {
         let mut current_block: u64 = self.client.get_block_number().await.unwrap().as_u64();
         let mut i: u64 = start_block;
 
+        // TODO: loop iteration logic
         loop {
-            // block until at least 10 blocks have passed (to make sure block is confirmed)
+            // wait until at least 10 blocks have passed (to make sure block is confirmed)
             while current_block - i < 10 {
                 // tokio::time::sleep(Duration::from_secs(1)).await;
                 current_block = self.client.get_block_number().await.unwrap().as_u64();
             }
 
-            let comptroller_filters: Vec<Filter> = comptroller_events
+            let mut comptroller_filters: Vec<Filter> = comptroller_events
                 .iter()
                 .map(|event_signature| {
                     Filter::new()
@@ -104,8 +106,62 @@ impl Indexer {
                 })
                 .collect();
 
-            // ctoken filters are annoying because we need to make a filter for each event at each
-            // ctoken address
+            let mut ctoken_filters: Vec<Filter> = self
+                .ctoken_instances
+                .iter()
+                .flat_map(|(ctoken_address, _)| {
+                    ctoken_events.iter().map(move |event_signature| {
+                        Filter::new()
+                            .address(*ctoken_address)
+                            .event(event_signature)
+                            .from_block(i)
+                            .to_block(i)
+                    })
+                })
+                .collect();
+
+            comptroller_filters.append(&mut ctoken_filters);
+            let all_filters = comptroller_filters;
+
+            let mut results: Vec<Result<Vec<Log>, ProviderError>> = Vec::new();
+            for filter in all_filters {
+                // TODO: optimize by using tokio join_all to run all queries in parallel
+                let logs = self.client.get_logs(&filter).await;
+                results.push(logs);
+            }
+
+            let logs: Vec<Log> = results
+                .into_iter()
+                .filter_map(|result| result.ok())
+                .flatten()
+                .collect();
+
+            for log in logs {
+                let raw_log = RawLog::from(log);
+                let decoded: TargetEvents = match CErc20Events::decode_log(&raw_log) {
+                    Ok(event) => TargetEvents::CTokenEvent(event),
+                    Err(_) => match ComptrollerEvents::decode_log(&raw_log) {
+                        Ok(event) => TargetEvents::ComptrollerEvent(event),
+                        Err(err) => panic!("error decoding event: {}", err),
+                    },
+                };
+                match decoded {
+                    TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
+                        ComptrollerEvents::MarketEnteredFilter(event) => {}
+                        ComptrollerEvents::MarketExitedFilter(event) => {}
+                        ComptrollerEvents::NewCollateralFactorFilter(event) => {}
+                        ComptrollerEvents::NewCloseFactorFilter(event) => {}
+                        ComptrollerEvents::NewLiquidationIncentiveFilter(event) => {}
+                        _ => panic!("Somehow not an event we want..."),
+                    },
+                    TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
+                        CErc20Events::BorrowFilter(event) => {}
+                        CErc20Events::RepayBorrowFilter(event) => {}
+                        CErc20Events::TransferFilter(event) => {}
+                        _ => panic!("Somehow not an event we want..."),
+                    },
+                }
+            }
         }
     }
 
@@ -186,7 +242,7 @@ impl Indexer {
             ctoken_instances.insert(ctoken_address, ctoken_instance);
         }
 
-        self.ctoken_instances = Arc::new(ctoken_instances);
+        self.ctoken_instances = ctoken_instances;
     }
 
     // make initial calls for ctoken: underlyingAddress, exchangeRateStored
@@ -438,7 +494,7 @@ fn handle_results(
     logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
 
     for log in logs {
-        let raw_log = RawLog::from(log.clone());
+        let raw_log = RawLog::from(log);
         let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
         match decoded {
             ComptrollerEvents::MarketEnteredFilter(market_entered) => {
