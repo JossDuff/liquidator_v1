@@ -5,6 +5,7 @@ use crate::bindings::{
     erc20_bindings::Erc20,
 };
 use crate::database::Database;
+use crate::handlers::borrow_handler::borrow_handler;
 use crate::types::account_ctoken_amount::AccountCTokenAmount;
 use crate::types::{
     account::Account,
@@ -105,7 +106,7 @@ impl Indexer {
 
             let results: Vec<Result<Vec<Log>, ProviderError>> = self.get_logs(all_filters).await;
 
-            handle_current_events(results);
+            self.handle_current_events(results);
 
             println!("processed block {}", i);
             i = i + 1;
@@ -375,6 +376,45 @@ impl Indexer {
         }
         println!("DB accounts are all filled in !!!");
     }
+
+    fn handle_current_events(&mut self, results: Vec<Result<Vec<Log>, ProviderError>>) {
+        let logs: Vec<Log> = results
+            .into_iter()
+            .filter_map(|result| result.ok())
+            .flatten()
+            .collect();
+
+        for log in logs {
+            // log.address is the contract that emitted the event
+            let log_address = log.address;
+            let raw_log = RawLog::from(log);
+            let decoded: TargetEvents = match CErc20Events::decode_log(&raw_log) {
+                Ok(event) => TargetEvents::CTokenEvent(event),
+                Err(_) => match ComptrollerEvents::decode_log(&raw_log) {
+                    Ok(event) => TargetEvents::ComptrollerEvent(event),
+                    Err(err) => panic!("error decoding event: {}", err),
+                },
+            };
+            match decoded {
+                TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
+                    ComptrollerEvents::MarketEnteredFilter(event) => {}
+                    ComptrollerEvents::MarketExitedFilter(event) => {}
+                    ComptrollerEvents::NewCollateralFactorFilter(event) => {}
+                    ComptrollerEvents::NewCloseFactorFilter(event) => {}
+                    ComptrollerEvents::NewLiquidationIncentiveFilter(event) => {}
+                    _ => panic!("Somehow not an event we want..."),
+                },
+                TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
+                    CErc20Events::BorrowFilter(event) => {
+                        borrow_handler(event, log_address, &mut self.database)
+                    }
+                    CErc20Events::RepayBorrowFilter(event) => {}
+                    CErc20Events::TransferFilter(event) => {}
+                    _ => panic!("Somehow not an event we want..."),
+                },
+            }
+        }
+    }
 }
 
 fn print_progress_percent(i: u64, start_block: u64, end_block: u64) -> () {
@@ -522,41 +562,6 @@ fn handle_past_events(
                 );
             }
             _ => panic!("Somehow not an event we want..."),
-        }
-    }
-}
-
-fn handle_current_events(results: Vec<Result<Vec<Log>, ProviderError>>) {
-    let logs: Vec<Log> = results
-        .into_iter()
-        .filter_map(|result| result.ok())
-        .flatten()
-        .collect();
-
-    for log in logs {
-        let raw_log = RawLog::from(log);
-        let decoded: TargetEvents = match CErc20Events::decode_log(&raw_log) {
-            Ok(event) => TargetEvents::CTokenEvent(event),
-            Err(_) => match ComptrollerEvents::decode_log(&raw_log) {
-                Ok(event) => TargetEvents::ComptrollerEvent(event),
-                Err(err) => panic!("error decoding event: {}", err),
-            },
-        };
-        match decoded {
-            TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
-                ComptrollerEvents::MarketEnteredFilter(event) => {}
-                ComptrollerEvents::MarketExitedFilter(event) => {}
-                ComptrollerEvents::NewCollateralFactorFilter(event) => {}
-                ComptrollerEvents::NewCloseFactorFilter(event) => {}
-                ComptrollerEvents::NewLiquidationIncentiveFilter(event) => {}
-                _ => panic!("Somehow not an event we want..."),
-            },
-            TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
-                CErc20Events::BorrowFilter(event) => {}
-                CErc20Events::RepayBorrowFilter(event) => {}
-                CErc20Events::TransferFilter(event) => {}
-                _ => panic!("Somehow not an event we want..."),
-            },
         }
     }
 }

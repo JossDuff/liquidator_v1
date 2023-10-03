@@ -30,18 +30,18 @@ CToken (many instances):
 
 // panic at NewComptroller event so I know if I have to handle it or not
 
+use crate::database::Database;
+use crate::types::db_types::DBKey;
+use ethers::types::Address;
+
 // comptroller events
-mod market_entered_handler;
-mod market_exited_handler;
-mod new_close_factor_handler;
-mod new_collateral_factor_handler;
-mod new_liquidation_incentive_handler;
+pub mod market_entered_handler;
+pub mod market_exited_handler;
+pub mod new_close_factor_handler;
+pub mod new_collateral_factor_handler;
+pub mod new_liquidation_incentive_handler;
 
 // ctoken events
-mod borrow_handler;
-mod repay_borrow_handler;
-mod transfer_handler;
-
-pub async fn run() {
-    println!("handlers::run()");
-}
+pub mod borrow_handler;
+pub mod repay_borrow_handler;
+pub mod transfer_handler;

@@ -133,6 +133,11 @@ impl Database {
             Err(_) => None,
         }
     }
+
+    // grrrrr race condition
+    // pub fn set_account_ctoken_usd_values(&mut self, ) {
+    //     let res = self.connection
+    // }
 }
 
 /* pub fn redis_test() -> Result<(), Box<dyn std::error::Error>> {
