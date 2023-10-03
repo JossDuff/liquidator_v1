@@ -9,28 +9,25 @@ use crate::indexer::Indexer;
 use crate::price_updater::PriceUpdater;
 
 use ethers::providers::{Http, Provider};
-extern crate redis; // TODO: why is this "extern crate" and not "use"?
-use std::{sync::Arc, thread};
+extern crate dotenv;
+extern crate redis;
+use dotenv::dotenv;
+use std::{env, sync::Arc, thread};
 use tokio::runtime;
-
-/* To switch for a different compound fork:
-
-chain name (for price oracle)
-wss url
-comptroller address
-comptroller creation block
-
-*/
-
-// current: sonne finance
-const CHAIN: &str = "optimistic-ethereum";
-const HTTP_URL: &str = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df";
-const COMPTROLLER: &str = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58";
-const COMPTROLLER_CREATION_BLOCK: u64 = 26050051;
-//const TEMP_LIQUIDATOR_ETH_MAINNET: &str = "0x000019210A31b4961b30EF54bE2aeD79B9c9Cd3B";
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    // load environment variables
+    dotenv().ok();
+    let chain: String = env::var("CHAIN").expect("chain not set in .env");
+    let provider_url: String = env::var("PROVIDER_URL").expect("provider url not set in .env");
+    let comptroller_address: String =
+        env::var("COMPTROLLER_ADDRESS").expect("comptroller address not set in .env");
+    let comptroller_creation_block: u64 = env::var("COMPTROLLER_CREATION_BLOCK")
+        .expect("comptroller creation block not set in .env")
+        .parse::<u64>()
+        .unwrap();
+
     // for threads
     let runtime = Arc::new(
         runtime::Builder::new_multi_thread()
@@ -41,17 +38,17 @@ async fn main() -> eyre::Result<()> {
     );
 
     // initialize provider & clients
-    let provider = Provider::<Http>::try_from(HTTP_URL).unwrap();
+    let provider = Provider::<Http>::try_from(provider_url).unwrap();
     let client_for_indexer = Arc::new(provider);
     let client_for_price_updater = client_for_indexer.clone();
 
     // initialize modules
     let mut indexer = Indexer::new(
         client_for_indexer,
-        COMPTROLLER.parse().unwrap(),
-        COMPTROLLER_CREATION_BLOCK,
+        comptroller_address.parse().unwrap(),
+        comptroller_creation_block,
     );
-    let mut price_updater = PriceUpdater::new(client_for_price_updater, CHAIN.to_string());
+    let mut price_updater = PriceUpdater::new(client_for_price_updater, chain.to_string());
 
     // let it rip
     thread::spawn(move || {

@@ -1,10 +1,8 @@
 # liquidator_v1
 
 # Architecture
-These diagrams are just for my reference, they don't comply to any standard
 
-## Modules
-![modules diagram](liquidator_v1_2.png)
+![modules diagram](liquidator_v1_3.png)
 
 ## Database
 ![database diagram](liquidator_database_v1_1.png)
@@ -25,7 +23,6 @@ TODO: Where could I assign some sort of
 priority to accounts that I should
 check for liquidation/ volatile tokens?
 TODO: rework readme
-TODO: put shit in env
 TODO: support dynamic ctoken lists.  currently just getting all ctokens using comp.allMarkets, so this bot is unaware of new markets added
 TODO: make comptroller creation block a dynamic binary search
 TODO: allow for either Https or websocket connections
