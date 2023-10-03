@@ -308,24 +308,27 @@ impl Indexer {
     }
 
     // TODO: this is so slow.  Can speed up with multicalls and tokio join_all
+    // Okay maybe the better approach is to just get balances by watching all events.
+    // There's a chance its slower, but it will probably clean up a lot of this code.
+    //
     async fn db_initialize_accounts_ctoken_amounts_with_calls(
         &mut self,
         account_ctokens_in: &HashMap<Address, HashSet<Address>>,
     ) {
-        // build vec of multicalls
-        // execute all multicalls
-        // handle results
-
         println!("initializing accounts_ctoken_amounts");
         let mut multicall = Multicall::<Provider<Http>>::new(self.client.clone(), None)
             .await
             .unwrap();
         println!("iterating through {} accounts", account_ctokens_in.len());
-        let mut accounts_done: u8 = 0;
-        let total_accounts: u8 = account_ctokens_in.len() as u8;
+        let mut accounts_done: u64 = 0;
+        let total_accounts: u64 = account_ctokens_in.len() as u64;
         for (account_address, ctokens) in account_ctokens_in {
             let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
-            println!("{}%", accounts_done as f64 / total_accounts as f64);
+            println!(
+                "accounts done: {}, {}% complete",
+                accounts_done,
+                (accounts_done as f64 / total_accounts as f64) * 100 as f64
+            );
 
             for ctoken_address in ctokens {
                 let ctoken_instance = self.ctoken_instances.get(ctoken_address).unwrap();
@@ -340,23 +343,35 @@ impl Indexer {
                 let collateral_amount_call = ctoken_instance.balance_of(*account_address);
 
                 multicall
-                    .clear_calls()
                     .add_call(borrowed_amount_call, false)
                     .add_call(collateral_amount_call, false);
+            }
 
-                // TODO: does this return in the same order as the calls were added?
-                let (borrowed_amount, collateral_amount) =
-                    multicall.call::<(U256, U256)>().await.unwrap();
+            // TODO: does this return in the same order as the calls were added?
+            // this should be a vec of borrowed_amount, collateral_amount continuing
+            let response: Vec<U256> = multicall.call_array().await.unwrap();
+            multicall.clear_calls();
 
+            let borrowed_amounts: Vec<U256> = response.iter().cloned().step_by(2).collect();
+            let collateral_amounts: Vec<U256> =
+                response.iter().cloned().skip(1).step_by(2).collect();
+
+            // this is my first rust complaint.  Don't want to have to set up a while loop
+            // I just want a nice for loop with indexing control
+            for ((ctoken_address, borrowed_amount), collateral_amount) in ctokens
+                .iter()
+                .zip(borrowed_amounts.iter())
+                .zip(collateral_amounts.iter())
+            {
                 let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
-                    Some(borrowed_amount),
-                    Some(collateral_amount),
+                    Some(*borrowed_amount),
+                    Some(*collateral_amount),
                     None,
                     None,
                 );
-
                 account.insert(*ctoken_address, account_ctoken_amount);
             }
+
             let db_key = DBKey::Account(*account_address);
             let db_val = DBVal::Account(Account(account));
             self.database.set(&db_key, &db_val);
