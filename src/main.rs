@@ -1,6 +1,5 @@
 mod bindings;
 mod database;
-mod handlers;
 mod indexer;
 mod price_updater;
 mod types;

@@ -1,3 +1,4 @@
+mod handlers;
 mod helpers;
 mod loop_controller;
 use crate::bindings::comptroller_bindings::ComptrollerEvents;
@@ -7,7 +8,6 @@ use crate::bindings::{
     erc20_bindings::Erc20,
 };
 use crate::database::Database;
-use crate::handlers::borrow_handler::borrow_handler;
 use crate::types::account_ctoken_amount::AccountCTokenAmount;
 use crate::types::{
     account::Account,
@@ -22,6 +22,10 @@ use ethers::{
     prelude::{ContractError, Multicall, ProviderError},
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, Log, U256},
+};
+use handlers::*;
+use helpers::{
+    build_comptroller_filters, build_ctoken_filters, flatten_into_logs, validate_query_data,
 };
 use loop_controller::{IndexingPhase, LoopController};
 use std::{
@@ -264,7 +268,7 @@ impl Indexer {
             };
             match decoded {
                 TargetEvents::ComptrollerEvent(comptroller_event) => match comptroller_event {
-                    ComptrollerEvents::MarketEnteredFilter(event) => {}
+                    ComptrollerEvents::MarketEnteredFilter(event) => handlers::market_entered(),
                     ComptrollerEvents::MarketExitedFilter(event) => {}
                     ComptrollerEvents::NewCollateralFactorFilter(event) => {}
                     ComptrollerEvents::NewCloseFactorFilter(event) => {}
@@ -272,9 +276,7 @@ impl Indexer {
                     _ => panic!("Somehow not an event we want..."),
                 },
                 TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
-                    CErc20Events::BorrowFilter(event) => {
-                        // borrow_handler(event, log_address, &mut self.database)
-                    }
+                    CErc20Events::BorrowFilter(event) => {}
                     CErc20Events::RepayBorrowFilter(event) => {}
                     CErc20Events::TransferFilter(event) => {}
                     _ => panic!("Somehow not an event we want..."),
@@ -282,70 +284,4 @@ impl Indexer {
             }
         }
     }
-}
-
-fn validate_query_data(results: &Vec<Result<Vec<Log>, ProviderError>>) -> bool {
-    for result in results.iter() {
-        if let Err(err) = result {
-            if err
-                .to_string()
-                .contains("query returned more than 10000 results")
-            {
-                println!(
-                    "too many results. re-trying query with decreasing block range until success"
-                );
-                return false;
-            } else {
-                panic!("historical event query error: {}", err);
-            }
-        }
-    }
-    return true;
-}
-
-fn build_comptroller_filters(
-    comptroller_events: &Vec<&str>,
-    comptroller_address: Address,
-    from_block: u64,
-    to_block: u64,
-) -> Vec<Filter> {
-    comptroller_events
-        .iter()
-        .map(|event_signature| {
-            Filter::new()
-                .address(comptroller_address)
-                .event(event_signature)
-                .from_block(from_block)
-                .to_block(to_block)
-        })
-        .collect()
-}
-
-// turns Vec<Result<Vec<Log>, Provider Error>> into Vec<Log>
-fn flatten_into_logs(results: Vec<Result<Vec<Log>, ProviderError>>) -> Vec<Log> {
-    results
-        .into_iter()
-        .filter_map(|result| result.ok())
-        .flatten()
-        .collect()
-}
-
-fn build_ctoken_filters(
-    ctoken_events: &Vec<&str>,
-    ctoken_addresses: Vec<&Address>,
-    from_block: u64,
-    to_block: u64,
-) -> Vec<Filter> {
-    ctoken_addresses
-        .iter()
-        .flat_map(|ctoken_address| {
-            ctoken_events.iter().map(move |event_signature| {
-                Filter::new()
-                    .address(**ctoken_address)
-                    .event(event_signature)
-                    .from_block(from_block)
-                    .to_block(to_block)
-            })
-        })
-        .collect()
 }

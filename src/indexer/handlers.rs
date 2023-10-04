@@ -35,13 +35,15 @@ use crate::types::db_types::DBKey;
 use ethers::types::Address;
 
 // comptroller events
-pub mod market_entered_handler;
-pub mod market_exited_handler;
-pub mod new_close_factor_handler;
-pub mod new_collateral_factor_handler;
-pub mod new_liquidation_incentive_handler;
+// pub mod market_entered_handler;
+// pub mod market_exited_handler;
+// pub mod new_close_factor_handler;
+// pub mod new_collateral_factor_handler;
+// pub mod new_liquidation_incentive_handler;
 
 // ctoken events
-pub mod borrow_handler;
-pub mod repay_borrow_handler;
-pub mod transfer_handler;
+// pub mod borrow_handler;
+// pub mod repay_borrow_handler;
+// pub mod transfer_handler;
+
+pub fn market_entered() {}
