@@ -1,4 +1,16 @@
 # liquidator_v1
+VERY MUCH NOT DONE.  I'm just making this public at this point to show that I have indeed been building and learning.
+
+It's been fun learning by doing.
+
+## What
+A generic liquidator bot that can be deployed on any Compound V2 forks.
+Liquidate-able accounts are liquidated via flashloan, allowing me to liquidate an account of any size.
+
+## Why
+I wanted to learn Rust and I enjoy thinking about performance.  I thought this would be a fun optimization project and the best way to learn a new tool is to use it.
+
+Compound V2 is one of the most forked lending protocols and I noticed that many Compound V2 forks by smaller protocols actually had to build their own internal liquidator bot because their protocol wasn't discovered by larger bots.  This bot is aimed at being easily deployed onto any Compound V2 fork.
 
 # Architecture
 
@@ -7,75 +19,31 @@
 ## Database
 ![database diagram](liquidator_database_v1_1.png)
 
-# Roadmap
+# Big TODO board
+This isn't updated regularly, I just dump things here while I'm working on other things so I don't forget.  But for now I'm just focusing on getting it from 0 to 1.  When something is done I just remove it, so don't expect this to be a dev log.
 
-## Phase 1: Start
-- extremely basic liquidator
-- troll chain since protocol creation and find market enter/exits
-    - start a process for present and past blocks
-- call to liquidator smart contract
-- Only CERC20, not bothering with CEther for now because we only care about L2s
-
-
-
-TODO: handle newComptroller event
-TODO: Where could I assign some sort of
-priority to accounts that I should
-check for liquidation/ volatile tokens?
-TODO: rework readme
-TODO: support dynamic ctoken lists.  currently just getting all ctokens using comp.allMarkets, so this bot is unaware of new markets added
-TODO: make comptroller creation block a dynamic binary search
-TODO: allow for either Https or websocket connections
-TODO: big refactor from storing f64 to storing U256.  converting to f64 results in loss of precision
-TODO: we can simplify a lot of things if we run the price updater AFTER we're done getting historical data
-
-## Phase 2: Correct
-- proper error handling
-- store positions in redis.  Use the more simple approach of serializing/deserializing entire data structures
-- use a better price oracle.  Coingecko rate limit is like 10/minute
-- If db instance is wrapped in arc mutex, do I really need each operation inside of db to be also wrapped in arc mutex?  This slows down everything cause they're all leaning on the one db...
-- multicalls!!!!
-- TESTS!
-
-## Phase 3: Scale
-- run it through a profiler to find bottlenecks
-- using get_logs or get_logs_paginated might be more efficient than query
-- Determine smallest accurate amount of current users.  Phase 1 just took all users who entered a market, but we could also maybe use marketExited to find out which users are still around
-- make the redis db secure (close ports?)
-- use complex redis data structures to represent data instead of serializing/deserializing every time
-- use redis ahash (+7-10% performance)
-- multithread
-    - split account and ctoken updating into their own threads
-- better logging than println
-- batching RPC calls (multicall)
-- websocket instead of https for performance (maybe no.  End goal is to be on IPC anyways)
-- Confirm the fastest way to get chain data: API, theGraph, or custom indexer
+### smaller items
+- make comptroller creation block a binary search.  One less input for me when deploying onto a new fork
+- call to liquidator.sol contract
 - execute multiple liquidate calls at once based on close factor
+- use redis ahash (+7-10% performance)
+- better multicall batching
+- add events to Liquidator contract
+
+### larger items
+- better logging than println
+- use a dedicated indexing service instead of building my own
+- unit tests
+- handle newComptroller event (need to determine if this is worth it)
+- support dynamic ctoken lists.  currently just getting all ctokens using comptroller.allMarkets, so this bot is unaware of new markets added
 - find a faster serializer: https://github.com/djkoloski/rust_serialization_benchmark
-    - don't need if we switch to approach of using complex redis data structures for everything
 
-
-## Phase 4: Spread
-- script to deploy onto any lending protocol and fork
-- function to find the comptroller contract creation block for each protocol
-- Add abstraction for any evm chain
-- target small lending protocols with not much competition
-
-## Optional Phase: Data
-- add events to Liquidator contract to keep track
+### hopes and dreams
+- benchmark environment to race different versions of this bot
+- Add some sort of priority to more volatile tokens / tokens with exposure to lots of volatile tokens
+- run it through a profiler to find bottlenecks
+- notify me of my liquidations
+- profit/loss of my liquidations historically
+- script to validate fork abi so I can easily deploy onto any fork
 - dune dashboard to track stats from all my deployed bots
-
-## Phase 5: Big
-- suit up to be competive on large lending protocols
-- my own ethereum/OP/ARB/etc nodes
-- switch to IPC for even faster speeds
-    - https://www.gakonst.com/ethers-rs/providers/ipc.html
-- private flashbot mempool submitting transactions directly to miners
-    - https://docs.flashbots.net/
-
-## Refactor to alloy when alloy is done
-
-To research: On L2s where gas is very cheap, constantly create new accounts and call entermarket call.  On accounts creation send address to bot and bot filters out that address.  Possibly clogs up competitor liquidators.  Might not be worth it for the gas fees and good liquidation bots might have a safeguard against this.
-
-# Sources
- - https://www.comp.xyz/t/the-compound-iii-liquidation-guide/3452
+- big and fast price oracle.  Might cost some money
