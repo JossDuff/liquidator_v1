@@ -1,3 +1,5 @@
+mod helpers;
+mod loop_controller;
 use crate::bindings::comptroller_bindings::ComptrollerEvents;
 use crate::bindings::{
     c_erc20_bindings::{CErc20, CErc20Events},
@@ -21,13 +23,14 @@ use ethers::{
     providers::{Http, Middleware, Provider, StreamExt},
     types::{Address, Filter, Log, U256},
 };
+use loop_controller::{IndexingPhase, LoopController};
 use std::{
     collections::{HashMap, HashSet},
     sync::{Arc, Mutex},
 };
 use tokio::time::Duration;
 
-const STEP_SIZE: u64 = 500_000;
+const STEP_SIZE: u64 = 1_000_000;
 
 pub struct Indexer {
     client: Arc<Provider<Http>>,
@@ -65,12 +68,10 @@ impl Indexer {
         self.db_initialize_all_ctokens().await;
 
         let bot_start_block = self.client.get_block_number().await.unwrap().as_u64();
-        self.discover_accounts(bot_start_block).await;
-        self.read_current_events(bot_start_block).await;
+        self.read_events(bot_start_block).await;
     }
 
-    async fn read_current_events(&mut self, start_block: u64) {
-        println!("Watching current events");
+    async fn read_events(&mut self, bot_start_block: u64) {
         let comptroller_events: Vec<&str> = vec![
             "MarketEntered(address,address)",
             "MarketExited(address,address)",
@@ -85,20 +86,37 @@ impl Indexer {
             "Transfer(address,address,uint256)",
         ];
 
-        let mut i: u64 = start_block;
+        // start at comptroller_creation_block
+        let mut loop_controller: LoopController =
+            LoopController::new(bot_start_block, self.comptroller_creation_block, STEP_SIZE);
         loop {
-            // wait until at least 10 blocks have passed (to make sure block is confirmed)
-            while self.client.get_block_number().await.unwrap().as_u64() - i < 10 {}
+            if let IndexingPhase::CurrentEvents = loop_controller.get_phase() {
+                let i = loop_controller.get_i();
+                // wait until at least 10 blocks have passed (to make sure block is confirmed)
+                while self.client.get_block_number().await.unwrap().as_u64() - i < 10 {}
+            }
+
+            // println!(
+            //     "trying from block {} to block {}, range = {}",
+            //     loop_controller.from_block(),
+            //     loop_controller.to_block(),
+            //     loop_controller.to_block() - loop_controller.from_block()
+            // );
 
             let mut comptroller_filters: Vec<Filter> = build_comptroller_filters(
                 &comptroller_events,
                 self.comptroller_instance.address(),
-                i,
-                i,
+                loop_controller.from_block(),
+                loop_controller.to_block(),
             );
 
-            let mut ctoken_filters: Vec<Filter> =
-                build_ctoken_filters(&ctoken_events, self.ctoken_instances.keys().collect(), i, i);
+            // TODO: shouldn't have to iterate over ctoken_instances.keys() each time
+            let mut ctoken_filters: Vec<Filter> = build_ctoken_filters(
+                &ctoken_events,
+                self.ctoken_instances.keys().collect(),
+                loop_controller.from_block(),
+                loop_controller.to_block(),
+            );
 
             // combine both filter Vectors into one Vec
             comptroller_filters.append(&mut ctoken_filters);
@@ -106,74 +124,24 @@ impl Indexer {
 
             let results: Vec<Result<Vec<Log>, ProviderError>> = self.get_logs(all_filters).await;
 
-            self.handle_current_events(results);
-
-            println!("processed block {}", i);
-            i = i + 1;
-        }
-    }
-
-    async fn discover_accounts(&mut self, end_block: u64) {
-        let comptroller_events: Vec<&str> = vec![
-            "MarketEntered(address,address)",
-            "MarketExited(address,address)",
-        ];
-
-        // address ctoken to set of accounts in
-        let mut ctoken_accounts_in: HashMap<Address, HashSet<Address>> = HashMap::new();
-        // address account to set of ctokens in
-        let mut account_ctokens_in: HashMap<Address, HashSet<Address>> = HashMap::new();
-
-        // start at comptroller_creation_block
-        let mut i: u64 = self.comptroller_creation_block;
-        let mut last_run_failure: bool = false;
-        let mut step_size: u64 = STEP_SIZE;
-        while i <= end_block {
-            print_progress_percent(i, self.comptroller_creation_block, end_block);
-
-            let comptroller_filters: Vec<Filter> = build_comptroller_filters(
-                &comptroller_events,
-                self.comptroller_instance.address(),
-                i,
-                i + step_size,
-            );
-
-            let results: Vec<Result<Vec<Log>, ProviderError>> =
-                self.get_logs(comptroller_filters).await;
-
-            // if there was a failed query we need to retry
             if !validate_query_data(&results) {
-                i -= step_size;
-                step_size = step_size / 2;
-                last_run_failure = true;
+                loop_controller.query_failure();
                 continue;
             }
 
-            handle_past_events(results, &mut ctoken_accounts_in, &mut account_ctokens_in);
+            // turns Vec<Result<Vec<Log>, Provider Error>> into Vec<Log>
+            let mut logs: Vec<Log> = flatten_into_logs(results);
 
-            if i == end_block {
-                break;
+            if let IndexingPhase::PastEvents = loop_controller.get_phase() {
+                // Sort by block number
+                logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
             }
-            if last_run_failure {
-                step_size *= 2;
-            }
-            last_run_failure = false;
-            if i + step_size > end_block {
-                step_size = end_block - i;
-            }
-            i += step_size;
+
+            self.handle_logs(logs);
+
+            loop_controller.print_progress();
+            loop_controller.query_successful();
         }
-
-        println!("got all events");
-        println!("accounts found: {}", account_ctokens_in.len());
-        println!("ctokens found: {}", ctoken_accounts_in.len());
-
-        // fill in the rest of the db info
-        self.db_initialize_ctokens_accounts_in(&ctoken_accounts_in);
-        self.db_initialize_accounts_ctoken_amounts_with_calls(&account_ctokens_in)
-            .await;
-
-        println!("db up to date");
     }
 
     async fn db_initialize_all_ctokens(&mut self) {
@@ -282,108 +250,7 @@ impl Indexer {
         results
     }
 
-    fn db_initialize_ctokens_accounts_in(
-        &mut self,
-        ctoken_accounts_in: &HashMap<Address, HashSet<Address>>,
-    ) {
-        // for each ctoken, get it's CToken entry from the database
-        // set the db Ctoken.accounts_in to the HashSet of addresses
-        // set the updated CToken entry to database
-        for (ctoken, accounts_set) in ctoken_accounts_in {
-            let db_key = DBKey::CToken(*ctoken);
-
-            let mut db_ctoken: CToken = match self.database.get(&db_key).unwrap() {
-                DBVal::CToken(ctoken) => ctoken,
-                _ => panic!("Requested a ctoken from db, didn't get a ctoken"),
-            };
-
-            // turns a HashSet into a Vec
-            let accounts_vec: Vec<Address> = accounts_set.iter().cloned().collect();
-            db_ctoken.accounts_in = Some(accounts_vec);
-
-            let db_val = DBVal::CToken(db_ctoken);
-            self.database.set(&db_key, &db_val);
-        }
-        println!("DB ctokens all have accounts_in !!!!");
-    }
-
-    // TODO: this is so slow
-    // Okay maybe the better approach is to just get balances by watching all events.
-    // There's a chance its slower, but it will probably clean up a lot of this code.
-    // There's also a chance it misses some events resulting in inaccurate accounts, which we
-    // can't chance
-    async fn db_initialize_accounts_ctoken_amounts_with_calls(
-        &mut self,
-        account_ctokens_in: &HashMap<Address, HashSet<Address>>,
-    ) {
-        println!("initializing accounts_ctoken_amounts");
-        let mut multicall = Multicall::<Provider<Http>>::new(self.client.clone(), None)
-            .await
-            .unwrap();
-        println!("iterating through {} accounts", account_ctokens_in.len());
-        let mut accounts_done: u64 = 0;
-        let total_accounts: u64 = account_ctokens_in.len() as u64;
-        for (account_address, ctokens) in account_ctokens_in {
-            let mut account: HashMap<Address, AccountCTokenAmount> = HashMap::new();
-            println!(
-                "accounts done: {}, {}% complete",
-                accounts_done,
-                (accounts_done as f64 / total_accounts as f64) * 100 as f64
-            );
-
-            for ctoken_address in ctokens {
-                let ctoken_instance = self.ctoken_instances.get(ctoken_address).unwrap();
-
-                let borrowed_amount_call = ctoken_instance.borrow_balance_stored(*account_address);
-
-                let collateral_amount_call = ctoken_instance.balance_of(*account_address);
-
-                multicall
-                    .add_call(borrowed_amount_call, false)
-                    .add_call(collateral_amount_call, false);
-            }
-
-            // TODO: does this return in the same order as the calls were added?
-            // this should be a vec of borrowed_amount, collateral_amount continuing
-            let response: Vec<U256> = multicall.call_array().await.unwrap();
-            multicall.clear_calls();
-
-            let borrowed_amounts: Vec<U256> = response.iter().cloned().step_by(2).collect();
-            let collateral_amounts: Vec<U256> =
-                response.iter().cloned().skip(1).step_by(2).collect();
-
-            // this is my first rust complaint.  Don't want to have to set up a while loop
-            // I just want a nice for loop with indexing control
-            for ((ctoken_address, borrowed_amount), collateral_amount) in ctokens
-                .iter()
-                .zip(borrowed_amounts.iter())
-                .zip(collateral_amounts.iter())
-            {
-                let account_ctoken_amount: AccountCTokenAmount = AccountCTokenAmount::new(
-                    Some(*borrowed_amount),
-                    Some(*collateral_amount),
-                    None,
-                    None,
-                );
-                account.insert(*ctoken_address, account_ctoken_amount);
-            }
-
-            let db_key = DBKey::Account(*account_address);
-            let db_val = DBVal::Account(Account(account));
-            self.database.set(&db_key, &db_val);
-
-            accounts_done = accounts_done + 1;
-        }
-        println!("DB accounts are all filled in !!!");
-    }
-
-    fn handle_current_events(&mut self, results: Vec<Result<Vec<Log>, ProviderError>>) {
-        let logs: Vec<Log> = results
-            .into_iter()
-            .filter_map(|result| result.ok())
-            .flatten()
-            .collect();
-
+    fn handle_logs(&mut self, logs: Vec<Log>) {
         for log in logs {
             // log.address is the contract that emitted the event
             let log_address = log.address;
@@ -406,7 +273,7 @@ impl Indexer {
                 },
                 TargetEvents::CTokenEvent(ctoken_event) => match ctoken_event {
                     CErc20Events::BorrowFilter(event) => {
-                        borrow_handler(event, log_address, &mut self.database)
+                        // borrow_handler(event, log_address, &mut self.database)
                     }
                     CErc20Events::RepayBorrowFilter(event) => {}
                     CErc20Events::TransferFilter(event) => {}
@@ -417,60 +284,6 @@ impl Indexer {
     }
 }
 
-fn print_progress_percent(i: u64, start_block: u64, end_block: u64) -> () {
-    let progress_percent =
-        ((i - start_block) as f64 / (end_block - start_block) as f64) * 100 as f64;
-
-    println!("loading past events {}%", progress_percent);
-}
-
-fn handle_past_market_exited_event(
-    ctoken_accounts_in: &mut HashMap<Address, HashSet<Address>>,
-    account_ctokens_in: &mut HashMap<Address, HashSet<Address>>,
-    account: Address,
-    ctoken: Address,
-) {
-    // remove ctoken from account
-    // delete account entirely if it's now empty
-    let ctokens = account_ctokens_in.get_mut(&account).unwrap();
-    if !ctokens.remove(&ctoken) {
-        panic!("removed a ctoken that wasn't caught in market enter");
-    }
-    if ctokens.is_empty() {
-        account_ctokens_in.remove(&account);
-    }
-
-    // remove account from ctoken
-    let accounts = ctoken_accounts_in.get_mut(&ctoken).unwrap();
-    if !accounts.remove(&account) {
-        panic!("removed an account that wasn't caught in market enter");
-    }
-}
-
-fn handle_past_market_enter_event(
-    ctoken_accounts_in: &mut HashMap<Address, HashSet<Address>>,
-    account_ctokens_in: &mut HashMap<Address, HashSet<Address>>,
-    account: Address,
-    ctoken: Address,
-) {
-    if let Some(ctokens) = account_ctokens_in.get_mut(&account) {
-        ctokens.insert(ctoken);
-    } else {
-        let mut ctokens: HashSet<Address> = HashSet::new();
-        ctokens.insert(ctoken);
-        account_ctokens_in.insert(account, ctokens);
-    }
-
-    // add_account_to_ctoken();
-    if let Some(accounts) = ctoken_accounts_in.get_mut(&ctoken) {
-        accounts.insert(account);
-    } else {
-        let mut accounts: HashSet<Address> = HashSet::new();
-        accounts.insert(account);
-        ctoken_accounts_in.insert(ctoken, accounts);
-    }
-}
-
 fn validate_query_data(results: &Vec<Result<Vec<Log>, ProviderError>>) -> bool {
     for result in results.iter() {
         if let Err(err) = result {
@@ -478,7 +291,9 @@ fn validate_query_data(results: &Vec<Result<Vec<Log>, ProviderError>>) -> bool {
                 .to_string()
                 .contains("query returned more than 10000 results")
             {
-                println!("too many results. re-trying query with smaller block range");
+                println!(
+                    "too many results. re-trying query with decreasing block range until success"
+                );
                 return false;
             } else {
                 panic!("historical event query error: {}", err);
@@ -506,6 +321,15 @@ fn build_comptroller_filters(
         .collect()
 }
 
+// turns Vec<Result<Vec<Log>, Provider Error>> into Vec<Log>
+fn flatten_into_logs(results: Vec<Result<Vec<Log>, ProviderError>>) -> Vec<Log> {
+    results
+        .into_iter()
+        .filter_map(|result| result.ok())
+        .flatten()
+        .collect()
+}
+
 fn build_ctoken_filters(
     ctoken_events: &Vec<&str>,
     ctoken_addresses: Vec<&Address>,
@@ -524,44 +348,4 @@ fn build_ctoken_filters(
             })
         })
         .collect()
-}
-
-fn handle_past_events(
-    results: Vec<Result<Vec<Log>, ProviderError>>,
-    ctoken_accounts_in: &mut HashMap<Address, HashSet<Address>>,
-    account_ctokens_in: &mut HashMap<Address, HashSet<Address>>,
-) {
-    // turns Vec<Result<Vec<Log>, ProviderError>> into Vec<Log>
-    let mut logs: Vec<Log> = results
-        .into_iter()
-        .filter_map(|result| result.ok())
-        .flatten()
-        .collect();
-
-    // Sort by block number
-    logs.sort_by(|a, b| a.block_number.cmp(&b.block_number));
-
-    for log in logs {
-        let raw_log = RawLog::from(log);
-        let decoded = ComptrollerEvents::decode_log(&raw_log).unwrap();
-        match decoded {
-            ComptrollerEvents::MarketEnteredFilter(market_entered) => {
-                handle_past_market_enter_event(
-                    ctoken_accounts_in,
-                    account_ctokens_in,
-                    market_entered.account,
-                    market_entered.c_token,
-                );
-            }
-            ComptrollerEvents::MarketExitedFilter(market_exited) => {
-                handle_past_market_exited_event(
-                    ctoken_accounts_in,
-                    account_ctokens_in,
-                    market_exited.account,
-                    market_exited.c_token,
-                );
-            }
-            _ => panic!("Somehow not an event we want..."),
-        }
-    }
 }
