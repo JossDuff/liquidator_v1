@@ -10,11 +10,8 @@ edition = "2021"
 
 [dependencies]
 ethers = { version = "2.0", features = ["ws"] }
-# Ethers' async features rely upon the Tokio async runtime.
 tokio = { version = "1", features = ["full"] }
-# Flexible concrete Error Reporting type built on std::error::Error with customizable Reports
-eyre = "0.6"
-# anyhow = "1.0.39"
+anyhow = "1.0.39"
 # http requests
 reqwest = { version = "0.11", features = ["json"] }
 # serialize/deserialize json
@@ -22,5 +19,4 @@ serde_json = "1.0"
 serde = "1.0.114"
 # serde_derive = "1.0.114"
 # graphql_client = "0.13.0"
-redis = { version = "0.23.2", features = ["tokio-comp"] }
 dotenv = "0.15.0"
