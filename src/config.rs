@@ -1,18 +1,28 @@
+use ethers::types::Address;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
-    pub price_oracle_config: PriceOracleConfig,
+    pub chain: u64,
+    pub protocol: String,
+    pub comptroller_address: Address,
+    pub price_oracle: PriceOracleConfig,
+    pub data_provider: DataProviderConfig,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct PriceOracleConfig {
-    pub kind: PriceOracleProvider,
-    pub endpoint: String,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "kind")]
+#[serde(rename_all = "lowercase")]
+pub enum PriceOracleConfig {
+    CoinGecko {
+        asset_platform: String,
+        endpoint: String,
+    },
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-pub enum PriceOracleProvider {
-    CoinGecko,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "kind")]
+#[serde(rename_all = "lowercase")]
+pub enum DataProviderConfig {
+    Envio { endpoint: String },
 }

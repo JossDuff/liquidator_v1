@@ -1,0 +1,12 @@
+chain = 1
+protocol = "compoundv2"
+comptroller_address = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B"
+
+[price_oracle]
+kind = "coingecko"
+asset_platform = "ethereum"
+endpoint = "https://api.coingecko.com/api/v3"
+
+[data_provider]
+kind = "envio"
+endpoint = "googoogaga"
