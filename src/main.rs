@@ -3,14 +3,17 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use config::Config;
 use data_provider::{data_provider_from_config, DataProvider};
-use ethers::{core::k256::sha2::digest::typenum::assert_type, types::Address};
-use liquidation::{liquidatable, liquidate};
+use ethers::{
+    providers::{Http, Provider},
+    types::Address,
+};
+use liquidator::{liquidator_from_config, Liquidator};
 use price_oracle::price_oracle_from_config;
 use types::TokenBalance;
 
 mod config;
 mod data_provider;
-mod liquidation;
+mod liquidator;
 mod price_oracle;
 mod types;
 
@@ -19,7 +22,6 @@ async fn main() -> Result<()> {
     let cfg = tokio::fs::read_to_string("config.toml")
         .await
         .context("read config file")?;
-
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
 
     let price_oracle =
@@ -27,6 +29,8 @@ async fn main() -> Result<()> {
 
     let data_provider =
         data_provider_from_config(cfg.data_provider).context("Data provider from config")?;
+
+    let liquidator = liquidator_from_config(cfg.liquidator).context("Liquidator from config")?;
 
     loop {
         let comptroller = update_comproller(data_provider.clone()).await?;
@@ -55,7 +59,7 @@ async fn main() -> Result<()> {
                 })
                 .collect();
 
-            if liquidatable(&account, &comptroller) {
+            if liquidator.can_i_liquidate(&account, &comptroller) {
                 let profits = liquidate(&account).context("liquidate")?;
                 println!("profit/loss: {profits}");
             }

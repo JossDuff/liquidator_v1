@@ -10,3 +10,7 @@ endpoint = "https://api.coingecko.com/api/v3"
 [data_provider]
 kind = "envio"
 endpoint = "googoogaga"
+
+[liquidator]
+ethers_provider = "https://mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
+address = "0xD9760ABad7021A0F64FC1f6fB4adB8f919A0a65d"
