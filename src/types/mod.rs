@@ -30,3 +30,14 @@ impl TokenBalance {
         TokenBalance { address, balance }
     }
 }
+
+pub enum CollateralOrBorrow {
+    Collateral {
+        value_usd: f64,
+        exchange_rate: f64,
+        collateral_factor: f64,
+    },
+    Borrow {
+        value_usd: f64,
+    },
+}

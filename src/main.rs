@@ -48,6 +48,7 @@ async fn main() -> Result<()> {
             // token in account, usd value held, collateral factor
             // TODO: but collateral factor doesn't update that often...
             let account_token_prices = price_oracle.get_prices(account_token_addresses).await?;
+            // let account_token_
             assert!(account_token_prices.len() == account_assets.len());
 
             let account_token_values: Vec<(Address, f64)> = account_assets
@@ -59,7 +60,7 @@ async fn main() -> Result<()> {
                 })
                 .collect();
 
-            if liquidator.can_i_liquidate(&account, &comptroller) {
+            if liquidator.can_i_liquidate(&account, &account_token_values) {
                 let profits = liquidate(&account).context("liquidate")?;
                 println!("profit/loss: {profits}");
             }
