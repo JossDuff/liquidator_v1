@@ -31,5 +31,5 @@ pub enum DataProviderConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LiquidatorConfig {
     pub provider_endpoint: String,
-    pub address: String,
+    pub liquidator_address: String,
 }
