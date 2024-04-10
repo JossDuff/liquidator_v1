@@ -6,9 +6,15 @@ pub struct Config {
     pub chain: u64,
     pub protocol: String,
     pub comptroller_address: Address,
+    #[serde(default = "default_min_profit_per_liquidation")]
+    pub min_profit_per_liquidation: usize,
     pub liquidator: LiquidatorConfig,
     pub price_oracle: PriceOracleConfig,
     pub data_provider: DataProviderConfig,
+}
+
+fn default_min_profit_per_liquidation() -> usize {
+    0
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
