@@ -38,10 +38,31 @@ pub struct Account {
 pub struct TokenBalance {
     pub underlying_address: Address,
     pub c_token_address: Address,
+    // TODO: balance of ctoken or in units of underlying?
     pub balance: u64,
     pub kind: CollateralOrBorrow,
     pub protocol_seize_share: f64,
     pub usd_price: Option<f64>,
+}
+
+impl TokenBalance {
+    pub fn new(
+        underlying_address: Address,
+        c_token_address: Address,
+        balance: u64,
+        kind: CollateralOrBorrow,
+        protocol_seize_share: f64,
+        usd_price: Option<f64>,
+    ) -> Self {
+        Self {
+            underlying_address,
+            c_token_address,
+            balance,
+            kind,
+            usd_price,
+            protocol_seize_share,
+        }
+    }
 }
 
 pub enum CollateralOrBorrow {

@@ -72,7 +72,7 @@ pub async fn run_execution_loop(state: State) -> Result<()> {
 
 // TODO: test extensively
 pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
-    // can liquidate if Sum(collateral_usd) > Sum(borrowed_usd)
+    // can liquidate if Sum(collateral_usd) < Sum(borrowed_usd)
     let mut account_liquidity: f64 = 0.0;
 
     for account_token in account_tokens {
@@ -135,6 +135,274 @@ pub fn choose_liquidation_tokens(
 }
 
 pub fn estimate_profit(liquidation_args: &LiquidationArgs, liquidation_incentive: f64) -> f64 {
-    // TODO
-    1_000_000.0
+    // TODO: revm simulation?
+
+    1.0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cannot_liquidate() {
+        let account_tokens = vec![TokenBalance::new(
+            Address::random(),
+            Address::random(),
+            1,
+            CollateralOrBorrow::Collateral {
+                exchange_rate: 0.5,
+                collateral_factor: 0.9,
+            },
+            0.1,
+            Some(10.0),
+        )];
+        assert!(!can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![TokenBalance::new(
+            Address::random(),
+            Address::random(),
+            0,
+            CollateralOrBorrow::Collateral {
+                exchange_rate: 0.5,
+                collateral_factor: 0.9,
+            },
+            0.1,
+            Some(10.0),
+        )];
+        assert!(!can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![TokenBalance::new(
+            Address::random(),
+            Address::random(),
+            10,
+            CollateralOrBorrow::Collateral {
+                exchange_rate: 0.5,
+                collateral_factor: 0.9,
+            },
+            0.1,
+            Some(0.0),
+        )];
+        assert!(!can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 1.0,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(!can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.9,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.9,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(!can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 1.0,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(!can_i_liquidate(&account_tokens));
+    }
+
+    #[test]
+    fn test_can_liquidate() {
+        let account_tokens = vec![TokenBalance::new(
+            Address::random(),
+            Address::random(),
+            1,
+            CollateralOrBorrow::Borrow,
+            0.1,
+            Some(10.0),
+        )];
+        assert!(can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.9,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.9,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.9,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 1.0,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(can_i_liquidate(&account_tokens));
+
+        let account_tokens = vec![
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                100,
+                CollateralOrBorrow::Collateral {
+                    exchange_rate: 1.0,
+                    collateral_factor: 0.01,
+                },
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                2,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+            TokenBalance::new(
+                Address::random(),
+                Address::random(),
+                10,
+                CollateralOrBorrow::Borrow,
+                0.1,
+                Some(1.0),
+            ),
+        ];
+        assert!(can_i_liquidate(&account_tokens));
+    }
 }
