@@ -1,17 +1,11 @@
-use std::{ops::Add, str::FromStr, sync::Arc};
+use std::str::FromStr;
 
-use crate::{
-    config::LiquidatorConfig,
-    types::{Account, CollateralOrBorrow, LiquidationArgs, TokenBalance},
-};
+use crate::{config::LiquidatorConfig, types::LiquidationArgs};
 use anyhow::{Context, Result};
 use ethers::{
-    abi::JsonAbi,
-    contract::{Contract, ContractInstance},
-    providers::{Http, Middleware, Provider, RwClient},
+    providers::{Http, Provider},
     types::Address,
 };
-use reqwest::Url;
 
 pub struct Liquidator {
     client: Provider<Http>,

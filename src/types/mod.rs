@@ -1,10 +1,8 @@
-use std::{default, sync::Arc};
+use std::sync::Arc;
 
 use ethers::types::Address;
 
-use crate::{
-    config::Config, data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle,
-};
+use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle};
 
 pub struct State {
     pub price_oracle: Arc<dyn PriceOracle>,
@@ -27,11 +25,6 @@ impl State {
             config_min_profit_per_liquidation,
         }
     }
-}
-
-pub struct Comptroller {
-    pub close_factor: f64,
-    pub liquidation_incentive: f64,
 }
 
 // struct to keep the most at risk accounts in memory

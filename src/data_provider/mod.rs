@@ -1,7 +1,7 @@
 use self::impls::envio::Envio;
 use crate::config::DataProviderConfig;
-use crate::types::{Account, CollateralOrBorrow, Comptroller, TokenBalance};
-use anyhow::{Context, Result};
+use crate::types::{Account, TokenBalance};
+use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::Arc;
 

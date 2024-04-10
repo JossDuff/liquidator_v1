@@ -2,15 +2,11 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use config::Config;
-use data_provider::{data_provider_from_config, DataProvider};
-use ethers::{
-    providers::{Http, Provider},
-    types::Address,
-};
+use data_provider::data_provider_from_config;
 use execution::run_execution_loop;
-use liquidator::{liquidator_from_config, Liquidator};
+use liquidator::liquidator_from_config;
 use price_oracle::price_oracle_from_config;
-use types::{State, TokenBalance};
+use types::State;
 
 mod config;
 mod data_provider;
