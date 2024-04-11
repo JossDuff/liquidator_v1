@@ -44,7 +44,7 @@ pub async fn run_execution_loop(state: State) -> Result<()> {
                         );
                     }
 
-                    account_token.usd_price = Some(*token_price);
+                    account_token.underlying_usd_price = Some(*token_price);
                 });
 
             // do the math to figure out if an account is liquidatable
@@ -70,24 +70,20 @@ pub async fn run_execution_loop(state: State) -> Result<()> {
     }
 }
 
-// TODO: test extensively
 pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
-    // can liquidate if Sum(collateral_usd) < Sum(borrowed_usd)
+    // can liquidate if Sum(collateral_usd_value * collateral_factor) < Sum(borrowed_usd_value)
     let mut account_liquidity: f64 = 0.0;
 
     for account_token in account_tokens {
-        let value_usd = if let Some(usd_price) = account_token.usd_price {
-            account_token.balance as f64 * usd_price
-        } else {
-            panic!("token {} has no price", account_token.underlying_address);
-        };
+        let usd_price = account_token.underlying_usd_price.unwrap();
 
         let affect = match account_token.kind {
             CollateralOrBorrow::Collateral {
                 exchange_rate,
                 collateral_factor,
-            } => value_usd * exchange_rate * collateral_factor,
-            CollateralOrBorrow::Borrow => -value_usd,
+                ctoken_balance,
+            } => ctoken_balance * exchange_rate * usd_price * collateral_factor,
+            CollateralOrBorrow::Borrow { underlying_balance } => -(underlying_balance * usd_price),
         };
 
         account_liquidity += affect;
@@ -104,25 +100,25 @@ pub fn choose_liquidation_tokens(
     let mut best_repay_c_token = (Address::default(), 0_f64);
     let mut best_seize_c_token = (Address::default(), 0_f64, 0_f64);
     for token in account_tokens {
-        let value = if let Some(usd_price) = token.usd_price {
-            usd_price * token.balance as f64
-        } else {
-            panic!(
-                "no usd price for token {} by 'choose_liquidation_tokens'",
-                token.underlying_address
-            );
-        };
+        let underlying_usd_price = token.underlying_usd_price.unwrap();
 
         match token.kind {
             CollateralOrBorrow::Collateral {
-                // TODO: might have to do something with exchange rate and collateral factor
+                exchange_rate,
+                ctoken_balance,
                 ..
-            } => if value > best_seize_c_token.1 {
-                best_seize_c_token = (token.c_token_address, value, token.protocol_seize_share)
-            },
-            CollateralOrBorrow::Borrow => if value > best_repay_c_token.1 {
-                best_repay_c_token = (token.c_token_address, value)
-            },
+            } => {
+                let value = ctoken_balance * exchange_rate * underlying_usd_price;
+                if value > best_seize_c_token.1 {
+                    best_seize_c_token = (token.c_token_address, value, token.protocol_seize_share)
+                }
+            }
+            CollateralOrBorrow::Borrow { underlying_balance } => {
+                let value = underlying_balance * underlying_usd_price;
+                if value > best_repay_c_token.1 {
+                    best_repay_c_token = (token.c_token_address, value)
+                }
+            }
         };
     }
 
@@ -149,10 +145,10 @@ mod tests {
         let account_tokens = vec![TokenBalance::new(
             Address::random(),
             Address::random(),
-            1,
             CollateralOrBorrow::Collateral {
                 exchange_rate: 0.5,
                 collateral_factor: 0.9,
+                ctoken_balance: 1.0,
             },
             0.1,
             Some(10.0),
@@ -162,10 +158,10 @@ mod tests {
         let account_tokens = vec![TokenBalance::new(
             Address::random(),
             Address::random(),
-            0,
             CollateralOrBorrow::Collateral {
                 exchange_rate: 0.5,
                 collateral_factor: 0.9,
+                ctoken_balance: 0.0,
             },
             0.1,
             Some(10.0),
@@ -175,10 +171,10 @@ mod tests {
         let account_tokens = vec![TokenBalance::new(
             Address::random(),
             Address::random(),
-            10,
             CollateralOrBorrow::Collateral {
                 exchange_rate: 0.5,
                 collateral_factor: 0.9,
+                ctoken_balance: 10.0,
             },
             0.1,
             Some(0.0),
@@ -189,10 +185,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 1.0,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -200,8 +196,9 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -212,10 +209,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.9,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -223,10 +220,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.9,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -234,8 +231,9 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -246,10 +244,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 1.0,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -257,16 +255,18 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 2.0,
+                },
                 0.1,
                 Some(1.0),
             ),
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 2.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -279,8 +279,9 @@ mod tests {
         let account_tokens = vec![TokenBalance::new(
             Address::random(),
             Address::random(),
-            1,
-            CollateralOrBorrow::Borrow,
+            CollateralOrBorrow::Borrow {
+                underlying_balance: 1.0,
+            },
             0.1,
             Some(10.0),
         )];
@@ -290,10 +291,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.9,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -301,8 +302,9 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -313,10 +315,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.9,
+                    ctoken_balance: 2.0,
                 },
                 0.1,
                 Some(1.0),
@@ -324,10 +326,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.9,
+                    ctoken_balance: 2.0,
                 },
                 0.1,
                 Some(1.0),
@@ -335,8 +337,9 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -347,10 +350,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 1.0,
+                    ctoken_balance: 10.0,
                 },
                 0.1,
                 Some(1.0),
@@ -358,16 +361,18 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 2.0,
+                },
                 0.1,
                 Some(1.0),
             ),
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),
@@ -378,10 +383,10 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                100,
                 CollateralOrBorrow::Collateral {
                     exchange_rate: 1.0,
                     collateral_factor: 0.01,
+                    ctoken_balance: 100.0,
                 },
                 0.1,
                 Some(1.0),
@@ -389,16 +394,18 @@ mod tests {
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                2,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 2.0,
+                },
                 0.1,
                 Some(1.0),
             ),
             TokenBalance::new(
                 Address::random(),
                 Address::random(),
-                10,
-                CollateralOrBorrow::Borrow,
+                CollateralOrBorrow::Borrow {
+                    underlying_balance: 10.0,
+                },
                 0.1,
                 Some(1.0),
             ),

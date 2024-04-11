@@ -38,18 +38,15 @@ pub struct Account {
 pub struct TokenBalance {
     pub underlying_address: Address,
     pub c_token_address: Address,
-    // TODO: balance of ctoken or in units of underlying?
-    pub balance: u64,
     pub kind: CollateralOrBorrow,
     pub protocol_seize_share: f64,
-    pub usd_price: Option<f64>,
+    pub underlying_usd_price: Option<f64>,
 }
 
 impl TokenBalance {
     pub fn new(
         underlying_address: Address,
         c_token_address: Address,
-        balance: u64,
         kind: CollateralOrBorrow,
         protocol_seize_share: f64,
         usd_price: Option<f64>,
@@ -57,9 +54,8 @@ impl TokenBalance {
         Self {
             underlying_address,
             c_token_address,
-            balance,
             kind,
-            usd_price,
+            underlying_usd_price: usd_price,
             protocol_seize_share,
         }
     }
@@ -69,8 +65,11 @@ pub enum CollateralOrBorrow {
     Collateral {
         exchange_rate: f64,
         collateral_factor: f64,
+        ctoken_balance: f64,
     },
-    Borrow,
+    Borrow {
+        underlying_balance: f64,
+    },
 }
 
 pub struct LiquidationArgs {
