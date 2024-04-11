@@ -17,7 +17,11 @@ impl Liquidator {
     // close_factor: The percent, ranging from 0% to 100%, of a liquidatable account’s borrow that can be repaid in a single liquidate
     // transaction. If a user has multiple borrowed assets, the closeFactor applies to any single borrowed asset, not the aggregated
     // value of a user’s outstanding borrowing.
-    pub async fn liquidate(&self, args: &LiquidationArgs, close_factor: f64) -> Result<f64> {
+    pub async fn liquidate(
+        &self,
+        args: LiquidationArgs,
+        close_factor: f64,
+    ) -> Result<(Address, f64)> {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 
         // use close factor to figure out how many times we can try to call this jawn

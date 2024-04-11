@@ -19,10 +19,10 @@ impl DataProvider for Envio {
     async fn account_health(&self, account: Address) -> Result<i64> {
         todo!()
     }
-    async fn account_liquidity(&self, account: Address) -> Result<f64> {
+    async fn account_liquidity(&self, account: Address) -> Result<(Address, f64)> {
         todo!()
     }
-    async fn account_assets(&self, account: Address) -> Result<Vec<TokenBalance>> {
+    async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         todo!()
     }
     async fn collateral_factor(&self, ctoken: Address) -> Result<f64> {

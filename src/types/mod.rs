@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{clone, sync::Arc};
 
 use ethers::types::Address;
 
@@ -31,8 +31,6 @@ impl State {
 pub struct Account {
     pub address: Address,
     pub health: i64,
-    pub top_2_seize: [TokenBalance; 2],
-    pub top_2_repay: [TokenBalance; 2],
 }
 
 pub struct TokenBalance {
@@ -72,6 +70,7 @@ pub enum CollateralOrBorrow {
     },
 }
 
+#[derive(Clone)]
 pub struct LiquidationArgs {
     pub borrower: Address,
     pub repay_c_token: Address,
