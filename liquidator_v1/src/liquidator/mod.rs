@@ -34,7 +34,7 @@ pub fn liquidator_from_config(config: LiquidatorConfig) -> Result<Liquidator> {
     // let client = RwClient::new(http, http);
     let client: Provider<Http> = Provider::<Http>::try_from(config.provider_endpoint).unwrap();
 
-    let abi: String = include_str!("../../abi/liquidator.json").into();
+    let abi: String = include_str!("../../../abi/liquidator.json").into();
 
     let address =
         Address::from_str(&config.liquidator_address).context("parse liquidator address")?;
