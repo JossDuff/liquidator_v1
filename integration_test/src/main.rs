@@ -1,31 +1,58 @@
+mod mock_data_provider;
+mod mock_price_oracle;
+mod types;
+use anyhow::{Context, Result};
+use async_trait::async_trait;
+use ethers::prelude::{Http, Provider};
 use ethers::types::{Address, U256};
-use std::str::FromStr;
+use liquidator::{
+    config::Config,
+    data_provider::{data_provider_from_config, DataProvider},
+    execution::run_execution,
+    liquidator::Liquidator,
+    price_oracle::PriceOracle,
+    types::State,
+};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
+use types::LiquidationEvent;
 
-fn main() {
-    println!("Hello, world!");
+use crate::types::LiquidationEventParams;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let cfg = tokio::fs::read_to_string("config.toml")
+        .await
+        .context("read config file")?;
+    let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
+
+    let provider: Arc<Provider<Http>> =
+        Arc::new(Provider::<Http>::try_from(cfg.liquidator.provider_endpoint).unwrap());
+
+    let liquidation_events = get_a_few_liquidation_events();
+    for liquidation_event in liquidation_events {
+        let mock_price_oracle = Arc::new(todo!());
+        let mock_data_provider = Arc::new(todo!());
+        let mock_min_profit_per_liquidation = 0.0;
+        let mock_liquidator = Arc::new(Liquidator {});
+
+        let state = State::new(
+            mock_price_oracle,
+            mock_data_provider,
+            mock_liquidator,
+            mock_min_profit_per_liquidation,
+        );
+
+        run_execution(&state).await?;
+    }
+
+    Ok(())
 }
 
-// for this test we will try to see if our logic picks up on the
-// some liquidation events
+// for this test we will try to see if our logic picks up on some liquidation events
 // use revm to fork state at block before liquidation event
 // get account balances at that block
 // get prices at that block
 // see if can_i_liquidate would have passed
-
-struct LiquidationEvent {
-    chain_id: u32,
-    block_number: u32,
-    src_address: Address,
-    params: LiquidationEventParams,
-}
-
-struct LiquidationEventParams {
-    liquidator: Address,
-    borrower: Address,
-    repay_amount: U256,
-    ctoken_collateral: Address,
-    seize_tokens: U256,
-}
 
 fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
     vec![

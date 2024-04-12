@@ -27,12 +27,13 @@ impl State {
     }
 }
 
-// struct to keep the most at risk accounts in memory
+#[derive(Clone)]
 pub struct Account {
     pub address: Address,
     pub health: i64,
 }
 
+#[derive(Clone)]
 pub struct TokenBalance {
     pub underlying_address: Address,
     pub c_token_address: Address,
@@ -59,6 +60,7 @@ impl TokenBalance {
     }
 }
 
+#[derive(Clone)]
 pub enum CollateralOrBorrow {
     Collateral {
         exchange_rate: f64,

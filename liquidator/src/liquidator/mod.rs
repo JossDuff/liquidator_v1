@@ -8,9 +8,9 @@ use ethers::{
 };
 
 pub struct Liquidator {
-    client: Provider<Http>,
-    address: Address,
-    abi: String,
+    // client: Provider<Http>,
+    // address: Address,
+    // abi: String,
 }
 
 impl Liquidator {
@@ -40,8 +40,8 @@ pub fn liquidator_from_config(config: LiquidatorConfig) -> Result<Liquidator> {
         Address::from_str(&config.liquidator_address).context("parse liquidator address")?;
 
     Ok(Liquidator {
-        client,
-        address,
-        abi,
+        // client,
+        // address,
+        // abi,
     })
 }

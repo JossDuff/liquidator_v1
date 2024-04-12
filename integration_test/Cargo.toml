@@ -6,6 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+liquidator = { path = "../liquidator" }
 ethers = { version = "2.0", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0.39"
+async-trait = "0.1.80"
+toml = "0.8.12"

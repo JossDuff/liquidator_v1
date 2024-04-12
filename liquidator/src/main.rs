@@ -1,19 +1,10 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use config::Config;
-use data_provider::data_provider_from_config;
-use execution::run_execution_loop;
-use liquidator::liquidator_from_config;
-use price_oracle::price_oracle_from_config;
-use types::State;
-
-mod config;
-mod data_provider;
-mod execution;
-mod liquidator;
-mod price_oracle;
-mod types;
+use liquidator::{
+    config::Config, data_provider::data_provider_from_config, execution::run_execution,
+    liquidator::liquidator_from_config, price_oracle::price_oracle_from_config, types::State,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -38,5 +29,7 @@ async fn main() -> Result<()> {
         cfg.min_profit_per_liquidation as f64,
     );
 
-    run_execution_loop(state).await
+    loop {
+        run_execution(&state).await?
+    }
 }

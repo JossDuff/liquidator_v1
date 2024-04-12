@@ -70,9 +70,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.79"
+version = "0.1.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a507401cad91ec6a857ed5513a2073c82a9b9048762b885bb98655b306964681"
+checksum = "c6fa2087f2753a7da8cc1c0dbfcf89579dd57458e36769de5ac750b4671737ca"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1527,8 +1527,11 @@ name = "integration_test"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "ethers",
+ "liquidator",
  "tokio",
+ "toml",
 ]
 
 [[package]]
@@ -1672,7 +1675,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01cda141df6706de531b6c46c3a33ecca755538219bd484262fa09410c13539c"
 
 [[package]]
-name = "liquidator_v1"
+name = "liquidator"
 version = "0.1.0"
 dependencies = [
  "anyhow",

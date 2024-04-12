@@ -1,0 +1,7 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./liquidator/Cargo.toml",
+        "./integration_test/Cargo.toml"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
+}

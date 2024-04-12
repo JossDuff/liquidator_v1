@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["liquidator_v1", "integration_test"]
+members = ["liquidator", "integration_test"]
