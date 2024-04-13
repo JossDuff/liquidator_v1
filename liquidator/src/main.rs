@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
+use ethers::contract::abigen;
 use liquidator::{
     config::Config, data_provider::data_provider_from_config, execution::run_execution,
     liquidator::liquidator_from_config, price_oracle::price_oracle_from_config, types::State,
@@ -8,6 +9,8 @@ use liquidator::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    abigen!(Unitroller, "../abi/unitroller.json");
+
     let cfg = tokio::fs::read_to_string("config.toml")
         .await
         .context("read config file")?;

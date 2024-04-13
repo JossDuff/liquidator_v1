@@ -3,6 +3,7 @@ mod mock_price_oracle;
 mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use ethers::contract::abigen;
 use ethers::prelude::{Http, Provider};
 use ethers::types::{Address, U256};
 use liquidator::{
@@ -13,6 +14,7 @@ use liquidator::{
     price_oracle::PriceOracle,
     types::State,
 };
+use mock_data_provider::MockDataProvider;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 use types::LiquidationEvent;
 
@@ -25,13 +27,27 @@ async fn main() -> Result<()> {
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
 
+    abigen!(Unitroller, "../abi/unitroller.json");
+
     let provider: Arc<Provider<Http>> =
         Arc::new(Provider::<Http>::try_from(cfg.liquidator.provider_endpoint).unwrap());
 
-    let liquidation_events = get_a_few_liquidation_events();
-    for liquidation_event in liquidation_events {
-        let mock_price_oracle = Arc::new(todo!());
-        let mock_data_provider = Arc::new(todo!());
+    for liquidation_event in get_a_few_liquidation_events() {
+        let liquidation_block_number = liquidation_event.block_number - 1;
+        let liquidated_account = liquidation_event.params.borrower;
+
+        let unitroller_instance: Unitroller<Provider<Http>> =
+            Unitroller::new(liquidation_event.unitroller, provider.clone());
+
+        let mock_price_oracle = todo!();
+        let mock_data_provider = Arc::new(
+            MockDataProvider::new(
+                provider.clone(),
+                block_number_data_provider,
+                liquidated_account,
+            )
+            .await?,
+        );
         let mock_min_profit_per_liquidation = 0.0;
         let mock_liquidator = Arc::new(Liquidator {});
 
@@ -59,6 +75,7 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         LiquidationEvent {
             chain_id: 10,
             block_number: 23437332,
+            unitroller: Address::from_str("0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF").unwrap(),
             src_address: Address::from_str("0x1d073cf59Ae0C169cbc58B6fdD518822ae89173a").unwrap(),
             params: LiquidationEventParams {
                 liquidator: Address::from_str("0xe83374e84091eA33582c556A9b017EE8b75D03C3")
@@ -73,6 +90,7 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         LiquidationEvent {
             chain_id: 10,
             block_number: 112194638,
+            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
             src_address: Address::from_str("0xd14451E0Fa44B18f08aeB1E4a4d092B823CaCa68").unwrap(),
             params: LiquidationEventParams {
                 liquidator: Address::from_str("0xe7fC43c74b5c0632Ba222C4057Dad3574D25e9Cc")
@@ -87,6 +105,7 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         LiquidationEvent {
             chain_id: 10,
             block_number: 112194962,
+            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
             src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
             params: LiquidationEventParams {
                 liquidator: Address::from_str("0x58DA173CD88b74e2BE75d54a6F365d93B508Cd49")
@@ -101,6 +120,7 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         LiquidationEvent {
             chain_id: 10,
             block_number: 112122577,
+            unitroller: Address::from_str("0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF").unwrap(),
             src_address: Address::from_str("0x4645e0952678E9566FB529D9313f5730E4e1C412").unwrap(),
             params: LiquidationEventParams {
                 liquidator: Address::from_str("0x6F0878b34164A9C6a400F1FfD1ecb7b27a47075c")
