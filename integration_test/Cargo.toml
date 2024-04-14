@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 liquidator = { path = "../liquidator" }
+contract_bindings = { path = "../contract_bindings" }
 ethers = { version = "2.0", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0.39"
 async-trait = "0.1.80"
 toml = "0.8.12"
+futures = "0.3.30"

@@ -14,7 +14,6 @@ pub trait DataProvider {
     // async fn account_health(&self, account: Address) -> Result<i64>;
     // async fn account_liquidity(&self, account: Address) -> Result<(Address, f64)>;
     async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)>;
-    async fn collateral_factor(&self, ctoken: Address) -> Result<f64>;
     async fn close_factor(&self) -> Result<f64>;
     async fn liquidation_incentive(&self) -> Result<f64>;
 }

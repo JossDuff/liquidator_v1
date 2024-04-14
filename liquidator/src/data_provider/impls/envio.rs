@@ -25,9 +25,6 @@ impl DataProvider for Envio {
     async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         todo!()
     }
-    async fn collateral_factor(&self, ctoken: Address) -> Result<f64> {
-        todo!()
-    }
     async fn close_factor(&self) -> Result<f64> {
         todo!()
     }
