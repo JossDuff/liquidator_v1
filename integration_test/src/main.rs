@@ -52,6 +52,7 @@ async fn main() -> Result<()> {
             )
             .await?,
         );
+
         let mock_price_oracle = todo!();
         let mock_min_profit_per_liquidation = 0.0;
         let mock_liquidator = Arc::new(Liquidator {});
@@ -96,22 +97,6 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         // sonne
         LiquidationEvent {
             chain_id: 10,
-            block_number: 112194638,
-            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
-            src_address: Address::from_str("0xd14451E0Fa44B18f08aeB1E4a4d092B823CaCa68").unwrap(),
-            params: LiquidationEventParams {
-                liquidator: Address::from_str("0xe7fC43c74b5c0632Ba222C4057Dad3574D25e9Cc")
-                    .unwrap(),
-                borrower: Address::from_str("0x937F7FA0E92F82A7293de7f4577Ec77caee2e2c1").unwrap(),
-                repay_amount: U256::from_str("365355950985780483275").unwrap(),
-                ctoken_collateral: Address::from_str("0xf7B5965f5C117Eb1B5450187c9DcFccc3C317e8E")
-                    .unwrap(),
-                seize_tokens: U256::from_str("984686533").unwrap(),
-            },
-        },
-        // sonne
-        LiquidationEvent {
-            chain_id: 10,
             block_number: 112194962,
             unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
             src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
@@ -123,6 +108,22 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
                 ctoken_collateral: Address::from_str("0x8cD6b19A07d754bF36AdEEE79EDF4F2134a8F571")
                     .unwrap(),
                 seize_tokens: U256::from_str("7500060831").unwrap(),
+            },
+        },
+        // sonne
+        LiquidationEvent {
+            chain_id: 10,
+            block_number: 112194638,
+            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
+            src_address: Address::from_str("0xd14451E0Fa44B18f08aeB1E4a4d092B823CaCa68").unwrap(),
+            params: LiquidationEventParams {
+                liquidator: Address::from_str("0xe7fC43c74b5c0632Ba222C4057Dad3574D25e9Cc")
+                    .unwrap(),
+                borrower: Address::from_str("0x937F7FA0E92F82A7293de7f4577Ec77caee2e2c1").unwrap(),
+                repay_amount: U256::from_str("365355950985780483275").unwrap(),
+                ctoken_collateral: Address::from_str("0xf7B5965f5C117Eb1B5450187c9DcFccc3C317e8E")
+                    .unwrap(),
+                seize_tokens: U256::from_str("984686533").unwrap(),
             },
         },
         // iron bank

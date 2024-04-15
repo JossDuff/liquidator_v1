@@ -23,4 +23,11 @@ fn main() {
         .unwrap()
         .write_to_file("contract_bindings/src/ctoken_bindings.rs")
         .unwrap();
+
+    Abigen::new("Erc20", "abi/erc20.json")
+        .unwrap()
+        .generate()
+        .unwrap()
+        .write_to_file("contract_bindings/src/erc20_bindings.rs")
+        .unwrap();
 }
