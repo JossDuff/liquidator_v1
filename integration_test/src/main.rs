@@ -17,6 +17,7 @@ use liquidator::{
     types::State,
 };
 use mock_data_provider::MockDataProvider;
+use mock_price_oracle::MockPriceOracle;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 use types::LiquidationEvent;
 
@@ -33,6 +34,7 @@ async fn main() -> Result<()> {
         Arc::new(Provider::<Http>::try_from(cfg.liquidator.provider_endpoint).unwrap());
 
     for liquidation_event in get_a_few_liquidation_events() {
+        let liquidation_block = liquidation_event.block_number;
         let block_before_liquidation = liquidation_event.block_number - 1;
         let liquidated_account = liquidation_event.params.borrower;
 
@@ -53,7 +55,16 @@ async fn main() -> Result<()> {
             .await?,
         );
 
-        let mock_price_oracle = todo!();
+        println!("data provider initialized");
+
+        let tokens_to_price = mock_data_provider.get_tokens_to_price();
+
+        let mock_price_oracle = Arc::new(
+            MockPriceOracle::new(provider.clone(), tokens_to_price, liquidation_block).await?,
+        );
+
+        println!("price oracle initialized");
+
         let mock_min_profit_per_liquidation = 0.0;
         let mock_liquidator = Arc::new(Liquidator {});
 
@@ -64,7 +75,9 @@ async fn main() -> Result<()> {
             mock_min_profit_per_liquidation,
         );
 
+        println!("running execution loop");
         run_execution(&state).await?;
+        println!("execution loop done");
     }
 
     Ok(())
@@ -94,22 +107,7 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
         //         seize_tokens: U256::from_str("1496908803363").unwrap(),
         //     },
         // },
-        // sonne
-        LiquidationEvent {
-            chain_id: 10,
-            block_number: 112194962,
-            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
-            src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
-            params: LiquidationEventParams {
-                liquidator: Address::from_str("0x58DA173CD88b74e2BE75d54a6F365d93B508Cd49")
-                    .unwrap(),
-                borrower: Address::from_str("0xe262Ae584d91f7473c4a9a67D37626005f800D2f").unwrap(),
-                repay_amount: U256::from_str("2555967").unwrap(),
-                ctoken_collateral: Address::from_str("0x8cD6b19A07d754bF36AdEEE79EDF4F2134a8F571")
-                    .unwrap(),
-                seize_tokens: U256::from_str("7500060831").unwrap(),
-            },
-        },
+
         // sonne
         LiquidationEvent {
             chain_id: 10,
@@ -124,6 +122,22 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
                 ctoken_collateral: Address::from_str("0xf7B5965f5C117Eb1B5450187c9DcFccc3C317e8E")
                     .unwrap(),
                 seize_tokens: U256::from_str("984686533").unwrap(),
+            },
+        },
+        // sonne
+        LiquidationEvent {
+            chain_id: 10,
+            block_number: 112194962,
+            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
+            src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
+            params: LiquidationEventParams {
+                liquidator: Address::from_str("0x58DA173CD88b74e2BE75d54a6F365d93B508Cd49")
+                    .unwrap(),
+                borrower: Address::from_str("0xe262Ae584d91f7473c4a9a67D37626005f800D2f").unwrap(),
+                repay_amount: U256::from_str("2555967").unwrap(),
+                ctoken_collateral: Address::from_str("0x8cD6b19A07d754bF36AdEEE79EDF4F2134a8F571")
+                    .unwrap(),
+                seize_tokens: U256::from_str("7500060831").unwrap(),
             },
         },
         // iron bank

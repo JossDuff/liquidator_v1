@@ -36,7 +36,9 @@ pub struct Account {
 #[derive(Clone)]
 pub struct TokenBalance {
     pub underlying_address: Address,
-    pub c_token_address: Address,
+    pub underlying_decimals: u8,
+    pub ctoken_address: Address,
+    pub ctoken_decimals: u8,
     pub kind: CollateralOrBorrow,
     pub protocol_seize_share: f64,
     pub underlying_usd_price: Option<f64>,
@@ -45,14 +47,18 @@ pub struct TokenBalance {
 impl TokenBalance {
     pub fn new(
         underlying_address: Address,
-        c_token_address: Address,
+        underlying_decimals: u8,
+        ctoken_address: Address,
+        ctoken_decimals: u8,
         kind: CollateralOrBorrow,
         protocol_seize_share: f64,
         usd_price: Option<f64>,
     ) -> Self {
         Self {
             underlying_address,
-            c_token_address,
+            underlying_decimals,
+            ctoken_address: ctoken_address,
+            ctoken_decimals: ctoken_decimals,
             kind,
             underlying_usd_price: usd_price,
             protocol_seize_share,
@@ -75,7 +81,7 @@ pub enum CollateralOrBorrow {
 #[derive(Clone)]
 pub struct LiquidationArgs {
     pub borrower: Address,
-    pub repay_c_token: Address,
-    pub seize_c_token: Address,
-    pub seize_c_token_protocol_seize_share: f64,
+    pub repay_ctoken: Address,
+    pub seize_ctoken: Address,
+    pub seize_ctoken_protocol_seize_share: f64,
 }

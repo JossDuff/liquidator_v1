@@ -58,6 +58,21 @@ impl MockDataProvider {
     }
 }
 
+impl MockDataProvider {
+    pub fn get_tokens_to_price(&self) -> Vec<(Address, Address)> {
+        self.account_assets
+            .1
+            .iter()
+            .map(|token_balance| {
+                (
+                    token_balance.ctoken_address,
+                    token_balance.underlying_address,
+                )
+            })
+            .collect()
+    }
+}
+
 #[async_trait]
 impl DataProvider for MockDataProvider {
     async fn unhealthy_accounts(&self, _num: u64) -> Result<Vec<Account>> {
@@ -161,21 +176,49 @@ async fn get_historic_account_assets(
 
         match (borrow, supply) {
             (Some(borrow), Some(supply)) => {
-                let token_balance =
-                    TokenBalance::new(underlying_addr, *ctoken_addr, borrow, 0.0, None);
+                let token_balance = TokenBalance::new(
+                    underlying_addr,
+                    underlying_decimals,
+                    *ctoken_addr,
+                    ctoken_decimals,
+                    borrow,
+                    0.0,
+                    None,
+                );
                 token_balances.push(token_balance);
-                let token_balance =
-                    TokenBalance::new(underlying_addr, *ctoken_addr, supply, 0.0, None);
+                let token_balance = TokenBalance::new(
+                    underlying_addr,
+                    underlying_decimals,
+                    *ctoken_addr,
+                    ctoken_decimals,
+                    supply,
+                    0.0,
+                    None,
+                );
                 token_balances.push(token_balance);
             }
             (None, Some(supply)) => {
-                let token_balance =
-                    TokenBalance::new(underlying_addr, *ctoken_addr, supply, 0.0, None);
+                let token_balance = TokenBalance::new(
+                    underlying_addr,
+                    underlying_decimals,
+                    *ctoken_addr,
+                    ctoken_decimals,
+                    supply,
+                    0.0,
+                    None,
+                );
                 token_balances.push(token_balance);
             }
             (Some(borrow), None) => {
-                let token_balance =
-                    TokenBalance::new(underlying_addr, *ctoken_addr, borrow, 0.0, None);
+                let token_balance = TokenBalance::new(
+                    underlying_addr,
+                    underlying_decimals,
+                    *ctoken_addr,
+                    ctoken_decimals,
+                    borrow,
+                    0.0,
+                    None,
+                );
                 token_balances.push(token_balance);
             }
             (None, None) => {
@@ -216,7 +259,7 @@ async fn get_historic_close_factor(
     Ok(convert_mantissa(close_factor_mantissa))
 }
 
-fn convert_mantissa(mantissa: U256) -> f64 {
+pub fn convert_mantissa(mantissa: U256) -> f64 {
     let scale = U256::exp10(18);
     let numerator = mantissa.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
     let denominator = scale.as_u128() as f64;

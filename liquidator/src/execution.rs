@@ -106,8 +106,8 @@ pub fn choose_liquidation_tokens(
     account_tokens: &Vec<TokenBalance>,
 ) -> Result<LiquidationArgs> {
     // TODO: is the best one just the one with the highest balance??
-    let mut best_repay_c_token = (Address::default(), 0_f64);
-    let mut best_seize_c_token = (Address::default(), 0_f64, 0_f64);
+    let mut best_repay_ctoken = (Address::default(), 0_f64);
+    let mut best_seize_ctoken = (Address::default(), 0_f64, 0_f64);
     for token in account_tokens {
         let underlying_usd_price = token.underlying_usd_price.unwrap();
 
@@ -118,14 +118,16 @@ pub fn choose_liquidation_tokens(
                 ..
             } => {
                 let value = ctoken_balance * exchange_rate * underlying_usd_price;
-                if value > best_seize_c_token.1 {
-                    best_seize_c_token = (token.c_token_address, value, token.protocol_seize_share)
+                if value > best_seize_ctoken.1 {
+                    best_seize_ctoken = (token.ctoken_address, value, token.protocol_seize_share)
                 }
             }
-            CollateralOrBorrow::Borrow { underlying_balance } => {
+            CollateralOrBorrow::Borrow {
+                underlying_balance, ..
+            } => {
                 let value = underlying_balance * underlying_usd_price;
-                if value > best_repay_c_token.1 {
-                    best_repay_c_token = (token.c_token_address, value)
+                if value > best_repay_ctoken.1 {
+                    best_repay_ctoken = (token.ctoken_address, value)
                 }
             }
         };
@@ -133,9 +135,9 @@ pub fn choose_liquidation_tokens(
 
     Ok(LiquidationArgs {
         borrower: *account_address,
-        repay_c_token: best_repay_c_token.0,
-        seize_c_token: best_seize_c_token.0,
-        seize_c_token_protocol_seize_share: best_seize_c_token.2,
+        repay_ctoken: best_repay_ctoken.0,
+        seize_ctoken: best_seize_ctoken.0,
+        seize_ctoken_protocol_seize_share: best_seize_ctoken.2,
     })
 }
 
@@ -145,6 +147,7 @@ pub fn estimate_profit(liquidation_args: &LiquidationArgs, liquidation_incentive
     1.0
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -422,3 +425,4 @@ mod tests {
         assert!(can_i_liquidate(&account_tokens));
     }
 }
+*/

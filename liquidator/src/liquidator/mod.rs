@@ -25,7 +25,8 @@ impl Liquidator {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 
         // use close factor to figure out how many times we can try to call this jawn
-        todo!()
+        println!("liquidate brrrrrrrrrrrrrr");
+        Ok((Address::default(), 0.0))
     }
 }
 
