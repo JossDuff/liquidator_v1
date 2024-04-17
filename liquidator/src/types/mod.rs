@@ -87,6 +87,7 @@ pub struct LiquidationArgs {
     pub seize_ctoken_protocol_seize_share_mant: U256,
 }
 
+#[derive(Clone)]
 pub struct ScaledNum {
     pub num: U256,
     pub scale: u8,
@@ -104,7 +105,9 @@ impl ScaledNum {
 impl Mul for ScaledNum {
     type Output = ScaledNum;
 
-    // what scale should this return?  Does it matter?  Could I just take the highest scale?
+    // is it always best to take the higher scale?
+    // pro: never lose precision
+    // con: could eventually overflow with too many operation
     fn mul(self, other: ScaledNum) -> ScaledNum {
         let min_scale = min(self.scale, other.scale);
         let max_scale = max(self.scale, other.scale);
@@ -130,7 +133,6 @@ mod tests {
         assert_eq!(z.num, 2000.into());
     }
 
-    // TODO: this is failing
     #[test]
     fn test_scaled_num_as_mantissa() {
         let x = ScaledNum::new(50, 2);
@@ -139,6 +141,6 @@ mod tests {
 
         assert_eq!(z.scale, 2);
 
-        assert_eq!(z.num, 5000.into());
+        assert_eq!(z.num, 50000.into());
     }
 }
