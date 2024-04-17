@@ -98,14 +98,18 @@ pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
         account_liquidity += affect;
     }
 
+    println!("account liquidity: {account_liquidity}");
+
     account_liquidity < 0.0
 }
 
+// best repay and best seize are NOT simply the largest value, like I have here
+// I think the best repay/seize are the most liquid & easiest to swap into
+// this is a more complex problem than it appears
 pub fn choose_liquidation_tokens(
     account_address: &Address,
     account_tokens: &Vec<TokenBalance>,
 ) -> Result<LiquidationArgs> {
-    // TODO: is the best one just the one with the highest balance??
     let mut best_repay_ctoken = (Address::default(), 0_f64);
     let mut best_seize_ctoken = (Address::default(), 0_f64, 0_f64);
     for token in account_tokens {
@@ -132,6 +136,14 @@ pub fn choose_liquidation_tokens(
             }
         };
     }
+    println!(
+        "best repay ctoken: {:?}, value: {}",
+        best_repay_ctoken.0, best_repay_ctoken.1
+    );
+    println!(
+        "best seize ctoken: {:?}, value: {}",
+        best_seize_ctoken.0, best_seize_ctoken.1
+    );
 
     Ok(LiquidationArgs {
         borrower: *account_address,

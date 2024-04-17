@@ -91,23 +91,6 @@ async fn main() -> Result<()> {
 
 fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
     vec![
-        // iron bank
-        // LiquidationEvent {
-        //     chain_id: 10,
-        //     block_number: 23437332,
-        //     unitroller: Address::from_str("0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF").unwrap(),
-        //     src_address: Address::from_str("0x1d073cf59Ae0C169cbc58B6fdD518822ae89173a").unwrap(),
-        //     params: LiquidationEventParams {
-        //         liquidator: Address::from_str("0xe83374e84091eA33582c556A9b017EE8b75D03C3")
-        //             .unwrap(),
-        //         borrower: Address::from_str("0xa10753468D7EaF706a91a7Ae5c021aAea2aaD7d8").unwrap(),
-        //         repay_amount: U256::from_str("151001568").unwrap(),
-        //         ctoken_collateral: Address::from_str("0x4645e0952678E9566FB529D9313f5730E4e1C412")
-        //             .unwrap(),
-        //         seize_tokens: U256::from_str("1496908803363").unwrap(),
-        //     },
-        // },
-
         // sonne
         LiquidationEvent {
             chain_id: 10,
@@ -125,35 +108,20 @@ fn get_a_few_liquidation_events() -> Vec<LiquidationEvent> {
             },
         },
         // sonne
-        LiquidationEvent {
-            chain_id: 10,
-            block_number: 112194962,
-            unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
-            src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
-            params: LiquidationEventParams {
-                liquidator: Address::from_str("0x58DA173CD88b74e2BE75d54a6F365d93B508Cd49")
-                    .unwrap(),
-                borrower: Address::from_str("0xe262Ae584d91f7473c4a9a67D37626005f800D2f").unwrap(),
-                repay_amount: U256::from_str("2555967").unwrap(),
-                ctoken_collateral: Address::from_str("0x8cD6b19A07d754bF36AdEEE79EDF4F2134a8F571")
-                    .unwrap(),
-                seize_tokens: U256::from_str("7500060831").unwrap(),
-            },
-        },
-        // iron bank
+        // this one has a weird token that can't be priced
         // LiquidationEvent {
         //     chain_id: 10,
-        //     block_number: 112122577,
-        //     unitroller: Address::from_str("0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF").unwrap(),
-        //     src_address: Address::from_str("0x4645e0952678E9566FB529D9313f5730E4e1C412").unwrap(),
+        //     block_number: 112194962,
+        //     unitroller: Address::from_str("0x60CF091cD3f50420d50fD7f707414d0DF4751C58").unwrap(),
+        //     src_address: Address::from_str("0xEC8FEa79026FfEd168cCf5C627c7f486D77b765F").unwrap(),
         //     params: LiquidationEventParams {
-        //         liquidator: Address::from_str("0x6F0878b34164A9C6a400F1FfD1ecb7b27a47075c")
+        //         liquidator: Address::from_str("0x58DA173CD88b74e2BE75d54a6F365d93B508Cd49")
         //             .unwrap(),
-        //         borrower: Address::from_str("0x9C952A59e50498518EBbc38FfC1A4962a367A089").unwrap(),
-        //         repay_amount: U256::from_str("345616681799010417319").unwrap(),
-        //         ctoken_collateral: Address::from_str("0x874C01c2d1767EFA01Fa54b2Ac16be96fAd5a742")
+        //         borrower: Address::from_str("0xe262Ae584d91f7473c4a9a67D37626005f800D2f").unwrap(),
+        //         repay_amount: U256::from_str("2555967").unwrap(),
+        //         ctoken_collateral: Address::from_str("0x8cD6b19A07d754bF36AdEEE79EDF4F2134a8F571")
         //             .unwrap(),
-        //         seize_tokens: U256::from_str("7046445840457").unwrap(),
+        //         seize_tokens: U256::from_str("7500060831").unwrap(),
         //     },
         // },
     ]
