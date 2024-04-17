@@ -1,6 +1,7 @@
+use ethers::types::{Address, U256};
+use std::cmp::{max, min};
+use std::ops::{Add, Div, Mul, Sub};
 use std::{clone, sync::Arc};
-
-use ethers::types::Address;
 
 use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle};
 
@@ -8,7 +9,7 @@ pub struct State {
     pub price_oracle: Arc<dyn PriceOracle>,
     pub data_provider: Arc<dyn DataProvider>,
     pub liquidator: Arc<Liquidator>,
-    pub config_min_profit_per_liquidation: f64,
+    pub config_min_profit_per_liquidation: U256,
 }
 
 impl State {
@@ -16,7 +17,7 @@ impl State {
         price_oracle: Arc<dyn PriceOracle>,
         data_provider: Arc<dyn DataProvider>,
         liquidator: Arc<Liquidator>,
-        config_min_profit_per_liquidation: f64,
+        config_min_profit_per_liquidation: U256,
     ) -> Self {
         Self {
             price_oracle,
@@ -27,11 +28,8 @@ impl State {
     }
 }
 
-#[derive(Clone)]
-pub struct Account {
-    pub address: Address,
-    pub health: i64,
-}
+// account is a potential borrower
+pub type Account = Address;
 
 #[derive(Clone)]
 pub struct TokenBalance {
@@ -40,8 +38,11 @@ pub struct TokenBalance {
     pub ctoken_address: Address,
     pub ctoken_decimals: u8,
     pub kind: CollateralOrBorrow,
-    pub protocol_seize_share: f64,
-    pub underlying_usd_price: Option<f64>,
+    pub exchange_rate: U256,
+    pub collateral_factor_mant: U256,
+    pub protocol_seize_share_mant: U256,
+    // TODO: is it better to scale this up to 256 or to scale others down?
+    pub underlying_usd_price: Option<U256>,
 }
 
 impl TokenBalance {
@@ -51,31 +52,30 @@ impl TokenBalance {
         ctoken_address: Address,
         ctoken_decimals: u8,
         kind: CollateralOrBorrow,
-        protocol_seize_share: f64,
-        usd_price: Option<f64>,
+        // scaled up by 1 * 10^(10 + Underlying Token Decimals)
+        exchange_rate: U256,
+        collateral_factor_mant: U256,
+        protocol_seize_share_mant: U256,
+        underlying_usd_price: Option<U256>,
     ) -> Self {
         Self {
             underlying_address,
             underlying_decimals,
-            ctoken_address: ctoken_address,
-            ctoken_decimals: ctoken_decimals,
+            ctoken_address,
+            ctoken_decimals,
             kind,
-            underlying_usd_price: usd_price,
-            protocol_seize_share,
+            exchange_rate,
+            collateral_factor_mant,
+            protocol_seize_share_mant,
+            underlying_usd_price,
         }
     }
 }
 
 #[derive(Clone)]
 pub enum CollateralOrBorrow {
-    Collateral {
-        exchange_rate: f64,
-        collateral_factor: f64,
-        ctoken_balance: f64,
-    },
-    Borrow {
-        underlying_balance: f64,
-    },
+    Collateral { ctoken_balance: U256 },
+    Borrow { underlying_balance: U256 },
 }
 
 #[derive(Clone)]
@@ -83,5 +83,62 @@ pub struct LiquidationArgs {
     pub borrower: Address,
     pub repay_ctoken: Address,
     pub seize_ctoken: Address,
-    pub seize_ctoken_protocol_seize_share: f64,
+    // is 0 if ctoken doesn't have protocolSeizeShareMantissa constant
+    pub seize_ctoken_protocol_seize_share_mant: U256,
+}
+
+pub struct ScaledNum {
+    pub num: U256,
+    pub scale: u8,
+}
+
+impl ScaledNum {
+    pub fn new<U: Into<U256>>(num: U, scale: u8) -> Self {
+        Self {
+            num: num.into(),
+            scale,
+        }
+    }
+}
+
+impl Mul for ScaledNum {
+    type Output = ScaledNum;
+
+    // what scale should this return?  Does it matter?  Could I just take the highest scale?
+    fn mul(self, other: ScaledNum) -> ScaledNum {
+        let min_scale = min(self.scale, other.scale);
+        let max_scale = max(self.scale, other.scale);
+        let num = self.num * other.num / U256::exp10(min_scale as usize);
+        ScaledNum {
+            num,
+            scale: max_scale,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mul_scaled_num() {
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = x * y;
+
+        assert_eq!(z.scale, 3);
+        assert_eq!(z.num, 2000.into());
+    }
+
+    // TODO: this is failing
+    #[test]
+    fn test_scaled_num_as_mantissa() {
+        let x = ScaledNum::new(50, 2);
+        let y = ScaledNum::new(10000, 1);
+        let z = x * y;
+
+        assert_eq!(z.scale, 2);
+
+        assert_eq!(z.num, 5000.into());
+    }
 }

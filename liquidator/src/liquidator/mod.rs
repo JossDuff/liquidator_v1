@@ -4,7 +4,7 @@ use crate::{config::LiquidatorConfig, types::LiquidationArgs};
 use anyhow::{Context, Result};
 use ethers::{
     providers::{Http, Provider},
-    types::Address,
+    types::{Address, U256},
 };
 
 pub struct Liquidator {
@@ -20,7 +20,7 @@ impl Liquidator {
     pub async fn liquidate(
         &self,
         args: LiquidationArgs,
-        close_factor: f64,
+        close_factor: U256,
     ) -> Result<(Address, f64)> {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 

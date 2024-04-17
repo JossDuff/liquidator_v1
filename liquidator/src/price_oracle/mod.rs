@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 
 use anyhow::Result;
-use ethers::types::Address;
+use ethers::types::{Address, U256};
 
 use crate::config::PriceOracleConfig;
 
@@ -11,7 +11,8 @@ mod impls;
 
 #[async_trait]
 pub trait PriceOracle {
-    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, f64)>>;
+    // returns USD price scaled by 1e18
+    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, U256)>>;
 }
 
 pub fn price_oracle_from_config(config: PriceOracleConfig) -> Result<Arc<dyn PriceOracle>> {

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use ethers::types::Address;
+use ethers::types::{Address, U256};
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use crate::price_oracle::PriceOracle;
@@ -13,7 +13,7 @@ pub struct CoinGecko {
 
 #[async_trait]
 impl PriceOracle for CoinGecko {
-    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, f64)>> {
+    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, U256)>> {
         let addresses = addresses
             .iter()
             .map(|a| format!("{:?}", a))
@@ -36,12 +36,12 @@ impl PriceOracle for CoinGecko {
         let prices = resp
             .iter()
             .map(|(address, price)| {
-                (
-                    Address::from_str(address).unwrap(),
-                    *price.get("usd").unwrap(),
-                )
+                let price = *price.get("usd").unwrap();
+                let price_scaled = U256::from((price * 1e18) as u64);
+
+                (Address::from_str(address).unwrap(), price_scaled)
             })
-            .collect::<Vec<(Address, f64)>>();
+            .collect::<Vec<(Address, U256)>>();
 
         Ok(prices)
     }

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::types::{CollateralOrBorrow, LiquidationArgs, State, TokenBalance};
 use anyhow::{Context, Result};
-use ethers::types::Address;
+use ethers::types::{Address, U256};
 use futures::future::join_all;
 use tokio::try_join;
 
@@ -15,7 +15,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
     let mut all_account_tokens_futs = vec![];
     for account in &unhealthy_accounts {
-        let account_tokens_fut = state.data_provider.account_assets(account.address);
+        let account_tokens_fut = state.data_provider.account_assets(*account);
         all_account_tokens_futs.push(account_tokens_fut);
     }
     let all_account_tokens = join_all(all_account_tokens_futs).await;
@@ -40,7 +40,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get token prices")?;
     // turn into hash map for fast lookup
-    let token_prices: HashMap<Address, f64> = token_prices.into_iter().collect();
+    let token_prices: HashMap<Address, U256> = token_prices.into_iter().collect();
 
     let mut liquidation_futs = vec![];
     for (account_address, account_tokens) in &mut all_account_tokens {
@@ -57,7 +57,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
             let expected_profit = estimate_profit(&liquidation_args, liquidation_incentive);
 
-            let min_profit = state.config_min_profit_per_liquidation as f64;
+            let min_profit = state.config_min_profit_per_liquidation;
 
             // schedule liquidation
             if expected_profit > min_profit {
@@ -81,49 +81,59 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
 pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
     // can liquidate if Sum(collateral_usd_value * collateral_factor) < Sum(borrowed_usd_value)
-    let mut account_liquidity: f64 = 0.0;
+    let mut borrow_balance = U256::zero();
+    let mut supply_balance = U256::zero();
 
-    for account_token in account_tokens {
-        let usd_price = account_token.underlying_usd_price.unwrap();
+    for token in account_tokens {
+        let usd_price = token.underlying_usd_price.unwrap();
 
-        let affect = match account_token.kind {
-            CollateralOrBorrow::Collateral {
-                exchange_rate,
-                collateral_factor,
-                ctoken_balance,
-            } => ctoken_balance * exchange_rate * usd_price * collateral_factor,
-            CollateralOrBorrow::Borrow { underlying_balance } => -(underlying_balance * usd_price),
+        match token.kind {
+            // TODO: have to make sure both calculations result in the same scale (1e18)
+            // make sure to multiply first then divide
+            CollateralOrBorrow::Collateral { ctoken_balance } => {
+                let balance_in_underlying_units = ctoken_balance * token.exchange_rate;
+                let balance_in_usd = balance_in_underlying_units * usd_price;
+                let balance_collateral_factor_adjusted =
+                    balance_in_usd * token.collateral_factor_mant;
+                supply_balance += balance_collateral_factor_adjusted;
+            }
+            CollateralOrBorrow::Borrow { underlying_balance } => {
+                borrow_balance += underlying_balance * usd_price;
+            }
         };
-
-        account_liquidity += affect;
     }
 
-    println!("account liquidity: {account_liquidity}");
+    println!("borrow_balance: {borrow_balance}");
+    println!("supply balance: {supply_balance}");
 
-    account_liquidity < 0.0
+    borrow_balance > supply_balance
 }
 
-// best repay and best seize are NOT simply the largest value, like I have here
+// best repay and best seize are NOT simply the largest value, like I have here.
 // I think the best repay/seize are the most liquid & easiest to swap into
 // this is a more complex problem than it appears
+// For now it might be okay
 pub fn choose_liquidation_tokens(
     account_address: &Address,
     account_tokens: &Vec<TokenBalance>,
 ) -> Result<LiquidationArgs> {
-    let mut best_repay_ctoken = (Address::default(), 0_f64);
-    let mut best_seize_ctoken = (Address::default(), 0_f64, 0_f64);
+    let mut best_repay_ctoken = (Address::default(), U256::zero());
+    let mut best_seize_ctoken = (Address::default(), U256::zero(), U256::zero());
     for token in account_tokens {
         let underlying_usd_price = token.underlying_usd_price.unwrap();
 
+        // TODO: also watch out for U256 math here
         match token.kind {
-            CollateralOrBorrow::Collateral {
-                exchange_rate,
-                ctoken_balance,
-                ..
-            } => {
-                let value = ctoken_balance * exchange_rate * underlying_usd_price;
-                if value > best_seize_ctoken.1 {
-                    best_seize_ctoken = (token.ctoken_address, value, token.protocol_seize_share)
+            CollateralOrBorrow::Collateral { ctoken_balance, .. } => {
+                let balance_in_underlying_units = ctoken_balance * token.exchange_rate;
+                let balance_in_usd = balance_in_underlying_units * underlying_usd_price;
+
+                if balance_in_usd > best_seize_ctoken.1 {
+                    best_seize_ctoken = (
+                        token.ctoken_address,
+                        balance_in_usd,
+                        token.protocol_seize_share_mant,
+                    )
                 }
             }
             CollateralOrBorrow::Borrow {
@@ -149,14 +159,15 @@ pub fn choose_liquidation_tokens(
         borrower: *account_address,
         repay_ctoken: best_repay_ctoken.0,
         seize_ctoken: best_seize_ctoken.0,
-        seize_ctoken_protocol_seize_share: best_seize_ctoken.2,
+        seize_ctoken_protocol_seize_share_mant: best_seize_ctoken.2,
     })
 }
 
-pub fn estimate_profit(liquidation_args: &LiquidationArgs, liquidation_incentive: f64) -> f64 {
+// profit in USD scaled by U256
+pub fn estimate_profit(liquidation_args: &LiquidationArgs, liquidation_incentive: U256) -> U256 {
     // TODO: revm simulation?
 
-    1.0
+    U256::zero()
 }
 
 /*

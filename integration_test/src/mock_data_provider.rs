@@ -167,7 +167,7 @@ async fn get_historic_account_assets(
             let ctoken_balance = fix_decimals(supplied_balance, ctoken_decimals);
             Some(CollateralOrBorrow::Collateral {
                 exchange_rate,
-                collateral_factor,
+                collateral_factor_mant: collateral_factor,
                 ctoken_balance,
             })
         } else {

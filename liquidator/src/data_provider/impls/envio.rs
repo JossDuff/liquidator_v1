@@ -4,7 +4,7 @@ use crate::{
 };
 use anyhow::Result;
 use async_trait::async_trait;
-use ethers::types::Address;
+use ethers::types::{Address, U256};
 
 pub struct Envio {
     // pub client:
@@ -25,10 +25,10 @@ impl DataProvider for Envio {
     async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         todo!()
     }
-    async fn close_factor(&self) -> Result<f64> {
+    async fn close_factor(&self) -> Result<U256> {
         todo!()
     }
-    async fn liquidation_incentive(&self) -> Result<f64> {
+    async fn liquidation_incentive(&self) -> Result<U256> {
         todo!()
     }
 }
