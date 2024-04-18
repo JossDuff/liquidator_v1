@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::types::{CollateralOrBorrow, LiquidationArgs, ScaledNum, State, TokenBalance};
+use crate::types::{
+    scaled_num::ScaledNum, CollateralOrBorrow, LiquidationArgs, State, TokenBalance,
+};
 use anyhow::{Context, Result};
 use ethers::types::{Address, U256};
 use futures::future::join_all;

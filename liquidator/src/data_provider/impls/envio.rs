@@ -1,6 +1,6 @@
 use crate::{
     data_provider::DataProvider,
-    types::{Account, ScaledNum, TokenBalance},
+    types::{scaled_num::ScaledNum, Account, TokenBalance},
 };
 use anyhow::Result;
 use async_trait::async_trait;

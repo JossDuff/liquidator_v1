@@ -4,7 +4,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use ethers::types::{Address, U256};
 
-use crate::{config::PriceOracleConfig, types::ScaledNum};
+use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
 use self::impls::coingecko::CoinGecko;
 mod impls;

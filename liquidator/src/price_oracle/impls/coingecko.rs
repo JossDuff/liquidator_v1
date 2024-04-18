@@ -6,7 +6,7 @@ use ethers::{
 };
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
-use crate::{price_oracle::PriceOracle, types::ScaledNum};
+use crate::{price_oracle::PriceOracle, types::scaled_num::ScaledNum};
 
 pub struct CoinGecko {
     pub client: Arc<reqwest::Client>,

@@ -1,6 +1,6 @@
 use self::impls::envio::Envio;
 use crate::config::DataProviderConfig;
-use crate::types::{Account, ScaledNum, TokenBalance};
+use crate::types::{scaled_num::ScaledNum, Account, TokenBalance};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::Arc;
