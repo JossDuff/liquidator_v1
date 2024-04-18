@@ -8,7 +8,7 @@ use liquidator::{
     execution::run_execution,
     liquidator::liquidator_from_config,
     price_oracle::price_oracle_from_config,
-    types::{ScaledNum, State},
+    types::{scaled_num::ScaledNum, State},
 };
 
 #[tokio::main]

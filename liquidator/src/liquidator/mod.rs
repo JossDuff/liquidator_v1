@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use crate::{config::LiquidatorConfig, types::LiquidationArgs};
+use crate::{
+    config::LiquidatorConfig,
+    types::{scaled_num::ScaledNum, LiquidationArgs},
+};
 use anyhow::{Context, Result};
 use ethers::{
     providers::{Http, Provider},
@@ -20,7 +23,7 @@ impl Liquidator {
     pub async fn liquidate(
         &self,
         args: LiquidationArgs,
-        close_factor: U256,
+        close_factor: ScaledNum,
     ) -> Result<(Address, f64)> {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 

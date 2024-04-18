@@ -44,7 +44,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
     // turn into hash map for fast lookup
     let token_prices: HashMap<Address, ScaledNum> = token_prices.into_iter().collect();
 
-    // let mut liquidation_futs = vec![];
+    let mut liquidation_futs = vec![];
     for (account_address, account_tokens) in &mut all_account_tokens {
         // add prices to the account's tokens
         for account_token in &mut *account_tokens {
@@ -62,21 +62,21 @@ pub async fn run_execution(state: &State) -> Result<()> {
             let min_profit = state.config_min_profit_per_liquidation;
 
             // schedule liquidation
-            // if expected_profit > min_profit {
-            //     liquidation_futs.push(
-            //         state
-            //             .liquidator
-            //             .liquidate(liquidation_args.clone(), close_factor),
-            //     );
-            // }
+            if expected_profit > min_profit {
+                liquidation_futs.push(
+                    state
+                        .liquidator
+                        .liquidate(liquidation_args.clone(), close_factor),
+                );
+            }
         }
     }
 
-    // let liquidations = join_all(liquidation_futs).await;
-    // for liquidation in liquidations {
-    //     let liquidation = liquidation.context("liquidation call")?;
-    //     println!("account {} liquidated for {}", liquidation.0, liquidation.1);
-    // }
+    let liquidations = join_all(liquidation_futs).await;
+    for liquidation in liquidations {
+        let liquidation = liquidation.context("liquidation call")?;
+        println!("account {} liquidated for {}", liquidation.0, liquidation.1);
+    }
 
     Ok(())
 }
@@ -119,51 +119,50 @@ pub fn choose_liquidation_tokens(
     account_address: &Address,
     account_tokens: &Vec<TokenBalance>,
 ) -> Result<LiquidationArgs> {
-    todo!()
-    // let mut best_repay_ctoken = (Address::default(), U256::zero());
-    // let mut best_seize_ctoken = (Address::default(), U256::zero(), U256::zero());
-    // for token in account_tokens {
-    //     let underlying_usd_price = token.underlying_usd_price.unwrap();
+    let mut best_repay_ctoken = (Address::default(), ScaledNum::zero());
+    let mut best_seize_ctoken = (Address::default(), ScaledNum::zero(), ScaledNum::zero());
+    for token in account_tokens {
+        let underlying_usd_price = token.underlying_usd_price.unwrap();
 
-    //     // TODO: also watch out for U256 math here
-    //     match token.kind {
-    //         CollateralOrBorrow::Collateral { ctoken_balance, .. } => {
-    //             let balance_in_underlying_units = ctoken_balance * token.exchange_rate;
-    //             let balance_in_usd = balance_in_underlying_units * underlying_usd_price;
+        // TODO: also watch out for U256 math here
+        match token.kind {
+            CollateralOrBorrow::Collateral { ctoken_balance, .. } => {
+                let balance_in_underlying_units = ctoken_balance * token.exchange_rate;
+                let balance_in_usd = balance_in_underlying_units * underlying_usd_price;
 
-    //             if balance_in_usd > best_seize_ctoken.1 {
-    //                 best_seize_ctoken = (
-    //                     token.ctoken_address,
-    //                     balance_in_usd,
-    //                     token.protocol_seize_share_mant,
-    //                 )
-    //             }
-    //         }
-    //         CollateralOrBorrow::Borrow {
-    //             underlying_balance, ..
-    //         } => {
-    //             let value = underlying_balance * underlying_usd_price;
-    //             if value > best_repay_ctoken.1 {
-    //                 best_repay_ctoken = (token.ctoken_address, value)
-    //             }
-    //         }
-    //     };
-    // }
-    // println!(
-    //     "best repay ctoken: {:?}, value: {}",
-    //     best_repay_ctoken.0, best_repay_ctoken.1
-    // );
-    // println!(
-    //     "best seize ctoken: {:?}, value: {}",
-    //     best_seize_ctoken.0, best_seize_ctoken.1
-    // );
+                if balance_in_usd > best_seize_ctoken.1 {
+                    best_seize_ctoken = (
+                        token.ctoken_address,
+                        balance_in_usd,
+                        token.protocol_seize_share_mant,
+                    )
+                }
+            }
+            CollateralOrBorrow::Borrow {
+                underlying_balance, ..
+            } => {
+                let value = underlying_balance * underlying_usd_price;
+                if value > best_repay_ctoken.1 {
+                    best_repay_ctoken = (token.ctoken_address, value)
+                }
+            }
+        };
+    }
+    println!(
+        "best repay ctoken: {:?}, value: {}",
+        best_repay_ctoken.0, best_repay_ctoken.1
+    );
+    println!(
+        "best seize ctoken: {:?}, value: {}",
+        best_seize_ctoken.0, best_seize_ctoken.1
+    );
 
-    // Ok(LiquidationArgs {
-    //     borrower: *account_address,
-    //     repay_ctoken: best_repay_ctoken.0,
-    //     seize_ctoken: best_seize_ctoken.0,
-    //     seize_ctoken_protocol_seize_share_mant: best_seize_ctoken.2,
-    // })
+    Ok(LiquidationArgs {
+        borrower: *account_address,
+        repay_ctoken: best_repay_ctoken.0,
+        seize_ctoken: best_seize_ctoken.0,
+        seize_ctoken_protocol_seize_share_mant: best_seize_ctoken.2,
+    })
 }
 
 // profit in USD scaled by U256

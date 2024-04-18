@@ -1,5 +1,6 @@
 use std::{
     cmp::{max, min, Ordering},
+    fmt::{self, Display, Formatter},
     ops::Mul,
 };
 
@@ -16,6 +17,13 @@ impl ScaledNum {
         Self {
             num: num.into(),
             scale,
+        }
+    }
+
+    pub fn zero() -> Self {
+        Self {
+            num: U256::zero(),
+            scale: 0,
         }
     }
 }
@@ -99,6 +107,25 @@ impl PartialOrd for ScaledNum {
 impl Ord for ScaledNum {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
+    }
+}
+
+impl Display for ScaledNum {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if self.scale == 0 {
+            return write!(f, "{}", self.num);
+        }
+
+        let mut num_str = self.num.to_string();
+        let scale = self.scale as usize;
+        if scale > num_str.len() {
+            let desired_length = num_str.len() + (scale - num_str.len()) + 1;
+            num_str = format!("{:0>width$}", num_str, width = desired_length);
+        }
+        let decimal_position = num_str.len() - scale;
+        let num = &num_str.to_string()[..(decimal_position)];
+        let mantissa = &num_str.to_string()[(decimal_position)..];
+        write!(f, "{}.{}", num, mantissa)
     }
 }
 
@@ -200,5 +227,20 @@ mod tests {
         let y = ScaledNum::new(100, 1);
         assert!(x != y);
         assert!(y > x);
+    }
+
+    #[test]
+    fn test_display() {
+        let x = ScaledNum::new(10, 1);
+        assert_eq!(format!("{x}"), format!("1.0"));
+
+        let x = ScaledNum::new(11, 1);
+        assert_eq!(format!("{x}"), format!("1.1"));
+
+        let x = ScaledNum::new(11, 3);
+        assert_eq!(format!("{x}"), format!("0.011"));
+
+        let x = ScaledNum::new(1, 0);
+        assert_eq!(format!("{x}"), format!("1"));
     }
 }
