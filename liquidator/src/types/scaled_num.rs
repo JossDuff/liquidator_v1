@@ -1,7 +1,7 @@
 use std::{
     cmp::{max, min, Ordering},
     fmt::{self, Display, Formatter},
-    ops::Mul,
+    ops::{Add, Mul},
 };
 
 use ethers::types::U256;
@@ -129,6 +129,24 @@ impl Display for ScaledNum {
     }
 }
 
+impl Add for ScaledNum {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        let max_scale = max(self.scale, other.scale);
+        let scale_diff_self = max_scale - self.scale;
+        let scale_diff_other = max_scale - other.scale;
+
+        let adjusted_self = self.num * U256::exp10(scale_diff_self as usize);
+        let adjusted_other = other.num * U256::exp10(scale_diff_other as usize);
+
+        ScaledNum {
+            num: adjusted_self + adjusted_other,
+            scale: max_scale,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -242,5 +260,37 @@ mod tests {
 
         let x = ScaledNum::new(1, 0);
         assert_eq!(format!("{x}"), format!("1"));
+    }
+
+    #[test]
+    fn test_addition() {
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = x + y;
+
+        assert_eq!(z.scale, 3);
+        assert_eq!(z.num, 3000.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(100, 2);
+        let z = x + y;
+
+        assert_eq!(z.scale, 2);
+        assert_eq!(z.num, 200.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = x + y + x;
+
+        assert_eq!(z.scale, 3);
+        assert_eq!(z.num, 4000.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = ScaledNum::new(300, 4); // 0.03
+        let q = x + y + z;
+
+        assert_eq!(q.scale, 4);
+        assert_eq!(q.num, 30300.into());
     }
 }

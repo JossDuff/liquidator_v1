@@ -83,8 +83,8 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
 pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
     // can liquidate if Sum(collateral_usd_value * collateral_factor) < Sum(borrowed_usd_value)
-    let mut borrow_balance = U256::zero();
-    let mut supply_balance = U256::zero();
+    let mut borrow_balance = ScaledNum::zero();
+    let mut supply_balance = ScaledNum::zero();
 
     for token in account_tokens {
         let usd_price = token.underlying_usd_price.unwrap();
