@@ -3,8 +3,12 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use ethers::{contract::abigen, types::U256};
 use liquidator::{
-    config::Config, data_provider::data_provider_from_config, execution::run_execution,
-    liquidator::liquidator_from_config, price_oracle::price_oracle_from_config, types::State,
+    config::Config,
+    data_provider::data_provider_from_config,
+    execution::run_execution,
+    liquidator::liquidator_from_config,
+    price_oracle::price_oracle_from_config,
+    types::{ScaledNum, State},
 };
 
 #[tokio::main]
@@ -29,7 +33,7 @@ async fn main() -> Result<()> {
         price_oracle,
         data_provider,
         liquidator,
-        U256::from(cfg.min_profit_per_liquidation),
+        ScaledNum::new(cfg.min_profit_per_liquidation, 0),
     );
 
     loop {

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use ethers::types::{Address, U256};
 
-use crate::config::PriceOracleConfig;
+use crate::{config::PriceOracleConfig, types::ScaledNum};
 
 use self::impls::coingecko::CoinGecko;
 mod impls;
@@ -12,7 +12,7 @@ mod impls;
 #[async_trait]
 pub trait PriceOracle {
     // returns USD price scaled by 1e18
-    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, U256)>>;
+    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>>;
 }
 
 pub fn price_oracle_from_config(config: PriceOracleConfig) -> Result<Arc<dyn PriceOracle>> {

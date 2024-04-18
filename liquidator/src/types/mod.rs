@@ -9,7 +9,7 @@ pub struct State {
     pub price_oracle: Arc<dyn PriceOracle>,
     pub data_provider: Arc<dyn DataProvider>,
     pub liquidator: Arc<Liquidator>,
-    pub config_min_profit_per_liquidation: U256,
+    pub config_min_profit_per_liquidation: ScaledNum,
 }
 
 impl State {
@@ -17,7 +17,7 @@ impl State {
         price_oracle: Arc<dyn PriceOracle>,
         data_provider: Arc<dyn DataProvider>,
         liquidator: Arc<Liquidator>,
-        config_min_profit_per_liquidation: U256,
+        config_min_profit_per_liquidation: ScaledNum,
     ) -> Self {
         Self {
             price_oracle,
@@ -38,11 +38,11 @@ pub struct TokenBalance {
     pub ctoken_address: Address,
     pub ctoken_decimals: u8,
     pub kind: CollateralOrBorrow,
-    pub exchange_rate: U256,
-    pub collateral_factor_mant: U256,
-    pub protocol_seize_share_mant: U256,
+    pub exchange_rate: ScaledNum,
+    pub collateral_factor_mant: ScaledNum,
+    pub protocol_seize_share_mant: ScaledNum,
     // TODO: is it better to scale this up to 256 or to scale others down?
-    pub underlying_usd_price: Option<U256>,
+    pub underlying_usd_price: Option<ScaledNum>,
 }
 
 impl TokenBalance {
@@ -53,10 +53,10 @@ impl TokenBalance {
         ctoken_decimals: u8,
         kind: CollateralOrBorrow,
         // scaled up by 1 * 10^(10 + Underlying Token Decimals)
-        exchange_rate: U256,
-        collateral_factor_mant: U256,
-        protocol_seize_share_mant: U256,
-        underlying_usd_price: Option<U256>,
+        exchange_rate: ScaledNum,
+        collateral_factor_mant: ScaledNum,
+        protocol_seize_share_mant: ScaledNum,
+        underlying_usd_price: Option<ScaledNum>,
     ) -> Self {
         Self {
             underlying_address,
@@ -74,8 +74,8 @@ impl TokenBalance {
 
 #[derive(Clone)]
 pub enum CollateralOrBorrow {
-    Collateral { ctoken_balance: U256 },
-    Borrow { underlying_balance: U256 },
+    Collateral { ctoken_balance: ScaledNum },
+    Borrow { underlying_balance: ScaledNum },
 }
 
 #[derive(Clone)]
@@ -84,10 +84,11 @@ pub struct LiquidationArgs {
     pub repay_ctoken: Address,
     pub seize_ctoken: Address,
     // is 0 if ctoken doesn't have protocolSeizeShareMantissa constant
-    pub seize_ctoken_protocol_seize_share_mant: U256,
+    pub seize_ctoken_protocol_seize_share_mant: ScaledNum,
 }
 
-#[derive(Clone)]
+// TODO: impl Eq and partialEq
+#[derive(Clone, Copy)]
 pub struct ScaledNum {
     pub num: U256,
     pub scale: u8,
@@ -119,6 +120,34 @@ impl Mul for ScaledNum {
     }
 }
 
+impl PartialEq for ScaledNum {
+    fn eq(&self, other: &Self) -> bool {
+        // both are exactly equal
+        if self.scale == other.scale && self.num == other.num {
+            true
+        // they are clearly not equal (one has a larger scale and smaller num)
+        } else if (self.scale > other.scale && self.num < other.num)
+            || self.scale < other.scale && self.num > other.num
+        {
+            false
+        } else {
+            // if we get here then one has a larger (or eq) scale and num
+
+            // find which one has the larger num and scale
+            let (larger, smaller) = if self.scale > other.scale {
+                (self, other)
+            } else {
+                (other, self)
+            };
+
+            // get the smaller num into same units as the larger num and compare
+            smaller.num * U256::exp10((larger.scale - smaller.scale).into()) == larger.num
+        }
+    }
+}
+
+impl Eq for ScaledNum {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,6 +160,45 @@ mod tests {
 
         assert_eq!(z.scale, 3);
         assert_eq!(z.num, 2000.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(100, 2);
+        let z = x * y;
+
+        assert_eq!(z.scale, 2);
+        assert_eq!(z.num, 100.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = x * y * x;
+
+        assert_eq!(z.scale, 3);
+        assert_eq!(z.num, 2000.into());
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(2000, 3);
+        let z = ScaledNum::new(300, 4);
+        let q = x * y * z;
+
+        assert_eq!(q.scale, 4);
+        assert_eq!(q.num, 600.into());
+    }
+
+    #[test]
+    fn test_scale_of_zero() {
+        let x = ScaledNum::new(100, 0);
+        let y = ScaledNum::new(2000, 3);
+        let z = x * y;
+
+        assert_eq!(z.scale, 3);
+        assert_eq!(z.num, 200000.into());
+
+        let x = ScaledNum::new(1, 0);
+        let y = ScaledNum::new(2, 0);
+        let z = x * y;
+
+        assert_eq!(z.scale, 0);
+        assert_eq!(z.num, 2.into());
     }
 
     #[test]
@@ -142,5 +210,36 @@ mod tests {
         assert_eq!(z.scale, 2);
 
         assert_eq!(z.num, 50000.into());
+    }
+
+    #[test]
+    fn test_scaled_num_eq() {
+        let x = ScaledNum::new(1, 1);
+        let y = ScaledNum::new(1, 2);
+        assert!(x != y);
+
+        let x = ScaledNum::new(1000, 1);
+        let y = ScaledNum::new(1000, 1);
+        assert!(x == y);
+
+        let x = ScaledNum::new(1000, 2);
+        let y = ScaledNum::new(100, 1);
+        assert!(x == y);
+
+        let x = ScaledNum::new(2000, 2);
+        let y = ScaledNum::new(100, 1);
+        assert!(x != y);
+
+        let x = ScaledNum::new(2000, 1);
+        let y = ScaledNum::new(100, 2);
+        assert!(x != y);
+
+        let x = ScaledNum::new(2000, 1);
+        let y = ScaledNum::new(100, 1);
+        assert!(x != y);
+
+        let x = ScaledNum::new(100, 2);
+        let y = ScaledNum::new(100, 1);
+        assert!(x != y);
     }
 }

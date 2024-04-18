@@ -1,9 +1,12 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use ethers::types::{Address, U256};
+use ethers::{
+    core::k256::Scalar,
+    types::{Address, U256},
+};
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
-use crate::price_oracle::PriceOracle;
+use crate::{price_oracle::PriceOracle, types::ScaledNum};
 
 pub struct CoinGecko {
     pub client: Arc<reqwest::Client>,
@@ -13,7 +16,7 @@ pub struct CoinGecko {
 
 #[async_trait]
 impl PriceOracle for CoinGecko {
-    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, U256)>> {
+    async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>> {
         let addresses = addresses
             .iter()
             .map(|a| format!("{:?}", a))
@@ -37,11 +40,14 @@ impl PriceOracle for CoinGecko {
             .iter()
             .map(|(address, price)| {
                 let price = *price.get("usd").unwrap();
-                let price_scaled = U256::from((price * 1e18) as u64);
+                let price_scaled = (price * 1e10) as u64;
 
-                (Address::from_str(address).unwrap(), price_scaled)
+                (
+                    Address::from_str(address).unwrap(),
+                    ScaledNum::new(price_scaled, 10),
+                )
             })
-            .collect::<Vec<(Address, U256)>>();
+            .collect::<Vec<(Address, ScaledNum)>>();
 
         Ok(prices)
     }

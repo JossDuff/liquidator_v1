@@ -1,6 +1,6 @@
 use crate::{
     data_provider::DataProvider,
-    types::{Account, TokenBalance},
+    types::{Account, ScaledNum, TokenBalance},
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -25,10 +25,10 @@ impl DataProvider for Envio {
     async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         todo!()
     }
-    async fn close_factor(&self) -> Result<U256> {
+    async fn close_factor(&self) -> Result<ScaledNum> {
         todo!()
     }
-    async fn liquidation_incentive(&self) -> Result<U256> {
+    async fn liquidation_incentive(&self) -> Result<ScaledNum> {
         todo!()
     }
 }
