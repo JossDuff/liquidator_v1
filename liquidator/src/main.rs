@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use ethers::{contract::abigen};
+use ethers::contract::abigen;
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,

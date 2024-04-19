@@ -1,8 +1,6 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use ethers::{
-    types::{Address},
-};
+use ethers::types::Address;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use crate::{price_oracle::PriceOracle, types::scaled_num::ScaledNum};

@@ -7,7 +7,7 @@ use crate::{
 use anyhow::{Context, Result};
 use ethers::{
     providers::{Http, Provider},
-    types::{Address},
+    types::Address,
 };
 
 pub struct Liquidator {

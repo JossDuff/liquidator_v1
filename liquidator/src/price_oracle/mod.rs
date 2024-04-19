@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 
 use anyhow::Result;
-use ethers::types::{Address};
+use ethers::types::Address;
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 

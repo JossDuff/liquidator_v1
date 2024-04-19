@@ -7,13 +7,11 @@ pub use sonne_price_oracle::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod sonne_price_oracle {
     const _: () = {
-        ::core::include_bytes!(
-            "/home/joss/dev/liquidator_v1/abi/sonne_price_oracle.json",
-        );
+        ::core::include_bytes!("/home/joss/dev/liquidator_v1/abi/sonne_price_oracle.json",);
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers::core::abi::Abi {
@@ -23,9 +21,7 @@ pub mod sonne_price_oracle {
                     ::ethers::core::abi::ethabi::Param {
                         name: ::std::borrow::ToOwned::to_owned("symbols_"),
                         kind: ::ethers::core::abi::ethabi::ParamType::Array(
-                            ::std::boxed::Box::new(
-                                ::ethers::core::abi::ethabi::ParamType::String,
-                            ),
+                            ::std::boxed::Box::new(::ethers::core::abi::ethabi::ParamType::String,),
                         ),
                         internal_type: ::core::option::Option::Some(
                             ::std::borrow::ToOwned::to_owned("string[]"),
@@ -34,9 +30,7 @@ pub mod sonne_price_oracle {
                     ::ethers::core::abi::ethabi::Param {
                         name: ::std::borrow::ToOwned::to_owned("feeds_"),
                         kind: ::ethers::core::abi::ethabi::ParamType::Array(
-                            ::std::boxed::Box::new(
-                                ::ethers::core::abi::ethabi::ParamType::Address,
-                            ),
+                            ::std::boxed::Box::new(::ethers::core::abi::ethabi::ParamType::Address,),
                         ),
                         internal_type: ::core::option::Option::Some(
                             ::std::borrow::ToOwned::to_owned("contract IAggregatorV3[]"),
@@ -45,9 +39,9 @@ pub mod sonne_price_oracle {
                     ::ethers::core::abi::ethabi::Param {
                         name: ::std::borrow::ToOwned::to_owned("baseUnits_"),
                         kind: ::ethers::core::abi::ethabi::ParamType::Array(
-                            ::std::boxed::Box::new(
-                                ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
-                            ),
+                            ::std::boxed::Box::new(::ethers::core::abi::ethabi::ParamType::Uint(
+                                256usize
+                            ),),
                         ),
                         internal_type: ::core::option::Option::Some(
                             ::std::borrow::ToOwned::to_owned("uint256[]"),
@@ -58,141 +52,107 @@ pub mod sonne_price_oracle {
             functions: ::core::convert::From::from([
                 (
                     ::std::borrow::ToOwned::to_owned("baseUnits"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("baseUnits"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("baseUnits"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("string"),
+                            ),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("uint256"),
+                            ),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getPrice"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("getPrice"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("cToken"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("contract CToken"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getPrice"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("cToken"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("contract CToken"),
+                            ),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("uint256"),
+                            ),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getUnderlyingPrice"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("getUnderlyingPrice"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("cToken"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("contract CToken"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getUnderlyingPrice"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("cToken"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("contract CToken"),
+                            ),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("uint256"),
+                            ),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isPriceOracle"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("isPriceOracle"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isPriceOracle"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("bool"),
+                            ),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("priceFeeds"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("priceFeeds"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("contract IAggregatorV3"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("priceFeeds"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("string"),
+                            ),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(
+                                ::std::borrow::ToOwned::to_owned("contract IAggregatorV3"),
+                            ),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
             ]),
             events: ::std::collections::BTreeMap::new(),
@@ -202,9 +162,8 @@ pub mod sonne_price_oracle {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static SONNEPRICEORACLE_ABI: ::ethers::contract::Lazy<
-        ::ethers::core::abi::Abi,
-    > = ::ethers::contract::Lazy::new(__abi);
+    pub static SONNEPRICEORACLE_ABI: ::ethers::contract::Lazy<::ethers::core::abi::Abi> =
+        ::ethers::contract::Lazy::new(__abi);
     pub struct SonnePriceOracle<M>(::ethers::contract::Contract<M>);
     impl<M> ::core::clone::Clone for SonnePriceOracle<M> {
         fn clone(&self) -> Self {
@@ -236,13 +195,11 @@ pub mod sonne_price_oracle {
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            Self(
-                ::ethers::contract::Contract::new(
-                    address.into(),
-                    SONNEPRICEORACLE_ABI.clone(),
-                    client,
-                ),
-            )
+            Self(::ethers::contract::Contract::new(
+                address.into(),
+                SONNEPRICEORACLE_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `baseUnits` (0x51003683) function
         pub fn base_units(
@@ -272,9 +229,7 @@ pub mod sonne_price_oracle {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isPriceOracle` (0x66331bba) function
-        pub fn is_price_oracle(
-            &self,
-        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
+        pub fn is_price_oracle(&self) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([102, 51, 27, 186], ())
                 .expect("method not found (this should never happen)")
@@ -283,17 +238,15 @@ pub mod sonne_price_oracle {
         pub fn price_feeds(
             &self,
             p0: ::std::string::String,
-        ) -> ::ethers::contract::builders::ContractCall<
-            M,
-            ::ethers::core::types::Address,
-        > {
+        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::Address> {
             self.0
                 .method_hash([203, 138, 232, 108], p0)
                 .expect("method not found (this should never happen)")
         }
     }
     impl<M: ::ethers::providers::Middleware> From<::ethers::contract::Contract<M>>
-    for SonnePriceOracle<M> {
+        for SonnePriceOracle<M>
+    {
         fn from(contract: ::ethers::contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -307,7 +260,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "baseUnits", abi = "baseUnits(string)")]
     pub struct BaseUnitsCall(pub ::std::string::String);
@@ -320,7 +273,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getPrice", abi = "getPrice(address)")]
     pub struct GetPriceCall {
@@ -335,7 +288,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getUnderlyingPrice", abi = "getUnderlyingPrice(address)")]
     pub struct GetUnderlyingPriceCall {
@@ -350,7 +303,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "isPriceOracle", abi = "isPriceOracle()")]
     pub struct IsPriceOracleCall;
@@ -363,7 +316,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "priceFeeds", abi = "priceFeeds(string)")]
     pub struct PriceFeedsCall(pub ::std::string::String);
@@ -381,29 +334,22 @@ pub mod sonne_price_oracle {
             data: impl AsRef<[u8]>,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <BaseUnitsCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
+            if let Ok(decoded) = <BaseUnitsCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::BaseUnits(decoded));
             }
-            if let Ok(decoded) = <GetPriceCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
+            if let Ok(decoded) = <GetPriceCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetPrice(decoded));
             }
-            if let Ok(decoded) = <GetUnderlyingPriceCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
+            if let Ok(decoded) =
+                <GetUnderlyingPriceCall as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetUnderlyingPrice(decoded));
             }
-            if let Ok(decoded) = <IsPriceOracleCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
+            if let Ok(decoded) = <IsPriceOracleCall as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsPriceOracle(decoded));
             }
-            if let Ok(decoded) = <PriceFeedsCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
+            if let Ok(decoded) = <PriceFeedsCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PriceFeeds(decoded));
             }
             Err(::ethers::core::abi::Error::InvalidData.into())
@@ -412,21 +358,13 @@ pub mod sonne_price_oracle {
     impl ::ethers::core::abi::AbiEncode for SonnePriceOracleCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::BaseUnits(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::GetPrice(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
+                Self::BaseUnits(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::GetPrice(element) => ::ethers::core::abi::AbiEncode::encode(element),
                 Self::GetUnderlyingPrice(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::IsPriceOracle(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::PriceFeeds(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
+                Self::IsPriceOracle(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::PriceFeeds(element) => ::ethers::core::abi::AbiEncode::encode(element),
             }
         }
     }
@@ -435,9 +373,7 @@ pub mod sonne_price_oracle {
             match self {
                 Self::BaseUnits(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetPrice(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetUnderlyingPrice(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GetUnderlyingPrice(element) => ::core::fmt::Display::fmt(element, f),
                 Self::IsPriceOracle(element) => ::core::fmt::Display::fmt(element, f),
                 Self::PriceFeeds(element) => ::core::fmt::Display::fmt(element, f),
             }
@@ -477,7 +413,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct BaseUnitsReturn(pub ::ethers::core::types::U256);
     ///Container type for all return fields from the `getPrice` function with signature `getPrice(address)` and selector `0x41976e09`
@@ -489,7 +425,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetPriceReturn(pub ::ethers::core::types::U256);
     ///Container type for all return fields from the `getUnderlyingPrice` function with signature `getUnderlyingPrice(address)` and selector `0xfc57d4df`
@@ -501,7 +437,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetUnderlyingPriceReturn(pub ::ethers::core::types::U256);
     ///Container type for all return fields from the `isPriceOracle` function with signature `isPriceOracle()` and selector `0x66331bba`
@@ -513,7 +449,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsPriceOracleReturn(pub bool);
     ///Container type for all return fields from the `priceFeeds` function with signature `priceFeeds(string)` and selector `0xcb8ae86c`
@@ -525,7 +461,7 @@ pub mod sonne_price_oracle {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PriceFeedsReturn(pub ::ethers::core::types::Address);
 }
