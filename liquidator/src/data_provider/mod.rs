@@ -5,7 +5,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-use ethers::types::{Address, U256};
+use ethers::types::Address;
 mod impls;
 
 #[async_trait]

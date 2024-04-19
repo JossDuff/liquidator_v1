@@ -1,7 +1,6 @@
-use ethers::types::{Address, U256};
-use std::cmp::{max, min, Ordering};
-use std::ops::{Add, Div, Mul, Sub};
-use std::{clone, sync::Arc};
+use ethers::types::Address;
+
+use std::sync::Arc;
 pub mod scaled_num;
 
 use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle};
@@ -37,9 +36,7 @@ pub type Account = Address;
 #[derive(Clone)]
 pub struct TokenBalance {
     pub underlying_address: Address,
-    pub underlying_decimals: u8,
     pub ctoken_address: Address,
-    pub ctoken_decimals: u8,
     pub kind: CollateralOrBorrow,
     pub exchange_rate: ScaledNum,
     pub collateral_factor_mant: ScaledNum,
@@ -51,9 +48,7 @@ pub struct TokenBalance {
 impl TokenBalance {
     pub fn new(
         underlying_address: Address,
-        underlying_decimals: u8,
         ctoken_address: Address,
-        ctoken_decimals: u8,
         kind: CollateralOrBorrow,
         exchange_rate: ScaledNum,
         collateral_factor_mant: ScaledNum,
@@ -62,9 +57,7 @@ impl TokenBalance {
     ) -> Self {
         Self {
             underlying_address,
-            underlying_decimals,
             ctoken_address,
-            ctoken_decimals,
             kind,
             exchange_rate,
             collateral_factor_mant,

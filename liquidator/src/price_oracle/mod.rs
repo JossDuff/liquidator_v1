@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 
 use anyhow::Result;
-use ethers::types::{Address, U256};
+use ethers::types::{Address};
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
@@ -23,7 +23,7 @@ pub fn price_oracle_from_config(config: PriceOracleConfig) -> Result<Arc<dyn Pri
         } => CoinGecko {
             client: Arc::new(reqwest::Client::new()),
             asset_platform,
-            endpoint: endpoint,
+            endpoint,
         },
     };
 

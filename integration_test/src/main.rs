@@ -3,19 +3,14 @@ mod mock_price_oracle;
 mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use contract_bindings::{comptroller_bindings::Comptroller, unitroller_bindings::Unitroller};
-use ethers::contract::abigen;
+use contract_bindings::comptroller_bindings::Comptroller;
+
 use ethers::prelude::{Http, Provider};
-use ethers::providers::{Middleware, MiddlewareError, RawCall};
-use ethers::types::{Address, BlockId, U256};
+use ethers::types::{Address, U256};
 use liquidator::types::scaled_num::ScaledNum;
 use liquidator::{
-    config::Config,
-    data_provider::{data_provider_from_config, DataProvider},
-    execution::run_execution,
-    liquidator::Liquidator,
-    price_oracle::PriceOracle,
-    types::State,
+    config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
+    price_oracle::PriceOracle, types::State,
 };
 use mock_data_provider::MockDataProvider;
 use mock_price_oracle::MockPriceOracle;

@@ -4,7 +4,7 @@ use crate::types::{
     scaled_num::ScaledNum, CollateralOrBorrow, LiquidationArgs, State, TokenBalance,
 };
 use anyhow::{Context, Result};
-use ethers::types::{Address, U256};
+use ethers::types::Address;
 use futures::future::join_all;
 use tokio::try_join;
 
@@ -166,8 +166,8 @@ pub fn choose_liquidation_tokens(
 
 // profit in USD scaled by U256
 pub fn estimate_profit(
-    liquidation_args: &LiquidationArgs,
-    liquidation_incentive: ScaledNum,
+    _liquidation_args: &LiquidationArgs,
+    _liquidation_incentive: ScaledNum,
 ) -> ScaledNum {
     // TODO: revm simulation?
 

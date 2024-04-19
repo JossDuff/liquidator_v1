@@ -26,10 +26,9 @@ impl PriceOracle for MockPriceOracle {
         for address in addresses {
             prices.push((
                 address,
-                self.prices
+                *self.prices
                     .get(&address)
-                    .context(format!("stored price of {address:?}"))?
-                    .clone(),
+                    .context(format!("stored price of {address:?}"))?,
             ));
         }
 

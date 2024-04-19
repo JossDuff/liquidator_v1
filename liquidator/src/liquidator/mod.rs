@@ -7,7 +7,7 @@ use crate::{
 use anyhow::{Context, Result};
 use ethers::{
     providers::{Http, Provider},
-    types::{Address, U256},
+    types::{Address},
 };
 
 pub struct Liquidator {
@@ -22,8 +22,8 @@ impl Liquidator {
     // value of a user’s outstanding borrowing.
     pub async fn liquidate(
         &self,
-        args: LiquidationArgs,
-        close_factor: ScaledNum,
+        _args: LiquidationArgs,
+        _close_factor: ScaledNum,
     ) -> Result<(Address, f64)> {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 
@@ -36,11 +36,11 @@ impl Liquidator {
 pub fn liquidator_from_config(config: LiquidatorConfig) -> Result<Liquidator> {
     // let http = Http::new(Url::parse(&config.provider_endpoint).unwrap());
     // let client = RwClient::new(http, http);
-    let client: Provider<Http> = Provider::<Http>::try_from(config.provider_endpoint).unwrap();
+    let _client: Provider<Http> = Provider::<Http>::try_from(config.provider_endpoint).unwrap();
 
-    let abi: String = include_str!("../../../abi/liquidator.json").into();
+    let _abi: String = include_str!("../../../abi/liquidator.json").into();
 
-    let address =
+    let _address =
         Address::from_str(&config.liquidator_address).context("parse liquidator address")?;
 
     Ok(Liquidator {

@@ -1,20 +1,9 @@
 use contract_bindings::{
-    comptroller_bindings::Comptroller,
-    ctoken_bindings::{ctoken, Ctoken},
-    erc20_bindings::Erc20,
+    comptroller_bindings::Comptroller, ctoken_bindings::Ctoken, erc20_bindings::Erc20,
 };
-use ethers::{
-    abi::parse_abi,
-    contract::{abigen, BaseContract, Multicall},
-    core::k256::CompressedPoint,
-    providers::RawCall,
-    types::TransactionRequest,
-};
-use futures::future::join_all;
-use liquidator::{
-    data_provider,
-    types::{Account, CollateralOrBorrow, TokenBalance},
-};
+use ethers::contract::Multicall;
+
+use liquidator::types::{Account, CollateralOrBorrow, TokenBalance};
 
 use super::*;
 
@@ -73,7 +62,7 @@ impl MockDataProvider {
 #[async_trait]
 impl DataProvider for MockDataProvider {
     async fn unhealthy_accounts(&self, _num: u64) -> Result<Vec<Account>> {
-        Ok(vec![self.unhealthy_accounts.clone()])
+        Ok(vec![self.unhealthy_accounts])
     }
     async fn account_assets(&self, _account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         Ok(self.account_assets.clone())
@@ -176,9 +165,7 @@ async fn get_historic_account_assets(
             (Some(borrow), Some(supply)) => {
                 let token_balance = TokenBalance::new(
                     underlying_addr,
-                    underlying_decimals,
                     *ctoken_addr,
-                    ctoken_decimals,
                     borrow,
                     exchange_rate,
                     collateral_factor,
@@ -188,9 +175,7 @@ async fn get_historic_account_assets(
                 token_balances.push(token_balance);
                 let token_balance = TokenBalance::new(
                     underlying_addr,
-                    underlying_decimals,
                     *ctoken_addr,
-                    ctoken_decimals,
                     supply,
                     exchange_rate,
                     collateral_factor,
@@ -202,9 +187,7 @@ async fn get_historic_account_assets(
             (None, Some(supply)) => {
                 let token_balance = TokenBalance::new(
                     underlying_addr,
-                    underlying_decimals,
                     *ctoken_addr,
-                    ctoken_decimals,
                     supply,
                     exchange_rate,
                     collateral_factor,
@@ -216,9 +199,7 @@ async fn get_historic_account_assets(
             (Some(borrow), None) => {
                 let token_balance = TokenBalance::new(
                     underlying_addr,
-                    underlying_decimals,
                     *ctoken_addr,
-                    ctoken_decimals,
                     borrow,
                     exchange_rate,
                     collateral_factor,
@@ -263,29 +244,3 @@ async fn get_historic_close_factor(
 
     Ok(ScaledNum::new(close_factor_mantissa, 18))
 }
-
-// pub fn convert_mantissa(mantissa: U256) -> f64 {
-//     let scale = U256::exp10(18);
-//     let numerator = mantissa.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
-//     let denominator = scale.as_u128() as f64;
-
-//     numerator / denominator
-// }
-
-// // exhcange rate = The current exchange rate as an unsigned integer,
-// // scaled by 1 * 10^(18 - 8 + Underlying Token Decimals).
-// fn convert_exchange_rate(exchange_rate_scaled: U256, underlying_decimals: u8) -> f64 {
-//     let scale = U256::exp10(10 + underlying_decimals as usize);
-//     let numerator = exchange_rate_scaled.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
-//     let denominator = scale.as_u128() as f64;
-
-//     numerator / denominator
-// }
-
-// fn fix_decimals(balance: U256, decimals: u8) -> f64 {
-//     let scale = U256::exp10(decimals as usize);
-//     let numerator = balance.as_u128() as f64;
-//     let denominator = scale.as_u128() as f64;
-
-//     numerator / denominator
-// }

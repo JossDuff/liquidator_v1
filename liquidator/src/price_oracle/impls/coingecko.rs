@@ -1,8 +1,7 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use ethers::{
-    core::k256::Scalar,
-    types::{Address, U256},
+    types::{Address},
 };
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
