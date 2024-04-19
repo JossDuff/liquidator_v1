@@ -1,6 +1,6 @@
 use super::*;
 use anyhow::{Context, Result};
-use contract_bindings::sonne_price_oracle::SonnePriceOracle;
+use contract_bindings::price_oracle_sonne::SonnePriceOracle;
 
 pub struct MockPriceOracle {
     prices: HashMap<Address, ScaledNum>,

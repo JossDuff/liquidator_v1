@@ -10,7 +10,6 @@ mod impls;
 
 #[async_trait]
 pub trait DataProvider {
-    // TODO: we're going to have to use U256s
     async fn unhealthy_accounts(&self, num: u64) -> Result<Vec<Account>>;
     // async fn account_health(&self, account: Address) -> Result<i64>;
     // async fn account_liquidity(&self, account: Address) -> Result<(Address, f64)>;
