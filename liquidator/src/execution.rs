@@ -97,10 +97,10 @@ pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
                 let balance_in_usd = balance_in_underlying_units * usd_price;
                 let balance_collateral_factor_adjusted =
                     balance_in_usd * token.collateral_factor_mant;
-                // supply_balance += balance_collateral_factor_adjusted;
+                supply_balance = supply_balance + balance_collateral_factor_adjusted;
             }
             CollateralOrBorrow::Borrow { underlying_balance } => {
-                // borrow_balance += underlying_balance * usd_price;
+                borrow_balance = borrow_balance + underlying_balance * usd_price;
             }
         };
     }
@@ -124,7 +124,6 @@ pub fn choose_liquidation_tokens(
     for token in account_tokens {
         let underlying_usd_price = token.underlying_usd_price.unwrap();
 
-        // TODO: also watch out for U256 math here
         match token.kind {
             CollateralOrBorrow::Collateral { ctoken_balance, .. } => {
                 let balance_in_underlying_units = ctoken_balance * token.exchange_rate;

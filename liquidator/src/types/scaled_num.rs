@@ -6,6 +6,7 @@ use std::{
 
 use ethers::types::U256;
 
+// TODO: impl +=
 #[derive(Clone, Copy)]
 pub struct ScaledNum {
     pub num: U256,

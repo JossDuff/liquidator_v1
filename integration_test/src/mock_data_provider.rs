@@ -22,8 +22,8 @@ use super::*;
 pub struct MockDataProvider {
     unhealthy_accounts: Account,
     account_assets: (Address, Vec<TokenBalance>),
-    close_factor: f64,
-    liquidation_incentive: f64,
+    close_factor: ScaledNum,
+    liquidation_incentive: ScaledNum,
 }
 
 impl MockDataProvider {
@@ -44,10 +44,7 @@ impl MockDataProvider {
         .await?;
         let close_factor = get_historic_close_factor(troll_instance.clone(), block_number).await?;
 
-        let unhealthy_accounts = Account {
-            address: liquidated_account,
-            health: 0,
-        };
+        let unhealthy_accounts = liquidated_account;
 
         Ok(Self {
             unhealthy_accounts,
@@ -81,10 +78,10 @@ impl DataProvider for MockDataProvider {
     async fn account_assets(&self, _account: Address) -> Result<(Address, Vec<TokenBalance>)> {
         Ok(self.account_assets.clone())
     }
-    async fn close_factor(&self) -> Result<f64> {
+    async fn close_factor(&self) -> Result<ScaledNum> {
         Ok(self.close_factor)
     }
-    async fn liquidation_incentive(&self) -> Result<f64> {
+    async fn liquidation_incentive(&self) -> Result<ScaledNum> {
         Ok(self.liquidation_incentive)
     }
 }
@@ -147,6 +144,11 @@ async fn get_historic_account_assets(
             .await
             .context("underlying decimals")?;
 
+        let borrow_balance = ScaledNum::new(borrow_balance, underlying_decimals);
+        let supplied_balance = ScaledNum::new(supplied_balance, ctoken_decimals);
+        let collateral_factor = ScaledNum::new(collateral_factor, 18);
+        let exchange_rate = ScaledNum::new(exchange_rate, 10 + underlying_decimals);
+
         // println!("ctoken_addr: {ctoken_addr:?}");
         // println!("underlying_addr: {underlying_addr:?}");
         // println!("borrow_balance: {borrow_balance:?}");
@@ -154,21 +156,17 @@ async fn get_historic_account_assets(
         // println!("collateral_factor: {collateral_factor:?}");
         // println!("exchange_rate: {exchange_rate:?}");
 
-        let borrow = if borrow_balance > U256::zero() {
-            let underlying_balance = fix_decimals(borrow_balance, underlying_decimals);
-            Some(CollateralOrBorrow::Borrow { underlying_balance })
+        let borrow = if borrow_balance > ScaledNum::zero() {
+            Some(CollateralOrBorrow::Borrow {
+                underlying_balance: borrow_balance,
+            })
         } else {
             None
         };
 
-        let supply = if supplied_balance > U256::zero() {
-            let exchange_rate = convert_exchange_rate(exchange_rate, underlying_decimals);
-            let collateral_factor = convert_mantissa(collateral_factor);
-            let ctoken_balance = fix_decimals(supplied_balance, ctoken_decimals);
+        let supply = if supplied_balance > ScaledNum::zero() {
             Some(CollateralOrBorrow::Collateral {
-                exchange_rate,
-                collateral_factor_mant: collateral_factor,
-                ctoken_balance,
+                ctoken_balance: supplied_balance,
             })
         } else {
             None
@@ -182,7 +180,9 @@ async fn get_historic_account_assets(
                     *ctoken_addr,
                     ctoken_decimals,
                     borrow,
-                    0.0,
+                    exchange_rate,
+                    collateral_factor,
+                    ScaledNum::zero(),
                     None,
                 );
                 token_balances.push(token_balance);
@@ -192,7 +192,9 @@ async fn get_historic_account_assets(
                     *ctoken_addr,
                     ctoken_decimals,
                     supply,
-                    0.0,
+                    exchange_rate,
+                    collateral_factor,
+                    ScaledNum::zero(),
                     None,
                 );
                 token_balances.push(token_balance);
@@ -204,7 +206,9 @@ async fn get_historic_account_assets(
                     *ctoken_addr,
                     ctoken_decimals,
                     supply,
-                    0.0,
+                    exchange_rate,
+                    collateral_factor,
+                    ScaledNum::zero(),
                     None,
                 );
                 token_balances.push(token_balance);
@@ -216,7 +220,9 @@ async fn get_historic_account_assets(
                     *ctoken_addr,
                     ctoken_decimals,
                     borrow,
-                    0.0,
+                    exchange_rate,
+                    collateral_factor,
+                    ScaledNum::zero(),
                     None,
                 );
                 token_balances.push(token_balance);
@@ -233,7 +239,7 @@ async fn get_historic_account_assets(
 async fn get_historic_liquidation_incentive(
     troll_instance: Arc<Comptroller<Provider<Http>>>,
     block_num: u64,
-) -> Result<f64> {
+) -> Result<ScaledNum> {
     let liquidation_incentive_mantissa = troll_instance
         .liquidation_incentive_mantissa()
         .block(block_num)
@@ -241,14 +247,13 @@ async fn get_historic_liquidation_incentive(
         .await
         .context("get old liquidation incentive mantissa")?;
 
-    // TODO: dangerous conversion
-    Ok(liquidation_incentive_mantissa.as_u64() as f64 / 1e18)
+    Ok(ScaledNum::new(liquidation_incentive_mantissa, 18))
 }
 
 async fn get_historic_close_factor(
     troll_instance: Arc<Comptroller<Provider<Http>>>,
     block_num: u64,
-) -> Result<f64> {
+) -> Result<ScaledNum> {
     let close_factor_mantissa = troll_instance
         .close_factor_mantissa()
         .block(block_num)
@@ -256,31 +261,31 @@ async fn get_historic_close_factor(
         .await
         .context("get old close factor mantissa")?;
 
-    Ok(convert_mantissa(close_factor_mantissa))
+    Ok(ScaledNum::new(close_factor_mantissa, 18))
 }
 
-pub fn convert_mantissa(mantissa: U256) -> f64 {
-    let scale = U256::exp10(18);
-    let numerator = mantissa.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
-    let denominator = scale.as_u128() as f64;
+// pub fn convert_mantissa(mantissa: U256) -> f64 {
+//     let scale = U256::exp10(18);
+//     let numerator = mantissa.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
+//     let denominator = scale.as_u128() as f64;
 
-    numerator / denominator
-}
+//     numerator / denominator
+// }
 
-// exhcange rate = The current exchange rate as an unsigned integer,
-// scaled by 1 * 10^(18 - 8 + Underlying Token Decimals).
-fn convert_exchange_rate(exchange_rate_scaled: U256, underlying_decimals: u8) -> f64 {
-    let scale = U256::exp10(10 + underlying_decimals as usize);
-    let numerator = exchange_rate_scaled.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
-    let denominator = scale.as_u128() as f64;
+// // exhcange rate = The current exchange rate as an unsigned integer,
+// // scaled by 1 * 10^(18 - 8 + Underlying Token Decimals).
+// fn convert_exchange_rate(exchange_rate_scaled: U256, underlying_decimals: u8) -> f64 {
+//     let scale = U256::exp10(10 + underlying_decimals as usize);
+//     let numerator = exchange_rate_scaled.as_u128() as f64; // Convert to f64, safe as long as U256 value is within u128 range
+//     let denominator = scale.as_u128() as f64;
 
-    numerator / denominator
-}
+//     numerator / denominator
+// }
 
-fn fix_decimals(balance: U256, decimals: u8) -> f64 {
-    let scale = U256::exp10(decimals as usize);
-    let numerator = balance.as_u128() as f64;
-    let denominator = scale.as_u128() as f64;
+// fn fix_decimals(balance: U256, decimals: u8) -> f64 {
+//     let scale = U256::exp10(decimals as usize);
+//     let numerator = balance.as_u128() as f64;
+//     let denominator = scale.as_u128() as f64;
 
-    numerator / denominator
-}
+//     numerator / denominator
+// }

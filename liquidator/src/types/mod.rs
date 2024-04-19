@@ -55,7 +55,6 @@ impl TokenBalance {
         ctoken_address: Address,
         ctoken_decimals: u8,
         kind: CollateralOrBorrow,
-        // scaled up by 1 * 10^(10 + Underlying Token Decimals)
         exchange_rate: ScaledNum,
         collateral_factor_mant: ScaledNum,
         protocol_seize_share_mant: ScaledNum,
