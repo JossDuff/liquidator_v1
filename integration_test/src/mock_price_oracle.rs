@@ -60,8 +60,9 @@ async fn get_historic_prices(
             .await
             .context("get price")?;
 
+        let price = ScaledNum::new(price, 18);
         println!("{price}");
-        prices.insert(underlying_addr, ScaledNum::new(price, 18));
+        prices.insert(underlying_addr, price);
     }
 
     Ok(prices)

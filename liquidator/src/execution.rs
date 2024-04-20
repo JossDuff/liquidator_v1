@@ -90,8 +90,6 @@ pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
         let usd_price = token.underlying_usd_price.unwrap();
 
         match token.kind {
-            // TODO: have to make sure both calculations result in the same scale (1e18)
-            // make sure to multiply first then divide
             CollateralOrBorrow::Collateral { ctoken_balance } => {
                 let balance_in_underlying_units = ctoken_balance * token.exchange_rate;
                 let balance_in_usd = balance_in_underlying_units * usd_price;
@@ -104,9 +102,9 @@ pub fn can_i_liquidate(account_tokens: &Vec<TokenBalance>) -> bool {
             }
         };
     }
-
     println!("borrow_balance: {borrow_balance}");
     println!("supply balance: {supply_balance}");
+    println!("liquidation possible: {}", borrow_balance > supply_balance);
 
     borrow_balance > supply_balance
 }

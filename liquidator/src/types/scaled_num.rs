@@ -6,7 +6,7 @@ use std::{
 
 use ethers::types::U256;
 
-// TODO: impl +=
+// TODO: impl +=, /, and from u64
 #[derive(Clone, Copy)]
 pub struct ScaledNum {
     pub num: U256,
@@ -118,7 +118,7 @@ impl Display for ScaledNum {
 
         let mut num_str = self.num.to_string();
         let scale = self.scale as usize;
-        if scale > num_str.len() {
+        if scale + 1 > num_str.len() {
             let desired_length = num_str.len() + (scale - num_str.len()) + 1;
             num_str = format!("{:0>width$}", num_str, width = desired_length);
         }
@@ -258,8 +258,14 @@ mod tests {
         let x = ScaledNum::new(11, 3);
         assert_eq!(format!("{x}"), format!("0.011"));
 
+        let x = ScaledNum::new(11, 2);
+        assert_eq!(format!("{x}"), format!("0.11"));
+
         let x = ScaledNum::new(1, 0);
         assert_eq!(format!("{x}"), format!("1"));
+
+        let x = ScaledNum::new(999962450000000000_u64, 18);
+        assert_eq!(format!("{x}"), format!("0.999962450000000000"));
     }
 
     #[test]
