@@ -41,7 +41,6 @@ pub struct TokenBalance {
     pub exchange_rate: ScaledNum,
     pub collateral_factor_mant: ScaledNum,
     pub protocol_seize_share_mant: ScaledNum,
-    // TODO: is it better to scale this up to 256 or to scale others down?
     pub underlying_usd_price: Option<ScaledNum>,
 }
 

@@ -1,12 +1,12 @@
 use std::{
     cmp::{max, min, Ordering},
     fmt::{self, Display, Formatter},
-    ops::{Add, Mul},
+    ops::{Add, AddAssign, Mul},
 };
 
 use ethers::types::U256;
 
-// TODO: impl +=, /, and from u64
+// TODO: impl /, and from u64 (edit: I don't remember why I wanted to implement these)
 #[derive(Clone, Copy)]
 pub struct ScaledNum {
     pub num: U256,
@@ -144,6 +144,20 @@ impl Add for ScaledNum {
             num: adjusted_self + adjusted_other,
             scale: max_scale,
         }
+    }
+}
+
+impl AddAssign for ScaledNum {
+    fn add_assign(&mut self, other: Self) {
+        let max_scale = max(self.scale, other.scale);
+        let scale_diff_self = max_scale - self.scale;
+        let scale_diff_other = max_scale - other.scale;
+
+        let adjusted_self = self.num * U256::exp10(scale_diff_self as usize);
+        let adjusted_other = other.num * U256::exp10(scale_diff_other as usize);
+
+        self.num = adjusted_self + adjusted_other;
+        self.scale = max_scale;
     }
 }
 
