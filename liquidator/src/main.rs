@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use contract_bindings::comptroller_bindings::Comptroller;
-use ethers::{
-    contract::abigen,
-    providers::{Http, Provider},
-};
+use ethers::providers::{Http, Provider};
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,
@@ -17,8 +14,6 @@ use liquidator::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    abigen!(Unitroller, "../abi/unitroller.json");
-
     let cfg = tokio::fs::read_to_string("config.toml")
         .await
         .context("read config file")?;

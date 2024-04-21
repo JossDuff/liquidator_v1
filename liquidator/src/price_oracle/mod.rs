@@ -20,10 +20,12 @@ pub fn price_oracle_from_config(config: PriceOracleConfig) -> Result<Arc<dyn Pri
         PriceOracleConfig::CoinGecko {
             asset_platform,
             endpoint,
+            api_key,
         } => CoinGecko {
             client: Arc::new(reqwest::Client::new()),
             asset_platform,
             endpoint,
+            api_key,
         },
     };
 

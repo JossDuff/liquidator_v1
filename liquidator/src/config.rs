@@ -25,6 +25,7 @@ pub enum PriceOracleConfig {
     CoinGecko {
         asset_platform: String,
         endpoint: String,
+        api_key: String,
     },
 }
 

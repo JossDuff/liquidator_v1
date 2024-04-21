@@ -43,17 +43,30 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all ctokens")?;
 
+    println!(
+        "got {} ctokens supported by sonne finance",
+        all_ctokens.len()
+    );
+
     // shouldn't make this call every iteration
     // TODO: could probably store ctoken info in redis cache that
     // updates every few seconds.  We only need to update the exchange rate
     // and the collateral_factor (only when an event is emitted)
     let mut all_ctoken_info = vec![];
     for ctoken_addr in all_ctokens {
+        println!("getting additional info for ctoken {ctoken_addr:?}");
         let ctoken_instance = Ctoken::new(ctoken_addr, provider.clone());
+        // let exchange_rate = ctoken_instance
+        //     .exchange_rate_stored()
+        //     .call()
+        //     .await
+        //     .context("underlying address calls")?;
+        // println!("exchange rate stored {exchange_rate:?}");
 
         let underlying_addr_call = ctoken_instance.underlying();
         let exchange_rate_call = ctoken_instance.exchange_rate_stored();
         let collateral_factor_mantissa_call = troll_instance.markets(ctoken_addr);
+        let ctoken_decimals_call = ctoken_instance.decimals();
         // TODO: protocol seize share for profit calculation
         // let protocol_seize_share_mantissa_call = ctoken_instance.protocol_seize_share
 
@@ -64,12 +77,15 @@ pub async fn run_execution(state: &State) -> Result<()> {
         multicall.add_call(underlying_addr_call, false);
         multicall.add_call(collateral_factor_mantissa_call, false);
         multicall.add_call(exchange_rate_call, false);
+        multicall.add_call(ctoken_decimals_call, false);
 
-        let (underlying_addr, (_, collateral_factor_mantissa, _), exchange_rate_mantissa): (
-            Address,
-            (bool, U256, bool),
-            U256,
-        ) = multicall.call().await.context("multicall for token info")?;
+        let (
+            underlying_addr,
+            (_, collateral_factor_mantissa, _),
+            exchange_rate_mantissa,
+            ctoken_decimals,
+        ): (Address, (bool, U256, bool), U256, u8) =
+            multicall.call().await.context("multicall for token info")?;
 
         let underlying_instance = Erc20::new(underlying_addr, provider.clone());
         let underlying_decimals = underlying_instance
@@ -84,7 +100,9 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
         let new_ctoken = CtokenInfo {
             underlying_addr,
+            underlying_decimals,
             ctoken_addr,
+            ctoken_decimals,
             exchange_rate,
             collateral_factor_mant,
             protocol_seize_share_mant,
@@ -104,6 +122,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get prices for underlying tokens")?;
     let underlying_prices: HashMap<Address, ScaledNum> = underlying_prices.into_iter().collect();
+    println!("got prices ");
 
     let mut ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = HashMap::new();
     for ctoken_info in all_ctoken_info {
@@ -115,6 +134,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         ctoken_info_priced.insert(ctoken_info.ctoken_addr, new_ctoken_info_priced);
     }
 
+    println!("getting all accounts");
     // this is the only call I should be making every time
     let all_accounts = state
         .data_provider
@@ -125,6 +145,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
     println!("found {} accounts", all_accounts.len());
 
     for (account, account_info) in all_accounts {
+        println!("seeing if I can liquidate account {account:?}");
         if can_i_liquidate(&account_info, &ctoken_info_priced) {
             println!("I can liquidate account {:?}", account);
             // let liquidation_args = choose_liquidation_tokens(account_address, account_tokens)
@@ -191,6 +212,7 @@ pub fn can_i_liquidate(
 
         match *token {
             CollateralOrBorrow::Collateral { ctoken_balance, .. } => {
+                let ctoken_balance = ScaledNum::new(ctoken_balance, info.ctoken_decimals);
                 let balance_in_underlying_units = ctoken_balance * info.exchange_rate;
                 let balance_in_usd = balance_in_underlying_units * underlying_price;
                 let balance_collateral_factor_adjusted =
@@ -201,13 +223,17 @@ pub fn can_i_liquidate(
             CollateralOrBorrow::Borrow {
                 underlying_balance, ..
             } => {
+                let underlying_balance =
+                    ScaledNum::new(underlying_balance, info.underlying_decimals);
                 borrow_balance += underlying_balance * underlying_price;
             }
         };
     }
-    println!("borrow_balance: {borrow_balance}");
-    println!("supply balance: {supply_balance}");
-    println!("liquidation possible: {}", borrow_balance > supply_balance);
+    if borrow_balance > supply_balance {
+        println!("borrow_balance: {borrow_balance}");
+        println!("supply balance: {supply_balance}");
+        println!("liquidation possible: {}", borrow_balance > supply_balance);
+    }
 
     borrow_balance > supply_balance
 }
@@ -216,6 +242,7 @@ pub fn can_i_liquidate(
 // I think the best repay/seize are the most liquid & easiest to swap into
 // this is a more complex problem than it appears
 // For now it might be okay
+/*
 pub fn choose_liquidation_tokens(
     account_address: &Address,
     account_tokens: &Vec<TokenBalance>,
@@ -264,6 +291,7 @@ pub fn choose_liquidation_tokens(
         seize_ctoken_protocol_seize_share_mant: best_seize_ctoken.2,
     })
 }
+*/
 
 // profit in USD scaled by U256
 pub fn estimate_profit(

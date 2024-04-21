@@ -1,7 +1,7 @@
 use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::{
     providers::{Http, Provider},
-    types::Address,
+    types::{Address, U256},
 };
 
 use std::sync::Arc;
@@ -46,7 +46,9 @@ pub type Account = Address;
 #[derive(Copy, Clone)]
 pub struct CtokenInfo {
     pub underlying_addr: Address,
+    pub underlying_decimals: u8,
     pub ctoken_addr: Address,
+    pub ctoken_decimals: u8,
     pub exchange_rate: ScaledNum,
     pub collateral_factor_mant: ScaledNum,
     pub protocol_seize_share_mant: ScaledNum,
@@ -93,12 +95,12 @@ impl TokenBalance {
 #[derive(Clone)]
 pub enum CollateralOrBorrow {
     Collateral {
-        ctoken_address: Address,
-        ctoken_balance: ScaledNum,
+        ctoken_addr: Address,
+        ctoken_balance: U256,
     },
     Borrow {
-        ctoken_address: Address,
-        underlying_balance: ScaledNum,
+        ctoken_addr: Address,
+        underlying_balance: U256,
     },
 }
 
@@ -106,8 +108,14 @@ impl CollateralOrBorrow {
     // TODO: find a better abstraction so we don't have to do this
     pub fn ctoken_address(&self) -> &Address {
         match self {
-            CollateralOrBorrow::Collateral { ctoken_address, .. } => ctoken_address,
-            CollateralOrBorrow::Borrow { ctoken_address, .. } => ctoken_address,
+            CollateralOrBorrow::Collateral {
+                ctoken_addr: ctoken_address,
+                ..
+            } => ctoken_address,
+            CollateralOrBorrow::Borrow {
+                ctoken_addr: ctoken_address,
+                ..
+            } => ctoken_address,
         }
     }
 }
