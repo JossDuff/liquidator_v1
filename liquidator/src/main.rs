@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use ethers::contract::abigen;
+use contract_bindings::comptroller_bindings::Comptroller;
+use ethers::providers::{Http, Provider};
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,
@@ -13,8 +14,6 @@ use liquidator::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    abigen!(Unitroller, "../abi/unitroller.json");
-
     let cfg = tokio::fs::read_to_string("config.toml")
         .await
         .context("read config file")?;
@@ -29,7 +28,17 @@ async fn main() -> Result<()> {
     let liquidator =
         Arc::new(liquidator_from_config(cfg.liquidator).context("Liquidator from config")?);
 
+    let provider: Arc<Provider<Http>> = Arc::new(
+        Provider::<Http>::try_from(cfg.provider_endpoint)
+            .context("create provider")
+            .unwrap(),
+    );
+
+    let troll_instance = Arc::new(Comptroller::new(cfg.comptroller_address, provider.clone()));
+
     let state = State::new(
+        provider,
+        troll_instance,
         price_oracle,
         data_provider,
         liquidator,

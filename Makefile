@@ -1,7 +1,7 @@
-run_liquidator_v1:
-	cargo run --release -p liquidator_v1 run
-debug_liquidator_v1:
-	cargo run -p liquidator_v1 run
+run_liquidator:
+	cargo run --release -p liquidator run
+debug_liquidator:
+	cargo run -p liquidator run
 
 run_integration_test:
 	cargo run --release -p integration_test run

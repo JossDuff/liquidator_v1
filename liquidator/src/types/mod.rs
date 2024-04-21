@@ -1,4 +1,8 @@
-use ethers::types::Address;
+use contract_bindings::comptroller_bindings::Comptroller;
+use ethers::{
+    providers::{Http, Provider},
+    types::{Address, U256},
+};
 
 use std::sync::Arc;
 pub mod scaled_num;
@@ -8,6 +12,8 @@ use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::P
 use self::scaled_num::ScaledNum;
 
 pub struct State {
+    pub provider: Arc<Provider<Http>>,
+    pub troll_instance: Arc<Comptroller<Provider<Http>>>,
     pub price_oracle: Arc<dyn PriceOracle>,
     pub data_provider: Arc<dyn DataProvider>,
     pub liquidator: Arc<Liquidator>,
@@ -16,12 +22,16 @@ pub struct State {
 
 impl State {
     pub fn new(
+        provider: Arc<Provider<Http>>,
+        troll_instance: Arc<Comptroller<Provider<Http>>>,
         price_oracle: Arc<dyn PriceOracle>,
         data_provider: Arc<dyn DataProvider>,
         liquidator: Arc<Liquidator>,
         config_min_profit_per_liquidation: ScaledNum,
     ) -> Self {
         Self {
+            provider,
+            troll_instance,
             price_oracle,
             data_provider,
             liquidator,
@@ -32,6 +42,22 @@ impl State {
 
 // account is a potential borrower
 pub type Account = Address;
+
+#[derive(Copy, Clone)]
+pub struct CtokenInfo {
+    pub underlying_addr: Address,
+    pub underlying_decimals: u8,
+    pub ctoken_addr: Address,
+    pub ctoken_decimals: u8,
+    pub exchange_rate: ScaledNum,
+    pub collateral_factor_mant: ScaledNum,
+    pub protocol_seize_share_mant: ScaledNum,
+}
+
+pub struct CtokenInfoPriced {
+    pub info: CtokenInfo,
+    pub underlying_price: ScaledNum,
+}
 
 #[derive(Clone)]
 pub struct TokenBalance {
@@ -68,8 +94,30 @@ impl TokenBalance {
 
 #[derive(Clone)]
 pub enum CollateralOrBorrow {
-    Collateral { ctoken_balance: ScaledNum },
-    Borrow { underlying_balance: ScaledNum },
+    Collateral {
+        ctoken_addr: Address,
+        ctoken_balance: U256,
+    },
+    Borrow {
+        ctoken_addr: Address,
+        underlying_balance: U256,
+    },
+}
+
+impl CollateralOrBorrow {
+    // TODO: find a better abstraction so we don't have to do this
+    pub fn ctoken_address(&self) -> &Address {
+        match self {
+            CollateralOrBorrow::Collateral {
+                ctoken_addr: ctoken_address,
+                ..
+            } => ctoken_address,
+            CollateralOrBorrow::Borrow {
+                ctoken_addr: ctoken_address,
+                ..
+            } => ctoken_address,
+        }
+    }
 }
 
 #[derive(Clone)]

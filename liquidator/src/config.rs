@@ -8,6 +8,7 @@ pub struct Config {
     pub comptroller_address: Address,
     #[serde(default = "default_min_profit_per_liquidation")]
     pub min_profit_per_liquidation: usize,
+    pub provider_endpoint: String,
     pub liquidator: LiquidatorConfig,
     pub price_oracle: PriceOracleConfig,
     pub data_provider: DataProviderConfig,
@@ -24,6 +25,7 @@ pub enum PriceOracleConfig {
     CoinGecko {
         asset_platform: String,
         endpoint: String,
+        api_key: String,
     },
 }
 
@@ -36,6 +38,5 @@ pub enum DataProviderConfig {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LiquidatorConfig {
-    pub provider_endpoint: String,
     pub liquidator_address: String,
 }

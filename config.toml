@@ -1,16 +1,17 @@
 chain = 1
-protocol = "compoundv2"
-comptroller_address = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B"
+protocol = "sonne"
+comptroller_address = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58"
+provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
 
 [price_oracle]
 kind = "coingecko"
-asset_platform = "ethereum"
+asset_platform = "optimistic-ethereum"
 endpoint = "https://api.coingecko.com/api/v3"
+api_key = "CG-AENTo3a2E8Lw1h5QHKavuppX"
 
 [data_provider]
 kind = "envio"
-endpoint = "googoogaga"
+endpoint = "http://localhost:8080/v1/graphql"
 
 [liquidator]
-provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
 liquidator_address = "0xD9760ABad7021A0F64FC1f6fB4adB8f919A0a65d"

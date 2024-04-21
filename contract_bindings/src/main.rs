@@ -35,6 +35,6 @@ fn main() {
         .unwrap()
         .generate()
         .unwrap()
-        .write_to_file("contract_bindings/src/sonne_price_oracle.rs")
+        .write_to_file("contract_bindings/src/price_oracle_sonne.rs")
         .unwrap();
 }
