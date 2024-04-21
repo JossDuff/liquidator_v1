@@ -11,7 +11,9 @@ pub use sonne_price_oracle::*;
 )]
 pub mod sonne_price_oracle {
     const _: () = {
-        ::core::include_bytes!("/home/joss/dev/liquidator_v1/abi/sonne_price_oracle.json",);
+        ::core::include_bytes!(
+            "/home/joss/dev/liquidator/liquidator_v1/abi/sonne_price_oracle.json",
+        );
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers::core::abi::Abi {

@@ -11,7 +11,7 @@ pub use unitroller::*;
 )]
 pub mod unitroller {
     const _: () = {
-        ::core::include_bytes!("/home/joss/dev/liquidator_v1/abi/unitroller.json");
+        ::core::include_bytes!("/home/joss/dev/liquidator/liquidator_v1/abi/unitroller.json",);
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers::core::abi::Abi {

@@ -1524,20 +1524,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "integration_test"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "contract_bindings",
- "ethers",
- "futures",
- "liquidator",
- "tokio",
- "toml",
-]
-
-[[package]]
 name = "ipnet"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1683,6 +1669,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "contract_bindings",
  "ethers",
  "futures",
  "reqwest",

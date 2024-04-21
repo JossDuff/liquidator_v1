@@ -11,7 +11,6 @@ use ethers::{
 };
 
 pub struct Liquidator {
-    // client: Provider<Http>,
     // address: Address,
     // abi: String,
 }
@@ -38,7 +37,6 @@ impl Liquidator {
 pub fn liquidator_from_config(config: LiquidatorConfig) -> Result<Liquidator> {
     // let http = Http::new(Url::parse(&config.provider_endpoint).unwrap());
     // let client = RwClient::new(http, http);
-    let _client: Provider<Http> = Provider::<Http>::try_from(config.provider_endpoint).unwrap();
 
     let _abi: String = include_str!("../../../abi/liquidator.json").into();
 
@@ -46,7 +44,6 @@ pub fn liquidator_from_config(config: LiquidatorConfig) -> Result<Liquidator> {
         Address::from_str(&config.liquidator_address).context("parse liquidator address")?;
 
     Ok(Liquidator {
-        // client,
         // address,
         // abi,
     })

@@ -1,7 +1,11 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use ethers::contract::abigen;
+use contract_bindings::comptroller_bindings::Comptroller;
+use ethers::{
+    contract::abigen,
+    providers::{Http, Provider},
+};
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,
@@ -29,7 +33,17 @@ async fn main() -> Result<()> {
     let liquidator =
         Arc::new(liquidator_from_config(cfg.liquidator).context("Liquidator from config")?);
 
+    let provider: Arc<Provider<Http>> = Arc::new(
+        Provider::<Http>::try_from(cfg.provider_endpoint)
+            .context("create provider")
+            .unwrap(),
+    );
+
+    let troll_instance = Arc::new(Comptroller::new(cfg.comptroller_address, provider.clone()));
+
     let state = State::new(
+        provider,
+        troll_instance,
         price_oracle,
         data_provider,
         liquidator,

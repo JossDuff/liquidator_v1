@@ -1,6 +1,6 @@
 use crate::{
     data_provider::DataProvider,
-    types::{scaled_num::ScaledNum, Account, TokenBalance},
+    types::{scaled_num::ScaledNum, Account, CollateralOrBorrow, TokenBalance},
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -13,22 +13,10 @@ pub struct Envio {
 
 #[async_trait]
 impl DataProvider for Envio {
-    async fn unhealthy_accounts(&self, _num: u64) -> Result<Vec<Account>> {
+    async fn get_accounts(&self) -> Result<Vec<(Account, Vec<CollateralOrBorrow>)>> {
         todo!()
     }
-    // async fn account_health(&self, account: Address) -> Result<i64> {
-    //     todo!()
-    // }
-    // async fn account_liquidity(&self, account: Address) -> Result<(Address, f64)> {
-    //     todo!()
-    // }
-    async fn account_assets(&self, _account: Address) -> Result<(Address, Vec<TokenBalance>)> {
-        todo!()
-    }
-    async fn close_factor(&self) -> Result<ScaledNum> {
-        todo!()
-    }
-    async fn liquidation_incentive(&self) -> Result<ScaledNum> {
+    async fn get_ctokens(&self) -> Result<Vec<Address>> {
         todo!()
     }
 }
