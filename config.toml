@@ -4,10 +4,8 @@ comptroller_address = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58"
 provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
 
 [price_oracle]
-kind = "coingecko"
-asset_platform = "optimistic-ethereum"
-endpoint = "https://api.coingecko.com/api/v3"
-api_key = "CG-AENTo3a2E8Lw1h5QHKavuppX"
+kind = "sonne"
+address = "0xEFc0495DA3E48c5A55F73706b249FD49d711A502"
 
 [data_provider]
 kind = "envio"

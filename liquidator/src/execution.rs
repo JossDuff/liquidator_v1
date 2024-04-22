@@ -111,22 +111,27 @@ pub async fn run_execution(state: &State) -> Result<()> {
         all_ctoken_info.push(new_ctoken);
     }
 
-    let underlying_tokens_to_price = all_ctoken_info
+    // sending ctokens here because sonne price oracle prices underlying from ctoken address
+    let ctokens_to_price = all_ctoken_info
         .iter()
-        .map(|ctoken_info| ctoken_info.underlying_addr)
+        .map(|ctoken_info| ctoken_info.ctoken_addr)
         .collect();
 
-    let underlying_prices = state
+    let underlying_prices_with_ctoken = state
         .price_oracle
-        .get_prices(underlying_tokens_to_price)
+        .get_prices(ctokens_to_price)
         .await
         .context("get prices for underlying tokens")?;
-    let underlying_prices: HashMap<Address, ScaledNum> = underlying_prices.into_iter().collect();
+
+    let underlying_prices_with_ctoken: HashMap<Address, ScaledNum> =
+        underlying_prices_with_ctoken.into_iter().collect();
     println!("got prices ");
 
     let mut ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = HashMap::new();
     for ctoken_info in all_ctoken_info {
-        let underlying_price = underlying_prices.get(&ctoken_info.underlying_addr).unwrap();
+        let underlying_price = underlying_prices_with_ctoken
+            .get(&ctoken_info.ctoken_addr)
+            .unwrap();
         let new_ctoken_info_priced = CtokenInfoPriced {
             info: ctoken_info,
             underlying_price: *underlying_price,

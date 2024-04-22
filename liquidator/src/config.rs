@@ -22,11 +22,12 @@ fn default_min_profit_per_liquidation() -> usize {
 #[serde(tag = "kind")]
 #[serde(rename_all = "lowercase")]
 pub enum PriceOracleConfig {
-    CoinGecko {
-        asset_platform: String,
-        endpoint: String,
-        api_key: String,
-    },
+    // CoinGecko {
+    //     asset_platform: String,
+    //     endpoint: String,
+    //     api_key: String,
+    // },
+    Sonne { address: String },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
