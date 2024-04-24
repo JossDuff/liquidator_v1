@@ -1686,6 +1686,7 @@ dependencies = [
  "contract_bindings",
  "ethers",
  "futures",
+ "rayon",
  "reqwest",
  "serde",
  "serde_json",

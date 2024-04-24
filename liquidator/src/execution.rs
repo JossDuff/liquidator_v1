@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Instant,
+};
 
 use crate::{
     data_provider,
@@ -14,6 +17,7 @@ use ethers::{
     types::{Address, U256},
 };
 use futures::future::join_all;
+use rayon::prelude::*;
 use tokio::try_join;
 
 pub async fn run_execution(state: &State) -> Result<()> {
@@ -54,7 +58,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
     // and the collateral_factor (only when an event is emitted)
     let mut all_ctoken_info = vec![];
     for ctoken_addr in all_ctokens {
-        println!("getting additional info for ctoken {ctoken_addr:?}");
+        // println!("getting additional info for ctoken {ctoken_addr:?}");
         let ctoken_instance = Ctoken::new(ctoken_addr, provider.clone());
         // let exchange_rate = ctoken_instance
         //     .exchange_rate_stored()
@@ -147,57 +151,22 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all accounts")?;
 
-    println!("found {} accounts", all_accounts.len());
+    let num_of_accounts = all_accounts.len();
+    println!("found {} accounts", num_of_accounts);
 
-    for (account, account_info) in all_accounts {
-        println!("seeing if I can liquidate account {account:?}");
+    let start = Instant::now();
+    all_accounts.par_iter().for_each(|(account, account_info)| {
         if can_i_liquidate(&account_info, &ctoken_info_priced) {
             println!("I can liquidate account {:?}", account);
-            // let liquidation_args = choose_liquidation_tokens(account_address, account_tokens)
-            //     .context("choose liquidation tokens")?;
-
-            // let expected_profit = estimate_profit(&liquidation_args, liquidation_incentive);
-
-            // let min_profit = state.config_min_profit_per_liquidation;
-
-            // // schedule liquidation
-            // if expected_profit > min_profit {
-            //     liquidation_futs.push(
-            //         state
-            //             .liquidator
-            //             .liquidate(liquidation_args.clone(), close_factor),
-            //     );
-            // }
         }
-    }
+    });
 
-    /*
-        // check if liquidation is possible
-        if can_i_liquidate(account_tokens) {
-            let liquidation_args = choose_liquidation_tokens(account_address, account_tokens)
-                .context("choose liquidation tokens")?;
-
-            let expected_profit = estimate_profit(&liquidation_args, liquidation_incentive);
-
-            let min_profit = state.config_min_profit_per_liquidation;
-
-            // schedule liquidation
-            if expected_profit > min_profit {
-                liquidation_futs.push(
-                    state
-                        .liquidator
-                        .liquidate(liquidation_args.clone(), close_factor),
-                );
-            }
-        }
-
-
-    let liquidations = join_all(liquidation_futs).await;
-    for liquidation in liquidations {
-        let liquidation = liquidation.context("liquidation call")?;
-        println!("account {} liquidated for {}", liquidation.0, liquidation.1);
-    }
-    */
+    let duration = Instant::now() - start;
+    println!(
+        "time to process all {} accounts in {}ms",
+        num_of_accounts,
+        duration.as_millis()
+    );
 
     Ok(())
 }
@@ -237,7 +206,6 @@ pub fn can_i_liquidate(
     if borrow_balance > supply_balance {
         println!("borrow_balance: {borrow_balance}");
         println!("supply balance: {supply_balance}");
-        println!("liquidation possible: {}", borrow_balance > supply_balance);
     }
 
     borrow_balance > supply_balance

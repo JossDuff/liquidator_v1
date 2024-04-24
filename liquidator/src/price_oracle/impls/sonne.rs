@@ -36,10 +36,10 @@ impl PriceOracle for Sonne {
                 .context(format!("get price of ctoken {ctoken_address:?}"))?;
 
             let price = ScaledNum::new(price, 18);
-            println!("price of underlying of ctoken {ctoken_address:?}: {price}");
+            // println!("price of underlying of ctoken {ctoken_address:?}: {price}");
             prices.push((ctoken_address, price))
         }
 
-        todo!()
+        Ok(prices)
     }
 }

@@ -5,7 +5,7 @@ provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c86180
 
 [price_oracle]
 kind = "sonne"
-address = "0xEFc0495DA3E48c5A55F73706b249FD49d711A502"
+address = "0x3176fA5060033a5d781b29De50D4A0f9E3d14F8F"
 
 [data_provider]
 kind = "envio"

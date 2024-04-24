@@ -51,7 +51,9 @@ impl DataProvider for Envio {
             let mut balances: Vec<CollateralOrBorrow> = vec![];
             for collateral in account_info.collateral {
                 let ctoken_addr = Address::from_str(&collateral.ctoken_id).unwrap();
-                let ctoken_balance = U256::from_str(&collateral.balance).unwrap();
+                // println!("balances for account {}", account_info.id);
+                let ctoken_balance = U256::from_str(&collateral.balance)
+                    .context(format!("parse {} as U256", collateral.balance))?;
                 balances.push(CollateralOrBorrow::Collateral {
                     ctoken_addr,
                     ctoken_balance,
