@@ -1,0 +1,108 @@
+get all ctokens: 79ms
+create comptroller multicall: 562ms
+execute comptroller multicall: 174ms
+execute ctoken task futures: 1178ms
+get prices: 175ms
+get all accounts: 610ms
+process 17556 accounts for liquidation: 5ms
+total execution time 2786ms
+
+get all ctokens: 69ms
+create comptroller multicall: 152ms
+execute comptroller multicall: 168ms
+execute ctoken task futures: 761ms
+get prices: 165ms
+get all accounts: 530ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1853ms
+
+get all ctokens: 67ms
+create comptroller multicall: 151ms
+execute comptroller multicall: 144ms
+execute ctoken task futures: 799ms
+get prices: 180ms
+get all accounts: 517ms
+process 17556 accounts for liquidation: 3ms
+total execution time 1864ms
+
+get all ctokens: 74ms
+create comptroller multicall: 131ms
+execute comptroller multicall: 156ms
+execute ctoken task futures: 558ms
+get prices: 176ms
+get all accounts: 513ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1614ms
+
+get all ctokens: 75ms
+create comptroller multicall: 150ms
+execute comptroller multicall: 157ms
+execute ctoken task futures: 502ms
+get prices: 165ms
+get all accounts: 527ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1584ms
+
+get all ctokens: 74ms
+create comptroller multicall: 138ms
+execute comptroller multicall: 153ms
+execute ctoken task futures: 751ms
+get prices: 180ms
+get all accounts: 488ms
+process 17556 accounts for liquidation: 5ms
+total execution time 1793ms
+
+get all ctokens: 74ms
+create comptroller multicall: 166ms
+execute comptroller multicall: 145ms
+execute ctoken task futures: 798ms
+get prices: 198ms
+get all accounts: 489ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1877ms
+
+get all ctokens: 72ms
+create comptroller multicall: 170ms
+execute comptroller multicall: 148ms
+execute ctoken task futures: 798ms
+get prices: 159ms
+get all accounts: 478ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1832ms
+
+get all ctokens: 66ms
+create comptroller multicall: 132ms
+execute comptroller multicall: 140ms
+execute ctoken task futures: 472ms
+get prices: 179ms
+get all accounts: 570ms
+process 17556 accounts for liquidation: 7ms
+total execution time 1569ms
+
+get all ctokens: 97ms
+create comptroller multicall: 144ms
+execute comptroller multicall: 142ms
+execute ctoken task futures: 529ms
+get prices: 149ms
+get all accounts: 530ms
+process 17556 accounts for liquidation: 5ms
+total execution time 1598ms
+
+get all ctokens: 81ms
+create comptroller multicall: 149ms
+execute comptroller multicall: 150ms
+execute ctoken task futures: 546ms
+get prices: 156ms
+get all accounts: 563ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1653ms
+
+get all ctokens: 66ms
+create comptroller multicall: 138ms
+execute comptroller multicall: 142ms
+execute ctoken task futures: 468ms
+get prices: 151ms
+get all accounts: 522ms
+process 17556 accounts for liquidation: 4ms
+total execution time 1494ms
+

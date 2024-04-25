@@ -25,21 +25,29 @@ impl PriceOracle for Sonne {
     ) -> Result<Vec<(Address, ScaledNum)>> {
         let sonne_instance = SonnePriceOracle::new(self.address, self.provider.clone());
 
-        let mut prices = vec![];
+        let mut price_tasks = vec![];
         // TODO: make this concurrent
         for ctoken_address in addresses {
-            // returns price scaled by 1e18
-            let price = sonne_instance
-                .get_price(ctoken_address)
-                .call()
-                .await
-                .context(format!("get price of ctoken {ctoken_address:?}"))?;
+            let sonne_instance = sonne_instance.clone();
+            let task = async move {
+                // returns price scaled by 1e18
+                let price = sonne_instance
+                    .get_price(ctoken_address)
+                    .call()
+                    .await
+                    .context(format!("get price of ctoken {ctoken_address:?}"))
+                    .unwrap();
 
-            let price = ScaledNum::new(price, 18);
+                (ctoken_address, ScaledNum::new(price, 18))
+            };
             // println!("price of underlying of ctoken {ctoken_address:?}: {price}");
-            prices.push((ctoken_address, price))
+            price_tasks.push(task);
         }
 
-        Ok(prices)
+        Ok(futures::future::join_all(price_tasks)
+            .await
+            .into_iter()
+            .map(|res| res)
+            .collect::<Vec<(Address, ScaledNum)>>())
     }
 }

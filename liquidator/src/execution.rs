@@ -22,6 +22,8 @@ use tokio::{task, try_join};
 
 pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
+    let last_check = Instant::now();
+
     let provider = state.provider.clone();
     let troll_instance = state.troll_instance.clone();
 
@@ -31,8 +33,14 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all ctokens")?;
 
+    println!(
+        "get all ctokens: {}ms",
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
+
     let num_ctokens = all_ctokens.len();
-    println!("got {} ctokens supported by sonne finance", num_ctokens);
+    // println!("got {} ctokens supported by sonne finance", num_ctokens);
 
     let close_factor_call = troll_instance.liquidation_incentive_mantissa();
     let liquidation_incentive_call = troll_instance.close_factor_mantissa();
@@ -43,16 +51,22 @@ pub async fn run_execution(state: &State) -> Result<()> {
     multicall.add_call(close_factor_call, false);
     multicall.add_call(liquidation_incentive_call, false);
 
-    let start_time_comptroller_calls = Instant::now();
+    println!(
+        "create comptroller multicall: {}ms",
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
+
     let (close_factor_mantissa, liquidation_incentive_mantissa): (U256, U256) = multicall
         .call()
         .await
         .context("multicall for comptroller info")?;
-    let duration_comptroller_calls = Instant::now() - start_time_comptroller_calls;
+
     println!(
-        "took {}ms for comptroller calls",
-        duration_comptroller_calls.as_millis()
+        "execute comptroller multicall: {}ms",
+        (Instant::now() - last_check).as_millis()
     );
+    let last_check = Instant::now();
 
     let close_factor_mantissa = ScaledNum::new(close_factor_mantissa, 18);
     let liquidation_incentive_mantissa = ScaledNum::new(liquidation_incentive_mantissa, 18);
@@ -131,7 +145,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         // all_ctoken_info.push(new_ctoken);
     }
 
-    let start_time_ctoken_calls = Instant::now();
+    // let start_time_ctoken_calls = Instant::now();
 
     // let mut stream = futures::stream::iter(ctoken_tasks).buffered(5);
 
@@ -145,11 +159,11 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .map(|res| res)
         .collect();
 
-    let duration_ctoken_calls = Instant::now() - start_time_ctoken_calls;
     println!(
-        "took {}ms for all ctoken calls",
-        duration_ctoken_calls.as_millis()
+        "execute ctoken task futures: {}ms",
+        (Instant::now() - last_check).as_millis()
     );
+    let last_check = Instant::now();
 
     // sending ctokens here because sonne price oracle prices underlying from ctoken address
     let ctokens_to_price = all_ctoken_info
@@ -163,9 +177,14 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get prices for underlying tokens")?;
 
+    println!(
+        "get prices: {}ms",
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
+
     let underlying_prices_with_ctoken: HashMap<Address, ScaledNum> =
         underlying_prices_with_ctoken.into_iter().collect();
-    println!("got prices ");
 
     let mut ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = HashMap::new();
     for ctoken_info in all_ctoken_info {
@@ -187,8 +206,14 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all accounts")?;
 
+    println!(
+        "get all accounts: {}ms",
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
+
     let num_of_accounts = all_accounts.len();
-    println!("found {} accounts", num_of_accounts);
+    // println!("found {} accounts", num_of_accounts);
 
     let start = Instant::now();
     all_accounts.par_iter().for_each(|(account, account_info)| {
@@ -197,15 +222,14 @@ pub async fn run_execution(state: &State) -> Result<()> {
         }
     });
 
-    let duration = Instant::now() - start;
     println!(
-        "took {}ms to process all {} accounts",
-        duration.as_millis(),
+        "process {} accounts for liquidation: {}ms",
         num_of_accounts,
+        (Instant::now() - last_check).as_millis()
     );
 
     println!(
-        "total execution time for this loop: {}ms\n",
+        "total execution time {}ms\n",
         (Instant::now() - start_execution).as_millis()
     );
 
