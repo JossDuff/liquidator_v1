@@ -3,6 +3,11 @@ run_liquidator:
 debug_liquidator:
 	cargo run -p liquidator run
 
+benchmark_liquidator:
+	cargo run --release -p liquidator run > benchmarks/benchmark-$(date -I).txt
+analyze_benchmarks:
+	cargo run -p benchmarks run
+
 run_integration_test:
 	cargo run --release -p integration_test run
 debug_integration_test:
