@@ -16,13 +16,23 @@ use ethers::{
     contract::Multicall,
     types::{Address, U256},
 };
-use futures::future::join_all;
+use futures::{future::join_all, stream, StreamExt};
 use rayon::prelude::*;
-use tokio::try_join;
+use tokio::{task, try_join};
 
 pub async fn run_execution(state: &State) -> Result<()> {
+    let start_execution = Instant::now();
     let provider = state.provider.clone();
     let troll_instance = state.troll_instance.clone();
+
+    let all_ctokens = state
+        .data_provider
+        .get_ctokens()
+        .await
+        .context("get all ctokens")?;
+
+    let num_ctokens = all_ctokens.len();
+    println!("got {} ctokens supported by sonne finance", num_ctokens);
 
     let close_factor_call = troll_instance.liquidation_incentive_mantissa();
     let liquidation_incentive_call = troll_instance.close_factor_mantissa();
@@ -33,87 +43,113 @@ pub async fn run_execution(state: &State) -> Result<()> {
     multicall.add_call(close_factor_call, false);
     multicall.add_call(liquidation_incentive_call, false);
 
+    let start_time_comptroller_calls = Instant::now();
     let (close_factor_mantissa, liquidation_incentive_mantissa): (U256, U256) = multicall
         .call()
         .await
         .context("multicall for comptroller info")?;
+    let duration_comptroller_calls = Instant::now() - start_time_comptroller_calls;
+    println!(
+        "took {}ms for comptroller calls",
+        duration_comptroller_calls.as_millis()
+    );
 
     let close_factor_mantissa = ScaledNum::new(close_factor_mantissa, 18);
     let liquidation_incentive_mantissa = ScaledNum::new(liquidation_incentive_mantissa, 18);
-
-    let all_ctokens = state
-        .data_provider
-        .get_ctokens()
-        .await
-        .context("get all ctokens")?;
-
-    println!(
-        "got {} ctokens supported by sonne finance",
-        all_ctokens.len()
-    );
 
     // shouldn't make this call every iteration
     // TODO: could probably store ctoken info in redis cache that
     // updates every few seconds.  We only need to update the exchange rate
     // and the collateral_factor (only when an event is emitted)
-    let mut all_ctoken_info = vec![];
+    let mut ctoken_tasks = vec![];
     for ctoken_addr in all_ctokens {
+        let provider = provider.clone();
+        let troll_instance = troll_instance.clone();
         // println!("getting additional info for ctoken {ctoken_addr:?}");
-        let ctoken_instance = Ctoken::new(ctoken_addr, provider.clone());
-        // let exchange_rate = ctoken_instance
-        //     .exchange_rate_stored()
-        //     .call()
-        //     .await
-        //     .context("underlying address calls")?;
-        // println!("exchange rate stored {exchange_rate:?}");
+        let task = async move {
+            // TODO: remove unwraps in this task
+            let ctoken_instance = Ctoken::new(ctoken_addr, provider.clone());
+            // let exchange_rate = ctoken_instance
+            //     .exchange_rate_stored()
+            //     .call()
+            //     .await
+            //     .context("underlying address calls")?;
+            // println!("exchange rate stored {exchange_rate:?}");
 
-        let underlying_addr_call = ctoken_instance.underlying();
-        let exchange_rate_call = ctoken_instance.exchange_rate_stored();
-        let collateral_factor_mantissa_call = troll_instance.markets(ctoken_addr);
-        let ctoken_decimals_call = ctoken_instance.decimals();
-        // TODO: protocol seize share for profit calculation
-        // let protocol_seize_share_mantissa_call = ctoken_instance.protocol_seize_share
+            let underlying_addr_call = ctoken_instance.underlying();
+            let exchange_rate_call = ctoken_instance.exchange_rate_stored();
+            let collateral_factor_mantissa_call = troll_instance.markets(ctoken_addr);
+            let ctoken_decimals_call = ctoken_instance.decimals();
+            // TODO: protocol seize share for profit calculation
+            // let protocol_seize_share_mantissa_call = ctoken_instance.protocol_seize_share
 
-        let mut multicall = Multicall::new(provider.clone(), None)
-            .await
-            .context("create multicall")?;
+            let mut multicall = Multicall::new(provider.clone(), None)
+                .await
+                .context("create multicall")
+                .unwrap();
 
-        multicall.add_call(underlying_addr_call, false);
-        multicall.add_call(collateral_factor_mantissa_call, false);
-        multicall.add_call(exchange_rate_call, false);
-        multicall.add_call(ctoken_decimals_call, false);
+            multicall.add_call(underlying_addr_call, false);
+            multicall.add_call(collateral_factor_mantissa_call, false);
+            multicall.add_call(exchange_rate_call, false);
+            multicall.add_call(ctoken_decimals_call, false);
 
-        let (
-            underlying_addr,
-            (_, collateral_factor_mantissa, _),
-            exchange_rate_mantissa,
-            ctoken_decimals,
-        ): (Address, (bool, U256, bool), U256, u8) =
-            multicall.call().await.context("multicall for token info")?;
+            let (
+                underlying_addr,
+                (_, collateral_factor_mantissa, _),
+                exchange_rate_mantissa,
+                ctoken_decimals,
+            ): (Address, (bool, U256, bool), U256, u8) = multicall
+                .call()
+                .await
+                .context("multicall for token info")
+                .unwrap();
 
-        let underlying_instance = Erc20::new(underlying_addr, provider.clone());
-        let underlying_decimals = underlying_instance
-            .decimals()
-            .call()
-            .await
-            .context("underlying decimals")?;
+            let underlying_instance = Erc20::new(underlying_addr, provider.clone());
+            let underlying_decimals = underlying_instance
+                .decimals()
+                .call()
+                .await
+                .context("underlying decimals")
+                .unwrap();
 
-        let exchange_rate = ScaledNum::new(exchange_rate_mantissa, 10 + underlying_decimals);
-        let collateral_factor_mant = ScaledNum::new(collateral_factor_mantissa, 18);
-        let protocol_seize_share_mant = ScaledNum::zero();
+            let exchange_rate = ScaledNum::new(exchange_rate_mantissa, 10 + underlying_decimals);
+            let collateral_factor_mant = ScaledNum::new(collateral_factor_mantissa, 18);
+            let protocol_seize_share_mant = ScaledNum::zero();
 
-        let new_ctoken = CtokenInfo {
-            underlying_addr,
-            underlying_decimals,
-            ctoken_addr,
-            ctoken_decimals,
-            exchange_rate,
-            collateral_factor_mant,
-            protocol_seize_share_mant,
+            CtokenInfo {
+                underlying_addr,
+                underlying_decimals,
+                ctoken_addr,
+                ctoken_decimals,
+                exchange_rate,
+                collateral_factor_mant,
+                protocol_seize_share_mant,
+            }
         };
 
-        all_ctoken_info.push(new_ctoken);
+        ctoken_tasks.push(task);
+        // all_ctoken_info.push(new_ctoken);
     }
+
+    let start_time_ctoken_calls = Instant::now();
+
+    // let mut stream = futures::stream::iter(ctoken_tasks).buffered(5);
+
+    // let mut all_ctoken_info = Vec::with_capacity(num_ctokens);
+    // while let Some(ctoken_info) = stream.next().await {
+    //     all_ctoken_info.push(ctoken_info);
+    // }
+    let all_ctoken_info: Vec<CtokenInfo> = futures::future::join_all(ctoken_tasks)
+        .await
+        .into_iter()
+        .map(|res| res)
+        .collect();
+
+    let duration_ctoken_calls = Instant::now() - start_time_ctoken_calls;
+    println!(
+        "took {}ms for all ctoken calls",
+        duration_ctoken_calls.as_millis()
+    );
 
     // sending ctokens here because sonne price oracle prices underlying from ctoken address
     let ctokens_to_price = all_ctoken_info
@@ -143,7 +179,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         ctoken_info_priced.insert(ctoken_info.ctoken_addr, new_ctoken_info_priced);
     }
 
-    println!("getting all accounts");
+    // println!("getting all accounts");
     // this is the only call I should be making every time
     let all_accounts = state
         .data_provider
@@ -157,15 +193,20 @@ pub async fn run_execution(state: &State) -> Result<()> {
     let start = Instant::now();
     all_accounts.par_iter().for_each(|(account, account_info)| {
         if can_i_liquidate(&account_info, &ctoken_info_priced) {
-            println!("I can liquidate account {:?}", account);
+            // println!("I can liquidate account {:?}", account);
         }
     });
 
     let duration = Instant::now() - start;
     println!(
-        "time to process all {} accounts in {}ms",
+        "took {}ms to process all {} accounts",
+        duration.as_millis(),
         num_of_accounts,
-        duration.as_millis()
+    );
+
+    println!(
+        "total execution time for this loop: {}ms\n",
+        (Instant::now() - start_execution).as_millis()
     );
 
     Ok(())
@@ -203,10 +244,10 @@ pub fn can_i_liquidate(
             }
         };
     }
-    if borrow_balance > supply_balance {
-        println!("borrow_balance: {borrow_balance}");
-        println!("supply balance: {supply_balance}");
-    }
+    // if borrow_balance > supply_balance {
+    //     println!("borrow_balance: {borrow_balance}");
+    //     println!("supply balance: {supply_balance}");
+    // }
 
     borrow_balance > supply_balance
 }

@@ -1,7 +1,7 @@
 chain = 1
 protocol = "sonne"
 comptroller_address = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58"
-provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
+provider_endpoint = "https://opt-mainnet.g.alchemy.com/v2/yczlTDn5o8DYi9ihpF2qXc1SJ8vDoVOZ"
 
 [price_oracle]
 kind = "sonne"
