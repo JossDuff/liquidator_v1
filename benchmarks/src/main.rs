@@ -41,6 +41,10 @@ fn main() {
 
     println!("worst case runtime: {worst_case_scenario}");
     println!("best case runtime:  {best_case_scenario}");
+    println!(
+        "range:              {}",
+        worst_case_scenario - best_case_scenario
+    );
     println!("average runtime:    {average_scenario}");
 }
 
