@@ -5,6 +5,8 @@ use crate::{
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use ethers::types::{Address, U256};
+use rayon::iter::ParallelIterator;
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator};
 use reqwest::Client;
 use serde::Deserialize;
 use std::str::FromStr;
@@ -45,30 +47,37 @@ impl DataProvider for Envio {
             .await
             .context("deserialize response for all account balances")?;
 
-        let mut out = vec![];
-        for account_info in response.data.account_info {
-            let account_addr = Address::from_str(&account_info.id).unwrap();
-            let mut balances: Vec<CollateralOrBorrow> = vec![];
-            for collateral in account_info.collateral {
-                let ctoken_addr = Address::from_str(&collateral.ctoken_id).unwrap();
-                // println!("balances for account {}", account_info.id);
-                let ctoken_balance = U256::from_str(&collateral.balance)
-                    .context(format!("parse {} as U256", collateral.balance))?;
-                balances.push(CollateralOrBorrow::Collateral {
-                    ctoken_addr,
-                    ctoken_balance,
-                })
-            }
-            for borrow in account_info.borrow {
-                let ctoken_addr = Address::from_str(&borrow.ctoken_id).unwrap();
-                let underlying_balance = U256::from_str(&borrow.balance_underlying).unwrap();
-                balances.push(CollateralOrBorrow::Borrow {
-                    ctoken_addr,
-                    underlying_balance,
-                })
-            }
-            out.push((account_addr, balances));
-        }
+        // TODO: oar iter doesn't seem to have an impact on performance
+        let out: Vec<(Address, Vec<CollateralOrBorrow>)> = response
+            .data
+            .account_info
+            .into_par_iter()
+            .map(|account_info| {
+                let account_addr = Address::from_str(&account_info.id).unwrap();
+                let mut balances: Vec<CollateralOrBorrow> = vec![];
+                for collateral in account_info.collateral {
+                    let ctoken_addr = Address::from_str(&collateral.ctoken_id).unwrap();
+                    // println!("balances for account {}", account_info.id);
+                    // TODO: don't unwrap
+                    let ctoken_balance = U256::from_str(&collateral.balance)
+                        .context(format!("parse {} as U256", collateral.balance))
+                        .unwrap();
+                    balances.push(CollateralOrBorrow::Collateral {
+                        ctoken_addr,
+                        ctoken_balance,
+                    })
+                }
+                for borrow in account_info.borrow {
+                    let ctoken_addr = Address::from_str(&borrow.ctoken_id).unwrap();
+                    let underlying_balance = U256::from_str(&borrow.balance_underlying).unwrap();
+                    balances.push(CollateralOrBorrow::Borrow {
+                        ctoken_addr,
+                        underlying_balance,
+                    })
+                }
+                (account_addr, balances)
+            })
+            .collect();
 
         Ok(out)
     }

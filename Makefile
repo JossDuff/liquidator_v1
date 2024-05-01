@@ -4,7 +4,7 @@ debug_liquidator:
 	cargo run -p liquidator run
 
 benchmark_liquidator:
-	cargo run --release -p liquidator run > benchmarks/benchmark-$(date -I).txt
+	cargo run --release -p liquidator run > benchmarks/benchmark-$$(date -I).txt
 analyze_benchmarks:
 	cargo run -p benchmarks run
 

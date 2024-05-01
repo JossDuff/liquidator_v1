@@ -2,7 +2,7 @@ use statrs::statistics::Statistics;
 use std::{collections::HashMap, fs::read_to_string};
 
 fn main() {
-    let input = read_to_string("benchmarks/benchmark-2024-04-25.txt").unwrap();
+    let input = read_to_string("benchmarks/benchmark-2024-04-26.txt").unwrap();
 
     let runs: Vec<(String, u64)> = input
         .lines()
@@ -39,13 +39,13 @@ fn main() {
         println!("  std_dev: {std_dev}\n");
     }
 
-    println!("worst case runtime: {worst_case_scenario}");
-    println!("best case runtime:  {best_case_scenario}");
-    println!(
-        "range:              {}",
-        worst_case_scenario - best_case_scenario
-    );
-    println!("average runtime:    {average_scenario}");
+    // println!("worst case runtime: {worst_case_scenario}");
+    // println!("best case runtime:  {best_case_scenario}");
+    // println!(
+    //     "range:              {}",
+    //     worst_case_scenario - best_case_scenario
+    // );
+    // println!("average runtime:    {average_scenario}");
 }
 
 fn parse_line(line: &str) -> (String, u64) {

@@ -3,6 +3,8 @@ use std::{
     time::Instant,
 };
 
+use tokio::join;
+
 use crate::{
     data_provider,
     types::{
@@ -18,7 +20,7 @@ use ethers::{
 };
 use futures::{future::join_all, stream, StreamExt};
 use rayon::prelude::*;
-use tokio::{task, try_join};
+use tokio::{io::join, task, try_join};
 
 pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
@@ -26,6 +28,32 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
     let provider = state.provider.clone();
     let troll_instance = state.troll_instance.clone();
+
+    let close_factor_call = troll_instance.liquidation_incentive_mantissa();
+    let liquidation_incentive_call = troll_instance.close_factor_mantissa();
+
+    // println!(
+    //     "create comptroller multicall: {}ms",
+    //     (Instant::now() - last_check).as_millis()
+    // );
+    // let last_check = Instant::now();
+    // let (close_factor_mantissa, liquidation_incentive_mantissa) =
+    //     join!(close_factor_call.call(), liquidation_incentive_call.call());
+
+    // println!(
+    //     "execute comptroller calls: {}ms",
+    //     (Instant::now() - last_check).as_millis()
+    // );
+    // let last_check = Instant::now();
+
+    // let close_factor_mantissa = ScaledNum::new(
+    //     close_factor_mantissa.context("close factor comptroller call")?,
+    //     18,
+    // );
+    // let liquidation_incentive_mantissa = ScaledNum::new(
+    //     liquidation_incentive_mantissa.context("close factor comptroller call")?,
+    //     18,
+    // );
 
     let all_ctokens = state
         .data_provider
@@ -41,35 +69,6 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
     let num_ctokens = all_ctokens.len();
     // println!("got {} ctokens supported by sonne finance", num_ctokens);
-
-    let close_factor_call = troll_instance.liquidation_incentive_mantissa();
-    let liquidation_incentive_call = troll_instance.close_factor_mantissa();
-
-    let mut multicall = Multicall::new(provider.clone(), None)
-        .await
-        .context("create multicall")?;
-    multicall.add_call(close_factor_call, false);
-    multicall.add_call(liquidation_incentive_call, false);
-
-    println!(
-        "create comptroller multicall: {}ms",
-        (Instant::now() - last_check).as_millis()
-    );
-    let last_check = Instant::now();
-
-    let (close_factor_mantissa, liquidation_incentive_mantissa): (U256, U256) = multicall
-        .call()
-        .await
-        .context("multicall for comptroller info")?;
-
-    println!(
-        "execute comptroller multicall: {}ms",
-        (Instant::now() - last_check).as_millis()
-    );
-    let last_check = Instant::now();
-
-    let close_factor_mantissa = ScaledNum::new(close_factor_mantissa, 18);
-    let liquidation_incentive_mantissa = ScaledNum::new(liquidation_incentive_mantissa, 18);
 
     // shouldn't make this call every iteration
     // TODO: could probably store ctoken info in redis cache that
@@ -160,7 +159,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .collect();
 
     println!(
-        "execute ctoken task futures: {}ms",
+        "get ctoken info: {}ms",
         (Instant::now() - last_check).as_millis()
     );
     let last_check = Instant::now();
@@ -215,7 +214,6 @@ pub async fn run_execution(state: &State) -> Result<()> {
     let num_of_accounts = all_accounts.len();
     // println!("found {} accounts", num_of_accounts);
 
-    let start = Instant::now();
     all_accounts.par_iter().for_each(|(account, account_info)| {
         if can_i_liquidate(&account_info, &ctoken_info_priced) {
             // println!("I can liquidate account {:?}", account);
@@ -229,7 +227,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
     );
 
     println!(
-        "total execution time {}ms\n",
+        "total execution time: {}ms\n",
         (Instant::now() - start_execution).as_millis()
     );
 
