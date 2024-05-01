@@ -47,11 +47,11 @@ impl DataProvider for Envio {
             .await
             .context("deserialize response for all account balances")?;
 
-        // TODO: oar iter doesn't seem to have an impact on performance
+        // TODO: par iter doesn't seem to have an impact on performance
         let out: Vec<(Address, Vec<CollateralOrBorrow>)> = response
             .data
             .account_info
-            .into_par_iter()
+            .into_iter()
             .map(|account_info| {
                 let account_addr = Address::from_str(&account_info.id).unwrap();
                 let mut balances: Vec<CollateralOrBorrow> = vec![];

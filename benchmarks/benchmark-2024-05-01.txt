@@ -1,0 +1,2 @@
+get all ctokens: 103ms
+get ctoken info: 978ms

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use contract_bindings::{comptroller_bindings::Comptroller, price_oracle_sonne::SonnePriceOracle};
-use ethers::providers::{Http, Provider};
+use ethers::providers::{Http, Provider, Ws};
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,
@@ -19,10 +19,10 @@ async fn main() -> Result<()> {
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
 
-    let provider: Arc<Provider<Http>> = Arc::new(
-        Provider::<Http>::try_from(cfg.provider_endpoint)
-            .context("create provider")
-            .unwrap(),
+    let provider: Arc<Provider<Ws>> = Arc::new(
+        Provider::<Ws>::connect(cfg.provider_endpoint)
+            .await
+            .context("create provider")?,
     );
 
     let price_oracle = price_oracle_from_config(cfg.price_oracle, provider.clone())

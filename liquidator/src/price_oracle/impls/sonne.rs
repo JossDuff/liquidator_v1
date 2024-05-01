@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::price_oracle_sonne::SonnePriceOracle;
 use ethers::{
-    providers::{Http, Provider},
+    providers::{Http, Provider, Ws},
     types::Address,
 };
 use std::sync::Arc;
@@ -11,7 +11,7 @@ use std::sync::Arc;
 // TODO: should this hold an instance of SonnePriceOracle instead of provider and address?
 pub struct Sonne {
     pub address: Address,
-    pub provider: Arc<Provider<Http>>,
+    pub provider: Arc<Provider<Ws>>,
 }
 
 #[async_trait]

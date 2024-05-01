@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use ethers::{
-    providers::{Http, Provider},
+    providers::{Http, Provider, Ws},
     types::Address,
 };
 
@@ -24,7 +24,7 @@ pub trait PriceOracle {
 
 pub fn price_oracle_from_config(
     config: PriceOracleConfig,
-    provider: Arc<Provider<Http>>,
+    provider: Arc<Provider<Ws>>,
 ) -> Result<Arc<dyn PriceOracle>> {
     let price_oracle = match config {
         // PriceOracleConfig::CoinGecko {
