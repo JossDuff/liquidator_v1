@@ -1,6 +1,6 @@
 use crate::{
     data_provider::DataProvider,
-    types::{scaled_num::ScaledNum, Account, CollateralOrBorrow, TokenBalance},
+    types::{scaled_num::ScaledNum, Account, CollateralOrBorrow, CtokenInfo, TokenBalance},
 };
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -9,10 +9,48 @@ use rayon::iter::ParallelIterator;
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator};
 use reqwest::Client;
 use serde::Deserialize;
-use std::str::FromStr;
+use std::{str::FromStr, sync::Arc};
+use tokio::{
+    sync::Mutex,
+    time::{interval, Duration},
+};
 
+#[derive(Clone)]
 pub struct Envio {
-    pub endpoint: String,
+    endpoint: String,
+    ctoken_info: Arc<Mutex<Vec<CtokenInfo>>>,
+}
+
+impl Envio {
+    pub async fn new(endpoint: String) -> Self {
+        let initial_ctoken_info = fetch_initial_ctoken_info().await;
+
+        let envio = Envio {
+            endpoint,
+            ctoken_info: Arc::new(Mutex::new(initial_ctoken_info)),
+        };
+
+        let cloned_envio = envio.clone();
+
+        tokio::spawn(async move {
+            cloned_envio.update_ctokens().await;
+        });
+
+        envio
+    }
+
+    async fn update_ctokens(&self) {
+        let mut interval = interval(Duration::from_secs(1));
+        loop {
+            interval.tick().await;
+            // make calls to update self.ctoken_info here
+        }
+    }
+}
+
+async fn fetch_initial_ctoken_info() -> Vec<CtokenInfo> {
+    // get ctoken info from data provider and fill in exchange_rates
+    todo!()
 }
 
 #[async_trait]
@@ -82,29 +120,32 @@ impl DataProvider for Envio {
         Ok(out)
     }
 
-    async fn get_ctokens(&self) -> Result<Vec<Address>> {
-        let client = Client::new();
-        let graphql_query = serde_json::json!({
-            "query": "{ Ctoken { id } }"
-        });
-        let response = client
-            .post(&self.endpoint)
-            .json(&graphql_query)
-            .send()
-            .await
-            .context("send graphql request for ctoken addresses")?
-            .json::<GraphQLResponseAllCtokens>()
-            .await
-            .context("deserialize response for ctoken addresses")?;
+    async fn get_ctoken_info(&self) -> Result<Vec<CtokenInfo>> {
+        let ctoken_info = self.ctoken_info.lock().await;
+        Ok(ctoken_info.clone())
 
-        let addresses: Vec<Address> = response
-            .data
-            .ctoken
-            .into_iter()
-            .map(|entry| Address::from_str(&entry.id).unwrap())
-            .collect();
+        // let client = Client::new();
+        // let graphql_query = serde_json::json!({
+        //     "query": "{ Ctoken { id } }"
+        // });
+        // let response = client
+        //     .post(&self.endpoint)
+        //     .json(&graphql_query)
+        //     .send()
+        //     .await
+        //     .context("send graphql request for ctoken addresses")?
+        //     .json::<GraphQLResponseAllCtokens>()
+        //     .await
+        //     .context("deserialize response for ctoken addresses")?;
 
-        Ok(addresses)
+        // let addresses: Vec<Address> = response
+        //     .data
+        //     .ctoken
+        //     .into_iter()
+        //     .map(|entry| Address::from_str(&entry.id).unwrap())
+        //     .collect();
+
+        // Ok(addresses)
     }
 }
 

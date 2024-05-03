@@ -1,7 +1,7 @@
 chain = 1
 protocol = "sonne"
 comptroller_address = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58"
-provider_endpoint = "wss://opt-mainnet.g.alchemy.com/v2/yczlTDn5o8DYi9ihpF2qXc1SJ8vDoVOZ"
+provider_endpoint = "wss://go.getblock.io/45f0fadb3c6a43a8a0a4d0c858fb24e9"
 
 [price_oracle]
 kind = "sonne"

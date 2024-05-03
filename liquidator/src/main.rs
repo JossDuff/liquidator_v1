@@ -28,8 +28,9 @@ async fn main() -> Result<()> {
     let price_oracle = price_oracle_from_config(cfg.price_oracle, provider.clone())
         .context("Price oracle from config")?;
 
-    let data_provider =
-        data_provider_from_config(cfg.data_provider).context("Data provider from config")?;
+    let data_provider = data_provider_from_config(cfg.data_provider)
+        .await
+        .context("Data provider from config")?;
 
     let liquidator =
         Arc::new(liquidator_from_config(cfg.liquidator).context("Liquidator from config")?);
