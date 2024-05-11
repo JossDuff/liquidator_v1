@@ -38,6 +38,8 @@ pub async fn run_execution(state: &State) -> Result<()> {
     );
     let last_check = Instant::now();
 
+    println!("number of ctokens: {}", all_ctoken_info.len());
+
     // sending ctokens here because sonne price oracle prices underlying from ctoken address
     let ctokens_to_price = all_ctoken_info
         .iter()
