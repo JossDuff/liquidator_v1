@@ -10,12 +10,10 @@ use ethers::{
     types::{Address, U256},
 };
 use rayon::iter::ParallelIterator;
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator};
+
 use reqwest::Client;
 use serde::Deserialize;
 use std::{
-    collections::HashMap,
-    ops::{Deref, DerefMut},
     str::FromStr,
     sync::Arc,
 };

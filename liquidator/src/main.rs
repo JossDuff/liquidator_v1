@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use contract_bindings::{comptroller_bindings::Comptroller, price_oracle_sonne::SonnePriceOracle};
-use ethers::providers::{Http, Provider, Ws};
+use contract_bindings::{comptroller_bindings::Comptroller};
+use ethers::providers::{Provider, Ws};
 use liquidator::{
     config::Config,
     data_provider::data_provider_from_config,

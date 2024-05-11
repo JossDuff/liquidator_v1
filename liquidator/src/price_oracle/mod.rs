@@ -4,13 +4,13 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use ethers::{
-    providers::{Http, Provider, Ws},
+    providers::{Provider, Ws},
     types::Address,
 };
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
-use contract_bindings::price_oracle_sonne::SonnePriceOracle;
+
 
 use self::impls::sonne::Sonne;
 

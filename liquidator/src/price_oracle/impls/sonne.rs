@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::price_oracle_sonne::SonnePriceOracle;
 use ethers::{
-    providers::{Http, Provider, Ws},
+    providers::{Provider, Ws},
     types::Address,
 };
 use std::sync::Arc;
@@ -47,7 +47,6 @@ impl PriceOracle for Sonne {
         Ok(futures::future::join_all(price_tasks)
             .await
             .into_iter()
-            .map(|res| res)
             .collect::<Vec<(Address, ScaledNum)>>())
     }
 }

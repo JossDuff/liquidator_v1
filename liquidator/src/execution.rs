@@ -1,27 +1,24 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{HashMap},
     time::Instant,
 };
 
-use tokio::join;
+
 
 use crate::{
-    data_provider,
     types::{
-        scaled_num::ScaledNum, AccountPosition, CollateralOrBorrow, CtokenInfo, CtokenInfoPriced,
+        scaled_num::ScaledNum, AccountPosition, CollateralOrBorrow, CtokenInfoPriced,
         LiquidationArgs, State,
     },
 };
 use anyhow::{Context, Result};
-use contract_bindings::{ctoken_bindings::Ctoken, erc20_bindings::Erc20};
+
 use ethers::{
-    contract::Multicall,
-    etherscan::account,
-    types::{Address, U256},
+    types::{Address},
 };
-use futures::{future::join_all, stream, StreamExt};
+use futures::{StreamExt};
 use rayon::prelude::*;
-use tokio::{io::join, task, try_join};
+
 
 pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
@@ -91,7 +88,7 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
     all_accounts
         .par_iter()
-        .for_each(|(account, account_positions)| {
+        .for_each(|(_account, account_positions)| {
             if can_i_liquidate(account_positions, &ctoken_info_priced) {
                 // println!("I can liquidate account {:?}", account);
             }

@@ -1,9 +1,9 @@
 use self::impls::envio::Envio;
 use crate::config::DataProviderConfig;
 use crate::types::AccountPosition;
-use crate::types::CollateralOrBorrow;
+
 use crate::types::CtokenInfo;
-use crate::types::{scaled_num::ScaledNum, Account};
+use crate::types::{Account};
 use anyhow::Context;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,7 +11,7 @@ use ethers::providers::Provider;
 use ethers::providers::Ws;
 use std::sync::Arc;
 
-use ethers::types::Address;
+
 mod impls;
 
 #[async_trait]

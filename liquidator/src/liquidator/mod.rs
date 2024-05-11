@@ -6,7 +6,6 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use ethers::{
-    providers::{Http, Provider},
     types::Address,
 };
 
@@ -22,12 +21,12 @@ impl Liquidator {
     pub async fn liquidate(
         &self,
         _args: LiquidationArgs,
-        close_factor: ScaledNum,
+        _close_factor: ScaledNum,
     ) -> Result<(Address, f64)> {
         // let contract_instance = Contract::new(address, abi, Arc::new(client));
 
         // use close factor to figure out how many times we can try to call this jawn
-        let one = ScaledNum::new(1, 0);
+        let _one = ScaledNum::new(1, 0);
         // let liquidation_calls = one / close_factor;
         println!("liquidate brrrrrrrrrrrrrr");
         Ok((Address::default(), 0.0))

@@ -1,6 +1,6 @@
 use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::{
-    providers::{Http, Provider, Ws},
+    providers::{Provider, Ws},
     types::{Address, U256},
 };
 
