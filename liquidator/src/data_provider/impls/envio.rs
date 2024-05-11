@@ -1,6 +1,6 @@
 use crate::{
     data_provider::DataProvider,
-    types::{scaled_num::ScaledNum, Account, CollateralOrBorrow, CtokenInfo, TokenBalance},
+    types::{scaled_num::ScaledNum, Account, AccountPosition, CollateralOrBorrow, CtokenInfo},
 };
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -54,6 +54,7 @@ impl Envio {
 
     async fn update_ctokens(&self) {
         let mut interval = interval(Duration::from_secs(1));
+        // TODO: test how often this loops.  I'm suspicious it's not finished within each block
         loop {
             interval.tick().await;
             // TODO: gonna have to properly handle a failure here
@@ -117,7 +118,7 @@ async fn fetch_ctoken_info(endpoint: &str, provider: Arc<Provider<Ws>>) -> Resul
 
 #[async_trait]
 impl DataProvider for Envio {
-    async fn get_accounts(&self) -> Result<Vec<(Account, Vec<CollateralOrBorrow>)>> {
+    async fn get_accounts(&self) -> Result<Vec<(Account, Vec<AccountPosition>)>> {
         let client = Client::new();
         let graphql_query = serde_json::json!({
             "query": "{
@@ -147,13 +148,14 @@ impl DataProvider for Envio {
             .context("deserialize response for all account balances")?;
 
         // TODO: par iter doesn't seem to have an impact on performance
-        let out: Vec<(Address, Vec<CollateralOrBorrow>)> = response
+        let out: Vec<(Address, Vec<AccountPosition>)> = response
             .data
             .account_info
             .into_iter()
             .map(|account_info| {
                 let account_addr = Address::from_str(&account_info.id).unwrap();
-                let mut balances: Vec<CollateralOrBorrow> = vec![];
+
+                let mut balances: Vec<AccountPosition> = vec![];
                 for collateral in account_info.collateral {
                     let ctoken_addr = Address::from_str(&collateral.ctoken_id).unwrap();
                     // println!("balances for account {}", account_info.id);
@@ -161,17 +163,17 @@ impl DataProvider for Envio {
                     let ctoken_balance = U256::from_str(&collateral.balance)
                         .context(format!("parse {} as U256", collateral.balance))
                         .unwrap();
-                    balances.push(CollateralOrBorrow::Collateral {
+                    balances.push(AccountPosition {
                         ctoken_addr,
-                        ctoken_balance,
+                        position: CollateralOrBorrow::Collateral { ctoken_balance },
                     })
                 }
                 for borrow in account_info.borrow {
                     let ctoken_addr = Address::from_str(&borrow.ctoken_id).unwrap();
                     let underlying_balance = U256::from_str(&borrow.balance_underlying).unwrap();
-                    balances.push(CollateralOrBorrow::Borrow {
+                    balances.push(AccountPosition {
                         ctoken_addr,
-                        underlying_balance,
+                        position: CollateralOrBorrow::Borrow { underlying_balance },
                     })
                 }
                 (account_addr, balances)
@@ -213,7 +215,7 @@ struct CtokenEntry {
 
 /*
     Account balances
-    TODO: fix the deserialization structs
+    TODO: fix these ugly deserialization structs
 */
 #[derive(Deserialize, Debug)]
 struct Root {

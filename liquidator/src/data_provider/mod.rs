@@ -1,8 +1,9 @@
 use self::impls::envio::Envio;
 use crate::config::DataProviderConfig;
+use crate::types::AccountPosition;
 use crate::types::CollateralOrBorrow;
 use crate::types::CtokenInfo;
-use crate::types::{scaled_num::ScaledNum, Account, TokenBalance};
+use crate::types::{scaled_num::ScaledNum, Account};
 use anyhow::Context;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -15,7 +16,7 @@ mod impls;
 
 #[async_trait]
 pub trait DataProvider {
-    async fn get_accounts(&self) -> Result<Vec<(Account, Vec<CollateralOrBorrow>)>>;
+    async fn get_accounts(&self) -> Result<Vec<(Account, Vec<AccountPosition>)>>;
     async fn get_ctoken_info(&self) -> Result<Vec<CtokenInfo>>;
 
     // async fn account_assets(&self, account: Address) -> Result<(Address, Vec<TokenBalance>)>;

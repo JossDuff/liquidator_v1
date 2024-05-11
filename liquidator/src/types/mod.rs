@@ -59,65 +59,15 @@ pub struct CtokenInfoPriced {
     pub underlying_price: ScaledNum,
 }
 
-#[derive(Clone)]
-pub struct TokenBalance {
-    pub underlying_address: Address,
-    pub ctoken_address: Address,
-    pub kind: CollateralOrBorrow,
-    pub exchange_rate: ScaledNum,
-    pub collateral_factor_mant: ScaledNum,
-    pub protocol_seize_share_mant: ScaledNum,
-    pub underlying_usd_price: Option<ScaledNum>,
-}
-
-impl TokenBalance {
-    pub fn new(
-        underlying_address: Address,
-        ctoken_address: Address,
-        kind: CollateralOrBorrow,
-        exchange_rate: ScaledNum,
-        collateral_factor_mant: ScaledNum,
-        protocol_seize_share_mant: ScaledNum,
-        underlying_usd_price: Option<ScaledNum>,
-    ) -> Self {
-        Self {
-            underlying_address,
-            ctoken_address,
-            kind,
-            exchange_rate,
-            collateral_factor_mant,
-            protocol_seize_share_mant,
-            underlying_usd_price,
-        }
-    }
+pub struct AccountPosition {
+    pub ctoken_addr: Address,
+    pub position: CollateralOrBorrow,
 }
 
 #[derive(Clone)]
 pub enum CollateralOrBorrow {
-    Collateral {
-        ctoken_addr: Address,
-        ctoken_balance: U256,
-    },
-    Borrow {
-        ctoken_addr: Address,
-        underlying_balance: U256,
-    },
-}
-
-impl CollateralOrBorrow {
-    // TODO: find a better abstraction so we don't have to do this
-    pub fn ctoken_address(&self) -> &Address {
-        match self {
-            CollateralOrBorrow::Collateral {
-                ctoken_addr: ctoken_address,
-                ..
-            } => ctoken_address,
-            CollateralOrBorrow::Borrow {
-                ctoken_addr: ctoken_address,
-                ..
-            } => ctoken_address,
-        }
-    }
+    Collateral { ctoken_balance: U256 },
+    Borrow { underlying_balance: U256 },
 }
 
 #[derive(Clone)]
