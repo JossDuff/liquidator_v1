@@ -4,12 +4,21 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use ethers::types::{Address, U256};
+use contract_bindings::ctoken_bindings::Ctoken;
+use ethers::{
+    providers::{Provider, Ws},
+    types::{Address, U256},
+};
 use rayon::iter::ParallelIterator;
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator};
 use reqwest::Client;
 use serde::Deserialize;
-use std::{str::FromStr, sync::Arc};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+    str::FromStr,
+    sync::Arc,
+};
 use tokio::{
     sync::Mutex,
     time::{interval, Duration},
@@ -18,15 +27,19 @@ use tokio::{
 #[derive(Clone)]
 pub struct Envio {
     endpoint: String,
+    provider: Arc<Provider<Ws>>,
     ctoken_info: Arc<Mutex<Vec<CtokenInfo>>>,
 }
 
 impl Envio {
-    pub async fn new(endpoint: String) -> Self {
-        let initial_ctoken_info = fetch_initial_ctoken_info().await;
+    pub async fn new(endpoint: String, provider: Arc<Provider<Ws>>) -> Result<Self> {
+        let initial_ctoken_info = fetch_ctoken_info(&endpoint, provider.clone())
+            .await
+            .context("get initial ctoken info")?;
 
         let envio = Envio {
             endpoint,
+            provider: provider.clone(),
             ctoken_info: Arc::new(Mutex::new(initial_ctoken_info)),
         };
 
@@ -36,21 +49,70 @@ impl Envio {
             cloned_envio.update_ctokens().await;
         });
 
-        envio
+        Ok(envio)
     }
 
     async fn update_ctokens(&self) {
         let mut interval = interval(Duration::from_secs(1));
         loop {
             interval.tick().await;
-            // make calls to update self.ctoken_info here
+            // TODO: gonna have to properly handle a failure here
+            let fresh_ctoken_info = fetch_ctoken_info(&self.endpoint, self.provider.clone())
+                .await
+                .context("update ctoken info")
+                .unwrap();
+
+            let mut mutex = self.ctoken_info.lock().await;
+            *mutex = fresh_ctoken_info;
         }
     }
 }
 
-async fn fetch_initial_ctoken_info() -> Vec<CtokenInfo> {
+// TODO: move this inside envio?
+async fn fetch_ctoken_info(endpoint: &str, provider: Arc<Provider<Ws>>) -> Result<Vec<CtokenInfo>> {
     // get ctoken info from data provider and fill in exchange_rates
-    todo!()
+
+    let client = Client::new();
+    let graphql_query = serde_json::json!({
+        "query": "{ Ctoken { id, ctokenDecimals, underlyingAddress, underlyingDecimals, collateralFactorMantissa } }"
+    });
+    let response = client
+        .post(endpoint)
+        .json(&graphql_query)
+        .send()
+        .await
+        .context("send graphql request for ctokens")?
+        .json::<GraphQLResponseAllCtokens>()
+        .await
+        .context("deserialize response for ctokens")?;
+
+    let ctoken_entries: Vec<CtokenEntry> = response.data.ctoken;
+
+    let mut ctoken_info = vec![];
+    for entry in ctoken_entries {
+        let ctoken_addr = entry.id;
+        let ctoken_instance = Ctoken::new(ctoken_addr, provider.clone());
+        let exchange_rate_mantissa = ctoken_instance
+            .exchange_rate_stored()
+            .call()
+            .await
+            .context("ctoken exchange rate call")?;
+        let exchange_rate = ScaledNum::new(exchange_rate_mantissa, 10 + entry.underlying_decimals);
+        let collateral_factor_mant = ScaledNum::new(entry.collateral_factor_mantissa, 18);
+
+        let new_ctoken_info = CtokenInfo {
+            underlying_addr: entry.underlying_address,
+            underlying_decimals: entry.underlying_decimals,
+            ctoken_addr,
+            ctoken_decimals: entry.ctoken_decimals,
+            exchange_rate,
+            collateral_factor_mant,
+            protocol_seize_share_mant: ScaledNum::zero(), // TODO:
+        };
+        ctoken_info.push(new_ctoken_info);
+    }
+
+    Ok(ctoken_info)
 }
 
 #[async_trait]
@@ -164,8 +226,13 @@ struct GraphQLDataAllCtokens {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CtokenEntry {
-    id: String,
+    id: Address,
+    ctoken_decimals: u8,
+    underlying_address: Address,
+    underlying_decimals: u8,
+    collateral_factor_mantissa: U256,
 }
 
 /*
