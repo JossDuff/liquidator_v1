@@ -140,7 +140,6 @@ impl DataProvider for Envio {
             .send()
             .await
             .context("send graphql request for all account balances")?;
-        // println!("response: {response:?}");
 
         let response = response
             .json::<Root>()
@@ -185,29 +184,6 @@ impl DataProvider for Envio {
     async fn get_ctoken_info(&self) -> Result<Vec<CtokenInfo>> {
         let ctoken_info = self.ctoken_info.lock().await;
         Ok(ctoken_info.clone())
-
-        // let client = Client::new();
-        // let graphql_query = serde_json::json!({
-        //     "query": "{ Ctoken { id } }"
-        // });
-        // let response = client
-        //     .post(&self.endpoint)
-        //     .json(&graphql_query)
-        //     .send()
-        //     .await
-        //     .context("send graphql request for ctoken addresses")?
-        //     .json::<GraphQLResponseAllCtokens>()
-        //     .await
-        //     .context("deserialize response for ctoken addresses")?;
-
-        // let addresses: Vec<Address> = response
-        //     .data
-        //     .ctoken
-        //     .into_iter()
-        //     .map(|entry| Address::from_str(&entry.id).unwrap())
-        //     .collect();
-
-        // Ok(addresses)
     }
 }
 

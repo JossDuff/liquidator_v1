@@ -74,7 +74,6 @@ pub async fn run_execution(state: &State) -> Result<()> {
     }
 
     // println!("getting all accounts");
-    // this is the only call I should be making every time
     let all_accounts = state
         .data_provider
         .get_accounts()
@@ -215,7 +214,6 @@ pub fn estimate_profit(
     ScaledNum::new(0, 0)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -493,4 +491,3 @@ mod tests {
         assert!(can_i_liquidate(&account_tokens));
     }
 }
-*/

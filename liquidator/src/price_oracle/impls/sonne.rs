@@ -19,7 +19,7 @@ impl PriceOracle for Sonne {
     // TODO: This implementation (sonne price oracle) takes an array of ctokens and returns the price of underlying
     async fn get_prices(
         &self,
-        // ctoken, underlying
+        // ctoken address
         addresses: Vec<Address>,
         // returns ctoken & underlying price
     ) -> Result<Vec<(Address, ScaledNum)>> {
