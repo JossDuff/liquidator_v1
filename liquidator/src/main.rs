@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
     let price_oracle = price_oracle_from_config(cfg.price_oracle, provider.clone())
         .context("Price oracle from config")?;
 
-    let data_provider = data_provider_from_config(cfg.data_provider)
+    let data_provider = data_provider_from_config(cfg.data_provider, provider.clone())
         .await
         .context("Data provider from config")?;
 

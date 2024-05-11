@@ -3,8 +3,11 @@ use crate::config::DataProviderConfig;
 use crate::types::CollateralOrBorrow;
 use crate::types::CtokenInfo;
 use crate::types::{scaled_num::ScaledNum, Account, TokenBalance};
+use anyhow::Context;
 use anyhow::Result;
 use async_trait::async_trait;
+use ethers::providers::Provider;
+use ethers::providers::Ws;
 use std::sync::Arc;
 
 use ethers::types::Address;
@@ -22,9 +25,12 @@ pub trait DataProvider {
 
 pub async fn data_provider_from_config(
     config: DataProviderConfig,
+    provider: Arc<Provider<Ws>>,
 ) -> Result<Arc<dyn DataProvider>> {
     let data_provider = match config {
-        DataProviderConfig::Envio { endpoint } => Envio::new(endpoint).await,
+        DataProviderConfig::Envio { endpoint } => Envio::new(endpoint, provider)
+            .await
+            .context("create envio provider")?,
     };
 
     Ok(Arc::new(data_provider))
