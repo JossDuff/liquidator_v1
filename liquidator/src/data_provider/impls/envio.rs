@@ -13,10 +13,7 @@ use rayon::iter::ParallelIterator;
 
 use reqwest::Client;
 use serde::Deserialize;
-use std::{
-    str::FromStr,
-    sync::Arc,
-};
+use std::{str::FromStr, sync::Arc};
 use tokio::{
     sync::Mutex,
     time::{interval, Duration},

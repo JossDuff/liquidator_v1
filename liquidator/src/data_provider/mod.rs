@@ -2,15 +2,14 @@ use self::impls::envio::Envio;
 use crate::config::DataProviderConfig;
 use crate::types::AccountPosition;
 
+use crate::types::Account;
 use crate::types::CtokenInfo;
-use crate::types::{Account};
 use anyhow::Context;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers::providers::Provider;
 use ethers::providers::Ws;
 use std::sync::Arc;
-
 
 mod impls;
 

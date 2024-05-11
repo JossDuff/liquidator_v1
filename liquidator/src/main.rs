@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use contract_bindings::{comptroller_bindings::Comptroller};
+use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::providers::{Provider, Ws};
 use liquidator::{
     config::Config,

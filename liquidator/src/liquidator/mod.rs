@@ -5,9 +5,7 @@ use crate::{
     types::{scaled_num::ScaledNum, LiquidationArgs},
 };
 use anyhow::{Context, Result};
-use ethers::{
-    types::Address,
-};
+use ethers::types::Address;
 
 pub struct Liquidator {
     // address: Address,

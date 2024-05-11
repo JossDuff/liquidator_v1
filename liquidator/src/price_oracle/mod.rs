@@ -10,8 +10,6 @@ use ethers::{
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
-
-
 use self::impls::sonne::Sonne;
 
 // use self::impls::coingecko::CoinGecko;
