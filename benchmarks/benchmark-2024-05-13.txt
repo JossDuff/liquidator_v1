@@ -1,0 +1,716 @@
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 340ms
+get all accounts: 1008ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 1355ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 345ms
+get all accounts: 555ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 906ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 348ms
+get all accounts: 609ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 962ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 369ms
+get all accounts: 482ms
+process 17914 accounts for liquidation: 7ms
+total execution time: 859ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 381ms
+get all accounts: 555ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 940ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 347ms
+get all accounts: 527ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 878ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 340ms
+get all accounts: 486ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 831ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 355ms
+get all accounts: 497ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 856ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 378ms
+get all accounts: 538ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 921ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 487ms
+get all accounts: 563ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 1054ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 517ms
+get all accounts: 476ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 999ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 439ms
+get all accounts: 527ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 972ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 575ms
+get all accounts: 521ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 1101ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 375ms
+get all accounts: 548ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 929ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 485ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 832ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 493ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 835ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 499ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 841ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 491ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 836ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 342ms
+get all accounts: 550ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 896ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 345ms
+get all accounts: 501ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 851ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 348ms
+get all accounts: 474ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 826ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 368ms
+get all accounts: 460ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 832ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 347ms
+get all accounts: 520ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 871ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 347ms
+get all accounts: 602ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 953ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 339ms
+get all accounts: 516ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 859ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 451ms
+get all accounts: 547ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 1002ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 367ms
+get all accounts: 500ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 871ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 369ms
+get all accounts: 533ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 906ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 580ms
+get all accounts: 482ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 1067ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 353ms
+get all accounts: 459ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 816ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 344ms
+get all accounts: 519ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 866ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 359ms
+get all accounts: 480ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 843ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 339ms
+get all accounts: 510ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 853ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 358ms
+get all accounts: 517ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 879ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 374ms
+get all accounts: 531ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 910ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 376ms
+get all accounts: 502ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 883ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 357ms
+get all accounts: 483ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 845ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 356ms
+get all accounts: 565ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 926ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 554ms
+process 17914 accounts for liquidation: 7ms
+total execution time: 905ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 335ms
+get all accounts: 497ms
+process 17914 accounts for liquidation: 20ms
+total execution time: 853ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 348ms
+get all accounts: 537ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 889ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 379ms
+get all accounts: 508ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 892ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 394ms
+get all accounts: 485ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 882ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 367ms
+get all accounts: 492ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 866ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 350ms
+get all accounts: 555ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 909ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 361ms
+get all accounts: 482ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 848ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 352ms
+get all accounts: 508ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 864ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 503ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 850ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 362ms
+get all accounts: 513ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 878ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 337ms
+get all accounts: 629ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 970ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 335ms
+get all accounts: 476ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 815ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 342ms
+get all accounts: 521ms
+process 17914 accounts for liquidation: 14ms
+total execution time: 878ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 357ms
+get all accounts: 525ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 886ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 346ms
+get all accounts: 550ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 901ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 346ms
+get all accounts: 525ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 876ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 352ms
+get all accounts: 453ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 809ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 340ms
+get all accounts: 538ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 882ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 543ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 889ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 425ms
+get all accounts: 588ms
+process 17914 accounts for liquidation: 9ms
+total execution time: 1022ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 390ms
+get all accounts: 504ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 898ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 347ms
+get all accounts: 474ms
+process 17914 accounts for liquidation: 6ms
+total execution time: 828ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 335ms
+get all accounts: 560ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 899ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 335ms
+get all accounts: 485ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 825ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 379ms
+get all accounts: 538ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 923ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 355ms
+get all accounts: 495ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 854ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 337ms
+get all accounts: 486ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 828ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 359ms
+get all accounts: 451ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 814ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 345ms
+get all accounts: 505ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 854ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 356ms
+get all accounts: 585ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 946ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 505ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 847ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 352ms
+get all accounts: 507ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 862ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 351ms
+get all accounts: 496ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 853ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 502ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 844ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 356ms
+get all accounts: 536ms
+process 17914 accounts for liquidation: 6ms
+total execution time: 899ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 346ms
+get all accounts: 514ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 864ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 367ms
+get all accounts: 572ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 944ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 361ms
+get all accounts: 501ms
+process 17914 accounts for liquidation: 6ms
+total execution time: 870ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 340ms
+get all accounts: 451ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 797ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 342ms
+get all accounts: 552ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 900ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 361ms
+get all accounts: 463ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 828ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 351ms
+get all accounts: 574ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 929ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 341ms
+get all accounts: 545ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 890ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 337ms
+get all accounts: 553ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 895ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 353ms
+get all accounts: 513ms
+process 17914 accounts for liquidation: 5ms
+total execution time: 873ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 333ms
+get all accounts: 521ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 858ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 554ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 901ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 343ms
+get all accounts: 478ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 826ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 340ms
+get all accounts: 594ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 939ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 339ms
+get all accounts: 478ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 822ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 346ms
+get all accounts: 524ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 875ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 354ms
+get all accounts: 497ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 855ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 361ms
+get all accounts: 498ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 862ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 335ms
+get all accounts: 503ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 843ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 391ms
+get all accounts: 493ms
+process 17914 accounts for liquidation: 7ms
+total execution time: 892ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 458ms
+get all accounts: 542ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 1005ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 524ms
+get all accounts: 511ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 1040ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 547ms
+get all accounts: 597ms
+process 17914 accounts for liquidation: 9ms
+total execution time: 1154ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 370ms
+get all accounts: 561ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 935ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 356ms
+get all accounts: 474ms
+process 17914 accounts for liquidation: 2ms
+total execution time: 833ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 352ms
+get all accounts: 504ms
+process 17914 accounts for liquidation: 4ms
+total execution time: 861ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 338ms
+get all accounts: 483ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 825ms
+
+get ctoken info: 0ms
+number of ctokens: 12
+get prices: 351ms
+get all accounts: 527ms
+process 17914 accounts for liquidation: 3ms
+total execution time: 881ms
+
+get ctoken info: 0ms
+number of ctokens: 12

@@ -14,6 +14,8 @@ pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
     let last_check = Instant::now();
 
+    let x = Instant::now();
+
     let all_ctoken_info = state
         .data_provider
         .get_ctoken_info()
@@ -205,6 +207,8 @@ pub fn estimate_profit(
 
 #[cfg(test)]
 mod tests {
+    use crate::types::CtokenInfo;
+
     use super::*;
 
     // TODO: fix these god awful tests.

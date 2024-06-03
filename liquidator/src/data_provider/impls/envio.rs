@@ -9,7 +9,6 @@ use ethers::{
     providers::{Provider, Ws},
     types::{Address, U256},
 };
-use rayon::iter::ParallelIterator;
 
 use reqwest::Client;
 use serde::Deserialize;
