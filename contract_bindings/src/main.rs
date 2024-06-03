@@ -31,10 +31,10 @@ fn main() {
         .write_to_file("contract_bindings/src/erc20_bindings.rs")
         .unwrap();
 
-    Abigen::new("SonnePriceOracle", "abi/sonne_price_oracle.json")
+    Abigen::new("IronBankPriceOracle", "abi/ironbank_price_oracle.json")
         .unwrap()
         .generate()
         .unwrap()
-        .write_to_file("contract_bindings/src/price_oracle_sonne.rs")
+        .write_to_file("contract_bindings/src/price_oracle_ironbank.rs")
         .unwrap();
 }

@@ -14,8 +14,6 @@ pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
     let last_check = Instant::now();
 
-    let x = Instant::now();
-
     let all_ctoken_info = state
         .data_provider
         .get_ctoken_info()
@@ -23,12 +21,13 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .context("get all ctokens")?;
 
     println!(
-        "get ctoken info: {}ms",
+        "get {} ctoken info: {}ms",
+        all_ctoken_info.len(),
         (Instant::now() - last_check).as_millis()
     );
     let last_check = Instant::now();
 
-    println!("number of ctokens: {}", all_ctoken_info.len());
+    // println!("number of ctokens: {}", all_ctoken_info.len());
 
     // sending ctokens here because sonne price oracle prices underlying from ctoken address
     let ctokens_to_price = all_ctoken_info
@@ -71,7 +70,8 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .context("get all accounts")?;
 
     println!(
-        "get all accounts: {}ms",
+        "get all {} accounts: {}ms",
+        all_accounts.len(),
         (Instant::now() - last_check).as_millis()
     );
     let last_check = Instant::now();

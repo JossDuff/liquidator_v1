@@ -1,11 +1,11 @@
 chain = 1
 protocol = "sonne"
-comptroller_address = "0x60CF091cD3f50420d50fD7f707414d0DF4751C58"
+comptroller_address = "0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF"
 provider_endpoint = "wss://go.getblock.io/45f0fadb3c6a43a8a0a4d0c858fb24e9"
 
 [price_oracle]
 kind = "sonne"
-address = "0x3176fA5060033a5d781b29De50D4A0f9E3d14F8F"
+address = "0x2424C30E589Caea191C06F41d1f5b90348dbeD7d"
 
 [data_provider]
 kind = "envio"

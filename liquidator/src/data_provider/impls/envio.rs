@@ -65,7 +65,7 @@ impl Envio {
 
 // TODO: move this inside envio?
 async fn fetch_ctoken_info(endpoint: &str, provider: Arc<Provider<Ws>>) -> Result<Vec<CtokenInfo>> {
-    // get ctoken info from data provider and fill in exchange_rates
+    // get ctoken info from data provider and make call to fill in exchange_rates
 
     let client = Client::new();
     let graphql_query = serde_json::json!({

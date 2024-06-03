@@ -1,7 +1,7 @@
 use crate::{price_oracle::PriceOracle, types::scaled_num::ScaledNum};
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use contract_bindings::price_oracle_sonne::SonnePriceOracle;
+use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
 use ethers::{
     providers::{Provider, Ws},
     types::Address,
@@ -23,7 +23,7 @@ impl PriceOracle for Sonne {
         addresses: Vec<Address>,
         // returns ctoken & underlying price
     ) -> Result<Vec<(Address, ScaledNum)>> {
-        let sonne_instance = SonnePriceOracle::new(self.address, self.provider.clone());
+        let sonne_instance = IronBankPriceOracle::new(self.address, self.provider.clone());
 
         let mut price_tasks = vec![];
         // TODO: make this concurrent
@@ -32,7 +32,7 @@ impl PriceOracle for Sonne {
             let task = async move {
                 // returns price scaled by 1e18
                 let price = sonne_instance
-                    .get_price(ctoken_address)
+                    .get_underlying_price(ctoken_address)
                     .call()
                     .await
                     .context(format!("get price of ctoken {ctoken_address:?}"))
