@@ -17,7 +17,6 @@ use tokio::{
 pub struct IronBank {
     pub address: Address,
     pub provider: Arc<Provider<Ws>>,
-    pub known_tokens: Arc<Mutex<Vec<Address>>>,
     pub prices: Arc<Mutex<Vec<(Address, ScaledNum)>>>,
 }
 
@@ -26,7 +25,6 @@ impl IronBank {
         let ironbank = IronBank {
             address,
             provider,
-            known_tokens: Arc::new(Mutex::new(vec![])),
             prices: Arc::new(Mutex::new(vec![])),
         };
 
@@ -45,8 +43,8 @@ impl IronBank {
         loop {
             interval.tick().await;
 
-            let mutex = self.known_tokens.lock().await;
-            let known_tokens = mutex.clone();
+            let mutex = self.prices.lock().await;
+            let known_tokens = mutex.clone().into_iter().map(|(a, _)| a).collect();
             // release mutex before async operation
             std::mem::drop(mutex);
 
@@ -99,7 +97,10 @@ impl PriceOracle for IronBank {
         addresses: Vec<Address>,
         // returns ctoken & underlying price
     ) -> Result<Vec<(Address, ScaledNum)>> {
-        let mut prices = self.prices.lock().await.clone();
+        let mutex = self.prices.lock().await;
+        let mut prices = mutex.clone();
+        std::mem::drop(mutex);
+
         let priced_addrs: Vec<&Address> = prices.iter().map(|(a, _)| a).collect();
         let non_priced_addrs: Vec<Address> = addresses
             .iter()
@@ -113,17 +114,15 @@ impl PriceOracle for IronBank {
             .collect();
 
         if !non_priced_addrs.is_empty() {
-            // update list of known tokens
-            let mut known_tokens = self.known_tokens.lock().await;
-            *known_tokens = addresses;
-            std::mem::drop(known_tokens);
-
             // get prices for these new tokens
             let newly_priced_addrs = self
                 .fetch_prices(non_priced_addrs)
                 .await
                 .context("get prices for tokens missing a price")?;
             prices.extend(newly_priced_addrs);
+
+            let mut mutex = self.prices.lock().await;
+            *mutex = prices.clone();
         }
 
         Ok(prices)
