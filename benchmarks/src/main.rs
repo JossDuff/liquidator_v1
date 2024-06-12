@@ -5,7 +5,6 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let todays_date = args[2].clone();
 
-    // TODO: automatically pass in today's date as an argument from the makefile
     let input = read_to_string(format!("benchmarks/benchmark-{todays_date}.txt")).unwrap();
 
     let runs: Vec<(String, u64)> = input

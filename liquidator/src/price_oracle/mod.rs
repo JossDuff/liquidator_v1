@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use ethers::{
     providers::{Provider, Ws},
     types::Address,
@@ -10,7 +10,7 @@ use ethers::{
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
-use self::impls::sonne::Sonne;
+use self::impls::ironbank::IronBank;
 
 // use self::impls::coingecko::CoinGecko;
 mod impls;
@@ -35,12 +35,9 @@ pub fn price_oracle_from_config(
         //     endpoint,
         //     api_key,
         // },
-        PriceOracleConfig::Sonne { address } => {
+        PriceOracleConfig::Ironbank { address } => {
             let address = Address::from_str(&address).unwrap();
-            Sonne {
-                address,
-                provider: provider.clone(),
-            }
+            IronBank::new(address, provider.clone()).context("new iron bank price oracle")?
         }
     };
 

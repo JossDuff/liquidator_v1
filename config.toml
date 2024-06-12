@@ -1,10 +1,10 @@
 chain = 1
-protocol = "sonne"
+protocol = "ironbank"
 comptroller_address = "0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF"
 provider_endpoint = "wss://go.getblock.io/45f0fadb3c6a43a8a0a4d0c858fb24e9"
 
 [price_oracle]
-kind = "sonne"
+kind = "ironbank"
 address = "0x2424C30E589Caea191C06F41d1f5b90348dbeD7d"
 
 [data_provider]

@@ -27,7 +27,7 @@ pub enum PriceOracleConfig {
     //     endpoint: String,
     //     api_key: String,
     // },
-    Sonne { address: String },
+    Ironbank { address: String },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

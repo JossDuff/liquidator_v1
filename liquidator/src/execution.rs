@@ -7,7 +7,6 @@ use crate::types::{
 use anyhow::{Context, Result};
 
 use ethers::types::Address;
-use futures::StreamExt;
 use rayon::prelude::*;
 
 pub async fn run_execution(state: &State) -> Result<()> {

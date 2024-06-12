@@ -1,0 +1,3212 @@
+get 8 ctoken info: 0ms
+get prices: 288ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 2ms
+total execution time: 392ms
+
+get 8 ctoken info: 0ms
+get prices: 298ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 415ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 114ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 139ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 139ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 125ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 126ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 133ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 134ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 116ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 117ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 114ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 2ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 127ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 127ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 116ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 124ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 125ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 116ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 117ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 122ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 151ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 151ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 86ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 87ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 86ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 87ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 86ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 87ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 156ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 157ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 127ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 129ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 122ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 124ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 125ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 126ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 116ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 116ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 117ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 134ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 135ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 165ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 166ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 119ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 117ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 116ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 122ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 123ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 120ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 121ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 125ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 126ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 124ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 125ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 106ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 131ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 132ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 113ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 2ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 127ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 128ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 123ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 124ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 112ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 119ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 120ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 124ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 125ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 119ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 122ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 119ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 130ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 130ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 114ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 109ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 116ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 152ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 152ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 120ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 121ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 109ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 109ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 119ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 127ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 127ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 87ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 109ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 122ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 123ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 139ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 140ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 103ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 122ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 123ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 87ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 105ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 111ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 111ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 122ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 86ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 87ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 100ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 101ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 119ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 120ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 107ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 112ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 122ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 89ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 89ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 118ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 119ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 126ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 126ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 99ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 161ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 162ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 113ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 114ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 123ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 104ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 121ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 121ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 108ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 117ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 118ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 99ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 95ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 96ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 125ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 126ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 96ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 97ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 116ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 117ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 90ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 97ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 98ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 102ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 110ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 108ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 109ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 109ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 110ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 114ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 115ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 98ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 100ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 115ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 116ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 104ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 91ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 90ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 91ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 101ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 102ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 103ms
+process 1411 accounts for liquidation: 1ms
+total execution time: 105ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 94ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 106ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 107ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 88ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 88ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 92ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 92ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 94ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 95ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms
+get all 1411 accounts: 93ms
+process 1411 accounts for liquidation: 0ms
+total execution time: 93ms
+
+get 8 ctoken info: 0ms
+get prices: 0ms

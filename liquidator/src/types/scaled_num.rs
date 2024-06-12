@@ -7,7 +7,7 @@ use std::{
 use ethers::types::U256;
 
 // TODO: impl /, and from u64 (edit: I don't remember why I wanted to implement these)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct ScaledNum {
     pub num: U256,
     pub scale: u8,
