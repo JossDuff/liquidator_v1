@@ -10,7 +10,7 @@ pub struct MockPriceOracle {
 
 impl MockPriceOracle {
     pub async fn new(
-        provider: Arc<Provider<Http>>,
+        provider: Arc<Provider<Ws>>,
         ctokens_to_price: Vec<Address>,
         liquidation_block: u64,
     ) -> Result<Self> {
@@ -41,7 +41,7 @@ impl PriceOracle for MockPriceOracle {
 
 // should return a mapping of underlying token to price
 async fn get_historic_prices(
-    provider: Arc<Provider<Http>>,
+    provider: Arc<Provider<Ws>>,
     // ctoken addresses
     ctokens_to_price: Vec<Address>,
     liquidation_block: u64,
