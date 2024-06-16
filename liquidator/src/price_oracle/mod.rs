@@ -17,6 +17,8 @@ mod impls;
 
 #[async_trait]
 pub trait PriceOracle {
+    // @param addresses: array of ctoken addresses
+    // returns (address ctoken, price underlying)
     async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>>;
 }
 

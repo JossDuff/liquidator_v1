@@ -59,6 +59,7 @@ pub struct CtokenInfoPriced {
     pub underlying_price: ScaledNum,
 }
 
+#[derive(Clone)]
 pub struct AccountPosition {
     pub ctoken_addr: Address,
     pub position: CollateralOrBorrow,

@@ -60,12 +60,12 @@ impl IronBank {
     }
 
     async fn fetch_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>> {
-        let ironbank_instance = IronBankPriceOracle::new(self.address, self.provider.clone());
+        let ironbank_price_oracle = IronBankPriceOracle::new(self.address, self.provider.clone());
 
         let mut price_tasks = vec![];
         // TODO: make this concurrent
         for ctoken_address in addresses {
-            let ironbank_instance = ironbank_instance.clone();
+            let ironbank_instance = ironbank_price_oracle.clone();
             let task = async move {
                 // returns price scaled by 1e18
                 let price = ironbank_instance

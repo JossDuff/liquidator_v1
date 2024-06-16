@@ -1,9 +1,13 @@
+mod liquidation_events;
 mod mock_data_provider;
 mod mock_price_oracle;
 mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::comptroller_bindings::Comptroller;
+use liquidation_events::fetch_liquidation_events;
+// use mock_data_provider::MockDataProvider;
+use mock_price_oracle::MockPriceOracle;
 
 use core::time;
 use ethers::prelude::{Http, Provider};
@@ -13,8 +17,6 @@ use liquidator::{
     config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
     price_oracle::PriceOracle, types::State,
 };
-// use mock_data_provider::MockDataProvider;
-// use mock_price_oracle::MockPriceOracle;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 use types::LiquidationEvent;
 
@@ -22,19 +24,21 @@ use crate::types::LiquidationEventParams;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    todo!();
-    /*
     let cfg = tokio::fs::read_to_string("config.toml")
         .await
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
 
     let provider: Arc<Provider<Http>> =
-        Arc::new(Provider::<Http>::try_from(cfg.liquidator.provider_endpoint).unwrap());
+        Arc::new(Provider::<Http>::try_from(cfg.provider_endpoint).unwrap());
 
-    for (liquidation_event_index, liquidation_event) in
-        get_a_few_sonne_liquidation_events().iter().enumerate()
-    {
+    let liquidation_events = fetch_liquidation_events()
+        .await
+        .context("get liquidation events")?;
+
+    println!("found {} liquidation events", liquidation_events.len());
+
+    for (liquidation_event_index, liquidation_event) in liquidation_events.iter().enumerate() {
         println!("\nliquidation event {liquidation_event_index}");
         println!("liquidation of {:?}", liquidation_event.params.borrower);
         let liquidation_block = liquidation_event.block_number;
@@ -48,44 +52,45 @@ async fn main() -> Result<()> {
             provider.clone(),
         ));
 
-        let mock_data_provider = Arc::new(
-            MockDataProvider::new(
-                provider.clone(),
-                troll_instance.clone(),
-                block_before_liquidation,
-                liquidated_account,
-            )
-            .await?,
-        );
+        // let mock_data_provider = Arc::new(
+        //     MockDataProvider::new(
+        //         provider.clone(),
+        //         troll_instance.clone(),
+        //         block_before_liquidation,
+        //         liquidated_account,
+        //     )
+        //     .await?,
+        // );
 
-        println!("data provider initialized");
+        println!("mock data provider initialized");
 
-        let tokens_to_price = mock_data_provider.get_tokens_to_price();
+        // let tokens_to_price = mock_data_provider.get_ctokens_to_price();
 
-        let mock_price_oracle = Arc::new(
-            MockPriceOracle::new(provider.clone(), tokens_to_price, liquidation_block).await?,
-        );
+        // let mock_price_oracle = Arc::new(
+        //     MockPriceOracle::new(provider.clone(), tokens_to_price, liquidation_block).await?,
+        // );
 
-        println!("price oracle initialized");
+        // println!("mock price oracle initialized");
 
-        let mock_min_profit_per_liquidation = ScaledNum::zero();
-        let mock_liquidator = Arc::new(Liquidator {});
+        // let mock_min_profit_per_liquidation = ScaledNum::zero();
+        // let mock_liquidator = Arc::new(Liquidator {});
 
-        let state = State::new(
-            mock_price_oracle,
-            mock_data_provider,
-            mock_liquidator,
-            mock_min_profit_per_liquidation,
-        );
+        // let state = State::new(
+        //     provider,
+        //     troll_instance,
+        //     mock_price_oracle,
+        //     mock_data_provider,
+        //     mock_liquidator,
+        //     mock_min_profit_per_liquidation,
+        // );
 
-        println!("running execution loop");
-        let start = std::time::Instant::now();
-        run_execution(&state).await?;
-        let duration = start.elapsed();
-        println!("execution loop done in {}ns", duration.as_nanos());
+        // println!("running execution loop");
+        // let start = std::time::Instant::now();
+        // run_execution(&state).await?;
+        // let duration = start.elapsed();
+        // println!("execution loop done in {}ns", duration.as_nanos());
     }
 
-    */
     Ok(())
 }
 
