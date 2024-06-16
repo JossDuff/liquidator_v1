@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use contract_bindings::{
     comptroller_bindings::Comptroller, ctoken_bindings::Ctoken, erc20_bindings::Erc20,
 };
@@ -15,24 +17,19 @@ pub struct MockDataProvider {
 
 impl MockDataProvider {
     pub async fn new(
-        provider: Arc<Provider<Http>>,
-        troll_instance: Arc<Comptroller<Provider<Http>>>,
+        provider: Arc<Provider<Ws>>,
+        troll_instance: Arc<Comptroller<Provider<Ws>>>,
         block_before_liquidation: u64,
         liquidated_account: Address,
     ) -> Result<Self> {
-        let liquidated_account = get_historic_account_assets(
+        let (liquidated_account, ctoken_info) = get_historic_account_assets_and_ctoken_info(
             provider,
             troll_instance.clone(),
             liquidated_account,
             block_before_liquidation,
         )
         .await
-        .context("get historic info on liquidated account")?;
-
-        let ctoken_info =
-            get_historic_ctoken_info(provider, liquidated_account, block_before_liquidation)
-                .await
-                .context("get historic ctoken info")?;
+        .context("get historic info on liquidated account and ctokens")?;
 
         Ok(Self {
             liquidated_account,
@@ -62,14 +59,15 @@ impl DataProvider for MockDataProvider {
     }
 }
 
-// returns (liquidated_account, liquidatedAccountAssets)
-async fn get_historic_account_assets(
-    provider: Arc<Provider<Http>>,
-    troll_instance: Arc<Comptroller<Provider<Http>>>,
+// returns (liquidated account, liquidated account positions), ctoken info
+async fn get_historic_account_assets_and_ctoken_info(
+    provider: Arc<Provider<Ws>>,
+    troll_instance: Arc<Comptroller<Provider<Ws>>>,
     liquidated_account: Address,
     block_num: u64,
-) -> Result<(Address, Vec<AccountPosition>)> {
-    let mut token_balances = vec![];
+) -> Result<((Address, Vec<AccountPosition>), Vec<CtokenInfo>)> {
+    let mut ctoken_info = vec![];
+    let mut account_positions = vec![];
 
     // ctoken addresses for the markets this account entered
     let markets_entered = troll_instance
@@ -121,11 +119,22 @@ async fn get_historic_account_assets(
             .await
             .context("underlying decimals")?;
 
-        let borrow_balance = ScaledNum::new(borrow_balance, underlying_decimals);
-        let supplied_balance = ScaledNum::new(supplied_balance, ctoken_decimals);
-        let collateral_factor = ScaledNum::new(collateral_factor, 18);
+        // borrow and supplied balance get turned into scalednum in can_i_liquidate
+        // let borrow_balance = ScaledNum::new(borrow_balance, underlying_decimals);
+        // let supplied_balance = ScaledNum::new(supplied_balance, ctoken_decimals);
+        let collateral_factor_mant = ScaledNum::new(collateral_factor, 18);
         let exchange_rate = ScaledNum::new(exchange_rate, 10 + underlying_decimals);
 
+        ctoken_info.push(CtokenInfo {
+            underlying_addr,
+            underlying_decimals,
+            ctoken_addr: *ctoken_addr,
+            ctoken_decimals,
+            exchange_rate,
+            collateral_factor_mant,
+            // TODO
+            protocol_seize_share_mant: ScaledNum::zero(),
+        });
         // println!("ctoken_addr: {ctoken_addr:?}");
         // println!("underlying_addr: {underlying_addr:?}");
         // println!("borrow_balance: {borrow_balance:?}");
@@ -133,102 +142,54 @@ async fn get_historic_account_assets(
         // println!("collateral_factor: {collateral_factor:?}");
         // println!("exchange_rate: {exchange_rate:?}");
 
-        let borrow = if borrow_balance > ScaledNum::zero() {
-            Some(CollateralOrBorrow::Borrow {
-                underlying_balance: borrow_balance,
+        if borrow_balance > U256::zero() {
+            account_positions.push(AccountPosition {
+                ctoken_addr: *ctoken_addr,
+                position: CollateralOrBorrow::Borrow {
+                    underlying_balance: borrow_balance,
+                },
             })
-        } else {
-            None
-        };
+        }
 
-        let supply = if supplied_balance > ScaledNum::zero() {
-            Some(CollateralOrBorrow::Collateral {
-                ctoken_balance: supplied_balance,
+        if supplied_balance > U256::zero() {
+            account_positions.push(AccountPosition {
+                ctoken_addr: *ctoken_addr,
+                position: CollateralOrBorrow::Collateral {
+                    ctoken_balance: supplied_balance,
+                },
             })
-        } else {
-            None
-        };
-
-        match (borrow, supply) {
-            (Some(borrow), Some(supply)) => {
-                let token_balance = TokenBalance::new(
-                    underlying_addr,
-                    *ctoken_addr,
-                    borrow,
-                    exchange_rate,
-                    collateral_factor,
-                    ScaledNum::zero(),
-                    None,
-                );
-                token_balances.push(token_balance);
-                let token_balance = TokenBalance::new(
-                    underlying_addr,
-                    *ctoken_addr,
-                    supply,
-                    exchange_rate,
-                    collateral_factor,
-                    ScaledNum::zero(),
-                    None,
-                );
-                token_balances.push(token_balance);
-            }
-            (None, Some(supply)) => {
-                let token_balance = TokenBalance::new(
-                    underlying_addr,
-                    *ctoken_addr,
-                    supply,
-                    exchange_rate,
-                    collateral_factor,
-                    ScaledNum::zero(),
-                    None,
-                );
-                token_balances.push(token_balance);
-            }
-            (Some(borrow), None) => {
-                let token_balance = TokenBalance::new(
-                    underlying_addr,
-                    *ctoken_addr,
-                    borrow,
-                    exchange_rate,
-                    collateral_factor,
-                    ScaledNum::zero(),
-                    None,
-                );
-                token_balances.push(token_balance);
-            }
-            (None, None) => {
-                continue;
-            }
         }
     }
 
-    Ok((liquidated_account, token_balances))
+    Ok(((liquidated_account, account_positions), (ctoken_info)))
 }
 
-async fn get_historic_liquidation_incentive(
-    troll_instance: Arc<Comptroller<Provider<Http>>>,
-    block_num: u64,
-) -> Result<ScaledNum> {
-    let liquidation_incentive_mantissa = troll_instance
-        .liquidation_incentive_mantissa()
-        .block(block_num)
-        .call()
-        .await
-        .context("get old liquidation incentive mantissa")?;
+// TODO
+// async fn get_historic_liquidation_incentive(
+//     troll_instance: Arc<Comptroller<Provider<Ws>>>,
+//     block_num: u64,
+// ) -> Result<ScaledNum> {
+//     let liquidation_incentive_mantissa = troll_instance
+//         .liquidation_incentive_mantissa()
+//         .block(block_num)
+//         .call()
+//         .await
+//         .context("get old liquidation incentive mantissa")?;
 
-    Ok(ScaledNum::new(liquidation_incentive_mantissa, 18))
-}
+//     Ok(ScaledNum::new(liquidation_incentive_mantissa, 18))
+// }
 
-async fn get_historic_close_factor(
-    troll_instance: Arc<Comptroller<Provider<Http>>>,
-    block_num: u64,
-) -> Result<ScaledNum> {
-    let close_factor_mantissa = troll_instance
-        .close_factor_mantissa()
-        .block(block_num)
-        .call()
-        .await
-        .context("get old close factor mantissa")?;
+// TODO
+// async fn get_historic_close_factor(
+//     troll_instance: Arc<Comptroller<Provider<Ws>>>,
+//     block_num: u64,
+// ) -> Result<ScaledNum> {
+//     let close_factor_mantissa = troll_instance
+//         .close_factor_mantissa()
+//         .block(block_num)
+//         .call()
+//         .await
+//         .context("get old close factor mantissa")?;
 
-    Ok(ScaledNum::new(close_factor_mantissa, 18))
-}
+//     Ok(ScaledNum::new(close_factor_mantissa, 18))
+// }
