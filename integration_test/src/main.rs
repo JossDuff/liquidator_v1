@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::{
-    providers::{Provider, Ws},
+    providers::{Http, Provider},
     types::{Address, U256},
 };
 use liquidation_events::fetch_liquidation_events;
@@ -31,10 +31,11 @@ async fn main() -> Result<()> {
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
 
-    let provider: Arc<Provider<Ws>> = Arc::new(
-        Provider::<Ws>::connect(cfg.provider_endpoint)
-            .await
-            .context("create provider")?,
+    let provider: Arc<Provider<Http>> = Arc::new(
+        // Provider::<Ws>::connect(cfg.provider_endpoint)
+        //     .await
+        //     .context("create provider")?,
+        Provider::<Http>::try_from(cfg.provider_endpoint).context("initialize provider")?,
     );
 
     let liquidation_events = fetch_liquidation_events()

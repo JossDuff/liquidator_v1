@@ -17,8 +17,8 @@ pub struct MockDataProvider {
 
 impl MockDataProvider {
     pub async fn new(
-        provider: Arc<Provider<Ws>>,
-        troll_instance: Arc<Comptroller<Provider<Ws>>>,
+        provider: Arc<Provider<Http>>,
+        troll_instance: Arc<Comptroller<Provider<Http>>>,
         block_before_liquidation: u64,
         liquidated_account: Address,
     ) -> Result<Self> {
@@ -61,8 +61,8 @@ impl DataProvider for MockDataProvider {
 
 // returns (liquidated account, liquidated account positions), ctoken info
 async fn get_historic_account_assets_and_ctoken_info(
-    provider: Arc<Provider<Ws>>,
-    troll_instance: Arc<Comptroller<Provider<Ws>>>,
+    provider: Arc<Provider<Http>>,
+    troll_instance: Arc<Comptroller<Provider<Http>>>,
     liquidated_account: Address,
     block_num: u64,
 ) -> Result<((Address, Vec<AccountPosition>), Vec<CtokenInfo>)> {
@@ -166,7 +166,7 @@ async fn get_historic_account_assets_and_ctoken_info(
 
 // TODO
 // async fn get_historic_liquidation_incentive(
-//     troll_instance: Arc<Comptroller<Provider<Ws>>>,
+//     troll_instance: Arc<Comptroller<Provider<Http>>>,
 //     block_num: u64,
 // ) -> Result<ScaledNum> {
 //     let liquidation_incentive_mantissa = troll_instance
@@ -181,7 +181,7 @@ async fn get_historic_account_assets_and_ctoken_info(
 
 // TODO
 // async fn get_historic_close_factor(
-//     troll_instance: Arc<Comptroller<Provider<Ws>>>,
+//     troll_instance: Arc<Comptroller<Provider<Http>>>,
 //     block_num: u64,
 // ) -> Result<ScaledNum> {
 //     let close_factor_mantissa = troll_instance

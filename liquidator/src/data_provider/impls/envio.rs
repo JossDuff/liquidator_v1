@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::ctoken_bindings::Ctoken;
 use ethers::{
-    providers::{Provider, Ws},
+    providers::{Http, Provider},
     types::{Address, U256},
 };
 
@@ -21,12 +21,12 @@ use tokio::{
 #[derive(Clone)]
 pub struct Envio {
     endpoint: String,
-    provider: Arc<Provider<Ws>>,
+    provider: Arc<Provider<Http>>,
     ctoken_info: Arc<Mutex<Vec<CtokenInfo>>>,
 }
 
 impl Envio {
-    pub async fn new(endpoint: String, provider: Arc<Provider<Ws>>) -> Result<Self> {
+    pub async fn new(endpoint: String, provider: Arc<Provider<Http>>) -> Result<Self> {
         let initial_ctoken_info = fetch_ctoken_info(&endpoint, provider.clone())
             .await
             .context("get initial ctoken info")?;
@@ -64,7 +64,10 @@ impl Envio {
 }
 
 // TODO: move this inside envio?
-async fn fetch_ctoken_info(endpoint: &str, provider: Arc<Provider<Ws>>) -> Result<Vec<CtokenInfo>> {
+async fn fetch_ctoken_info(
+    endpoint: &str,
+    provider: Arc<Provider<Http>>,
+) -> Result<Vec<CtokenInfo>> {
     // get ctoken info from data provider and make call to fill in exchange_rates
 
     let client = Client::new();

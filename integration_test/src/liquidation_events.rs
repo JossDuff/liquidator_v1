@@ -4,7 +4,7 @@ use ethers::types::{Address, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-const GRAPHQL_ENDPOINT: &str = "http://localhost:8080/v1/graphql";
+const GRAPHQL_ENDPOINT: &str = "https://indexer.bigdevenergy.link/e11ed78/v1/graphql";
 
 const QUERY: &str = r#"query MyQuery {
   Liquidation(order_by: {blockNumber: asc}) {

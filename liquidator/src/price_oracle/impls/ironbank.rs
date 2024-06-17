@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
 use ethers::{
-    providers::{Provider, Ws},
+    providers::{Http, Provider},
     types::Address,
 };
 use std::sync::Arc;
@@ -16,12 +16,12 @@ use tokio::{
 // TODO: should this hold an instance of ironbankPriceOracle instead of provider and address?
 pub struct IronBank {
     pub address: Address,
-    pub provider: Arc<Provider<Ws>>,
+    pub provider: Arc<Provider<Http>>,
     pub prices: Arc<Mutex<Vec<(Address, ScaledNum)>>>,
 }
 
 impl IronBank {
-    pub fn new(address: Address, provider: Arc<Provider<Ws>>) -> Result<Self> {
+    pub fn new(address: Address, provider: Arc<Provider<Http>>) -> Result<Self> {
         let ironbank = IronBank {
             address,
             provider,
@@ -68,8 +68,9 @@ impl IronBank {
             let ironbank_instance = ironbank_price_oracle.clone();
             let task = async move {
                 // returns price scaled by 1e18
+                // TODO: this won't work because ironbank returns prices relative to eth
                 let price = ironbank_instance
-                    .get_underlying_price(ctoken_address)
+                    .get_price(ctoken_address)
                     .call()
                     .await
                     .context(format!("get price of ctoken {ctoken_address:?}"))

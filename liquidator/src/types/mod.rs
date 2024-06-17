@@ -1,6 +1,6 @@
 use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::{
-    providers::{Provider, Ws},
+    providers::{Http, Provider},
     types::{Address, U256},
 };
 
@@ -12,8 +12,8 @@ use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::P
 use self::scaled_num::ScaledNum;
 
 pub struct State {
-    pub provider: Arc<Provider<Ws>>,
-    pub troll_instance: Arc<Comptroller<Provider<Ws>>>,
+    pub provider: Arc<Provider<Http>>,
+    pub troll_instance: Arc<Comptroller<Provider<Http>>>,
     pub price_oracle: Arc<dyn PriceOracle>,
     pub data_provider: Arc<dyn DataProvider>,
     pub liquidator: Arc<Liquidator>,
@@ -22,8 +22,8 @@ pub struct State {
 
 impl State {
     pub fn new(
-        provider: Arc<Provider<Ws>>,
-        troll_instance: Arc<Comptroller<Provider<Ws>>>,
+        provider: Arc<Provider<Http>>,
+        troll_instance: Arc<Comptroller<Provider<Http>>>,
         price_oracle: Arc<dyn PriceOracle>,
         data_provider: Arc<dyn DataProvider>,
         liquidator: Arc<Liquidator>,

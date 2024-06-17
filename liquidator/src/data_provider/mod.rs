@@ -7,8 +7,8 @@ use crate::types::CtokenInfo;
 use anyhow::Context;
 use anyhow::Result;
 use async_trait::async_trait;
+use ethers::providers::Http;
 use ethers::providers::Provider;
-use ethers::providers::Ws;
 use std::sync::Arc;
 
 mod impls;
@@ -25,7 +25,7 @@ pub trait DataProvider {
 
 pub async fn data_provider_from_config(
     config: DataProviderConfig,
-    provider: Arc<Provider<Ws>>,
+    provider: Arc<Provider<Http>>,
 ) -> Result<Arc<dyn DataProvider>> {
     let data_provider = match config {
         DataProviderConfig::Envio { endpoint } => Envio::new(endpoint, provider)
