@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
         println!("liquidation of {:?}", liquidation_event.params.borrower);
 
         let liquidation_block = liquidation_event.block_number;
-        let block_before_liquidation = liquidation_event.block_number - 1;
+        let block_before_liquidation = liquidation_event.block_number - 2;
         let liquidated_account = liquidation_event.params.borrower;
 
         let troll_instance = Arc::new(Comptroller::new(
