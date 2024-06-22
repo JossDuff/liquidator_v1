@@ -13,16 +13,12 @@ use liquidation_events::fetch_liquidation_events;
 use mock_data_provider::MockDataProvider;
 use mock_price_oracle::MockPriceOracle;
 
-use core::time;
 use liquidator::types::scaled_num::ScaledNum;
 use liquidator::{
     config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
     price_oracle::PriceOracle, types::State,
 };
 use std::{collections::HashMap, str::FromStr, sync::Arc};
-use types::LiquidationEvent;
-
-use crate::types::LiquidationEventParams;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -69,15 +65,16 @@ async fn main() -> Result<()> {
             .await?,
         );
 
-        println!("mock data provider initialized");
+        // println!("mock data provider initialized");
 
-        let tokens_to_price = mock_data_provider.get_ctokens_to_price();
+        let ctokens_to_price = mock_data_provider.get_ctokens_to_price();
+        println!("{} ctokens to price", ctokens_to_price.len());
 
         let mock_price_oracle = Arc::new(
-            MockPriceOracle::new(provider.clone(), tokens_to_price, liquidation_block).await?,
+            MockPriceOracle::new(provider.clone(), ctokens_to_price, liquidation_block).await?,
         );
 
-        println!("mock price oracle initialized");
+        // println!("mock price oracle initialized");
 
         let mock_min_profit_per_liquidation = ScaledNum::zero();
         let mock_liquidator = Arc::new(Liquidator {});

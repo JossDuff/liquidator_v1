@@ -6,8 +6,13 @@ use serde_json::json;
 
 const GRAPHQL_ENDPOINT: &str = "https://indexer.bigdevenergy.link/e11ed78/v1/graphql";
 
-const QUERY: &str = r#"query MyQuery {
-  Liquidation(order_by: {blockNumber: asc}) {
+// block 105290653 is after op's bedrock upgrade
+const QUERY: &str = r#"
+query MyQuery {
+  Liquidation(
+    order_by: {blockNumber: asc}
+    where: {blockNumber: {_gt: 105290653}}
+  ) {
     blockNumber
     borrowerAddress
     cTokenCollateralAddress

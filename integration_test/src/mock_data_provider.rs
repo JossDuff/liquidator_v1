@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, time::Duration};
 
 use contract_bindings::{
     comptroller_bindings::Comptroller, ctoken_bindings::Ctoken, erc20_bindings::Erc20,
@@ -43,7 +43,20 @@ impl MockDataProvider {
         self.liquidated_account
             .1
             .iter()
-            .map(|position| position.ctoken_addr)
+            .filter_map(|position| {
+                if match position.position {
+                    CollateralOrBorrow::Borrow { underlying_balance } => {
+                        underlying_balance > U256::zero()
+                    }
+                    CollateralOrBorrow::Collateral { ctoken_balance } => {
+                        ctoken_balance > U256::zero()
+                    }
+                } {
+                    Some(position.ctoken_addr)
+                } else {
+                    None
+                }
+            })
             .collect()
     }
 }
@@ -75,6 +88,10 @@ async fn get_historic_account_assets_and_ctoken_info(
         .block(block_num)
         .call()
         .await?;
+    println!(
+        "markets entered of {:?}:\n{:?}",
+        liquidated_account, markets_entered
+    );
 
     for ctoken_addr in &markets_entered {
         let ctoken_instance = Ctoken::new(*ctoken_addr, provider.clone());
@@ -87,29 +104,53 @@ async fn get_historic_account_assets_and_ctoken_info(
         let exchange_rate_call = ctoken_instance.exchange_rate_current();
         let ctoken_decimals_call = ctoken_instance.decimals();
 
-        let mut multicall = Multicall::new(provider.clone(), None)
+        let underlying_addr = underlying_addr_call.call().await.unwrap();
+        // sleep because I use free provider
+        std::thread::sleep(Duration::from_secs(1));
+        let borrow_balance = borrow_balance_call.call().await.unwrap();
+        std::thread::sleep(Duration::from_secs(1));
+        let supplied_balance = supplied_balance_call.call().await.unwrap();
+        std::thread::sleep(Duration::from_secs(1));
+        let (_, collateral_factor, _) = collateral_factor_call.call().await.unwrap();
+        std::thread::sleep(Duration::from_secs(1));
+        let exchange_rate = exchange_rate_call.call().await.unwrap();
+        std::thread::sleep(Duration::from_secs(1));
+        let ctoken_decimals: u8 = ctoken_decimals_call
+            .call()
             .await
-            .context("create multicall")?;
+            .unwrap()
+            .try_into()
+            .unwrap();
+        std::thread::sleep(Duration::from_secs(1));
 
-        multicall.add_call(underlying_addr_call, false);
-        multicall.add_call(borrow_balance_call, false);
-        multicall.add_call(supplied_balance_call, false);
-        multicall.add_call(collateral_factor_call, false);
-        multicall.add_call(exchange_rate_call, false);
-        multicall.add_call(ctoken_decimals_call, false);
+        // let mut multicall = Multicall::new(provider.clone(), None)
+        //     .await
+        //     .context("create multicall")?;
 
-        let (
-            underlying_addr,
-            borrow_balance,
-            supplied_balance,
-            (_, collateral_factor, _),
-            exchange_rate,
-            ctoken_decimals,
-        ): (Address, U256, U256, (bool, U256, bool), U256, u8) = multicall
-            .block(block_num)
-            .call::<(Address, U256, U256, (bool, U256, bool), U256, u8)>()
-            .await
-            .context("execute multicall")?;
+        // multicall.add_call(underlying_addr_call, false);
+        // multicall.add_call(borrow_balance_call, false);
+        // multicall.add_call(supplied_balance_call, false);
+        // multicall.add_call(collateral_factor_call, false);
+        // multicall.add_call(exchange_rate_call, false);
+        // multicall.add_call(ctoken_decimals_call, false);
+
+        // let (
+        //     underlying_addr,
+        //     borrow_balance,
+        //     supplied_balance,
+        //     (_, collateral_factor, _),
+        //     exchange_rate,
+        //     ctoken_decimals,
+        // ): (Address, U256, U256, (bool, U256, bool), U256, u8) = multicall
+        //     .block(block_num)
+        //     .call::<(Address, U256, U256, (bool, U256, bool), U256, u8)>()
+        //     .await
+        //     .context("execute multicall")?;
+
+        // println!(
+        //     "getting info for...\nctoken: {:?}\nunderlying: {:?}\n",
+        //     ctoken_addr, underlying_addr
+        // );
 
         let underlying_instance = Erc20::new(underlying_addr, provider.clone());
         let underlying_decimals = underlying_instance
@@ -135,12 +176,12 @@ async fn get_historic_account_assets_and_ctoken_info(
             // TODO
             protocol_seize_share_mant: ScaledNum::zero(),
         });
-        // println!("ctoken_addr: {ctoken_addr:?}");
-        // println!("underlying_addr: {underlying_addr:?}");
-        // println!("borrow_balance: {borrow_balance:?}");
-        // println!("supplied_balance: {supplied_balance:?}");
-        // println!("collateral_factor: {collateral_factor:?}");
-        // println!("exchange_rate: {exchange_rate:?}");
+        println!("ctoken_addr: {ctoken_addr:?}");
+        println!("underlying_addr: {underlying_addr:?}");
+        println!("borrow_balance: {borrow_balance:?}");
+        println!("supplied_balance: {supplied_balance:?}");
+        println!("collateral_factor: {collateral_factor:?}");
+        println!("exchange_rate: {exchange_rate:?}");
 
         if borrow_balance > U256::zero() {
             account_positions.push(AccountPosition {

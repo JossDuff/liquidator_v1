@@ -59,13 +59,13 @@ pub struct CtokenInfoPriced {
     pub underlying_price: ScaledNum,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AccountPosition {
     pub ctoken_addr: Address,
     pub position: CollateralOrBorrow,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CollateralOrBorrow {
     Collateral { ctoken_balance: U256 },
     Borrow { underlying_balance: U256 },

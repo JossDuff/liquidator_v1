@@ -70,7 +70,7 @@ impl IronBank {
                 // returns price scaled by 1e18
                 // TODO: this won't work because ironbank returns prices relative to eth
                 let price = ironbank_instance
-                    .get_price(ctoken_address)
+                    .get_underlying_price(ctoken_address)
                     .call()
                     .await
                     .context(format!("get price of ctoken {ctoken_address:?}"))

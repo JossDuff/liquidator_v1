@@ -2,7 +2,7 @@ use super::*;
 use anyhow::{Context, Result};
 use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
 
-const PRICE_ORACLE_ADDR: &str = "0x61e38fa2A349b5d4EAD78458AfBCC1E4ADEefAb5";
+const PRICE_ORACLE_ADDR: &str = "0x2424C30E589Caea191C06F41d1f5b90348dbeD7d";
 
 pub struct MockPriceOracle {
     prices: HashMap<Address, ScaledNum>,
@@ -17,12 +17,17 @@ impl MockPriceOracle {
         let prices = get_historic_prices(provider, ctokens_to_price, liquidation_block)
             .await
             .context("get historic prices")?;
+
+        println!("prices: {:?}", prices);
+
         Ok(Self { prices })
     }
 }
 
 #[async_trait]
 impl PriceOracle for MockPriceOracle {
+    // takes address of ctokens
+    // returns (ctoken addr, underlying price)
     async fn get_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>> {
         let mut prices = vec![];
         for address in addresses {
@@ -31,6 +36,7 @@ impl PriceOracle for MockPriceOracle {
                 *self
                     .prices
                     .get(&address)
+                    .or(Some(&ScaledNum::zero()))
                     .context(format!("get stored price of {address:?}"))?,
             ));
         }
@@ -39,7 +45,7 @@ impl PriceOracle for MockPriceOracle {
     }
 }
 
-// should return a mapping of underlying token to price
+// returns (ctoken address, underlying price)
 async fn get_historic_prices(
     provider: Arc<Provider<Http>>,
     // ctoken addresses
@@ -53,8 +59,9 @@ async fn get_historic_prices(
     let mut prices: HashMap<Address, ScaledNum> = HashMap::new();
     for ctoken_addr in ctokens_to_price {
         print!("getting price of underlying of ctoken {ctoken_addr:?} : ");
+        // IronBank price oracle needs the underlying address
         let underlying_price = iron_bank_price_oracle_instance
-            .get_price(ctoken_addr)
+            .get_underlying_price(ctoken_addr)
             .block(liquidation_block)
             .call()
             .await

@@ -21,7 +21,21 @@ pub mod iron_bank_price_oracle {
             constructor: ::core::option::Option::Some(::ethers::core::abi::ethabi::Constructor {
                 inputs: ::std::vec![
                     ::ethers::core::abi::ethabi::Param {
-                        name: ::std::borrow::ToOwned::to_owned("_poster"),
+                        name: ::std::borrow::ToOwned::to_owned("admin_"),
+                        kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                        internal_type: ::core::option::Option::Some(
+                            ::std::borrow::ToOwned::to_owned("address"),
+                        ),
+                    },
+                    ::ethers::core::abi::ethabi::Param {
+                        name: ::std::borrow::ToOwned::to_owned("v1PriceOracle_"),
+                        kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                        internal_type: ::core::option::Option::Some(
+                            ::std::borrow::ToOwned::to_owned("address"),
+                        ),
+                    },
+                    ::ethers::core::abi::ethabi::Param {
+                        name: ::std::borrow::ToOwned::to_owned("ethUsdAggregator_"),
                         kind: ::ethers::core::abi::ethabi::ParamType::Address,
                         internal_type: ::core::option::Option::Some(
                             ::std::borrow::ToOwned::to_owned("address"),
@@ -31,484 +45,33 @@ pub mod iron_bank_price_oracle {
             }),
             functions: ::core::convert::From::from([
                 (
-                    ::std::borrow::ToOwned::to_owned("_acceptAnchorAdmin"),
+                    ::std::borrow::ToOwned::to_owned("_setAdmin"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("_acceptAnchorAdmin"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
+                            name: ::std::borrow::ToOwned::to_owned("_setAdmin"),
+                            inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
+                                    name: ::std::borrow::ToOwned::to_owned("_admin"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                        ::std::borrow::ToOwned::to_owned("address"),
                                     ),
                                 },
                             ],
+                            outputs: ::std::vec![],
                             constant: ::core::option::Option::Some(false),
                             state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
                         },
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("_assetPrices"),
+                    ::std::borrow::ToOwned::to_owned("_setAggregators"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("_assetPrices"),
+                            name: ::std::borrow::ToOwned::to_owned("_setAggregators"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("mantissa"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("_setPaused"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("_setPaused"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("requestedState"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(false),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("_setPendingAnchor"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("_setPendingAnchor"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("newScaledPrice"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(false),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("_setPendingAnchorAdmin"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "_setPendingAnchorAdmin",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "newPendingAnchorAdmin",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(false),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("anchorAdmin"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("anchorAdmin"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("anchors"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("anchors"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("period"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("priceMantissa"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("assetPrices"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("assetPrices"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("getPrice"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("getPrice"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("maxSwing"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("maxSwing"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("mantissa"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("maxSwingMantissa"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("maxSwingMantissa"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("oneHour"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("oneHour"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("paused"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("paused"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("pendingAnchorAdmin"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("pendingAnchorAdmin"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("pendingAnchors"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("pendingAnchors"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("poster"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("poster"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(true),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("setPrice"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("setPrice"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "requestedPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::Some(false),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("setPrices"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("setPrices"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("assets"),
+                                    name: ::std::borrow::ToOwned::to_owned("cTokenAddresses"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Array(
                                         ::std::boxed::Box::new(
                                             ::ethers::core::abi::ethabi::ParamType::Address,
@@ -519,75 +82,230 @@ pub mod iron_bank_price_oracle {
                                     ),
                                 },
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "requestedPriceMantissas",
-                                    ),
+                                    name: ::std::borrow::ToOwned::to_owned("sources"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Array(
                                         ::std::boxed::Box::new(
-                                            ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers::core::abi::ethabi::ParamType::Address,
                                         ),
                                     ),
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256[]"),
+                                        ::std::borrow::ToOwned::to_owned("address[]"),
+                                    ),
+                                },
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("bases"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                        ),
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "enum PriceOracleProxyUSD.AggregatorBase[]",
+                                        ),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::Some(false),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("_setGuardian"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("_setGuardian"),
+                            inputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_guardian"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::Some(false),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("admin"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("admin"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("aggregators"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("aggregators"),
+                            inputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("source"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "contract AggregatorV3Interface",
+                                        ),
+                                    ),
+                                },
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("base"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "enum PriceOracleProxyUSD.AggregatorBase",
+                                        ),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ethUsdAggregator"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("ethUsdAggregator"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "contract AggregatorV3Interface",
+                                        ),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getUnderlyingPrice"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getUnderlyingPrice"),
+                            inputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("cToken"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("contract CToken"),
                                     ),
                                 },
                             ],
                             outputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
                                     name: ::std::string::String::new(),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Array(
-                                        ::std::boxed::Box::new(
-                                            ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
-                                        ),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
+                                        256usize,
                                     ),
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256[]"),
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
                                     ),
                                 },
                             ],
-                            constant: ::core::option::Option::Some(false),
-                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("guardian"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("guardian"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("v1PriceOracle"),
+                    ::std::vec![
+                        ::ethers::core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("v1PriceOracle"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "contract V1PriceOracleInterface",
+                                        ),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::Some(true),
+                            state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
                         },
                     ],
                 ),
             ]),
             events: ::core::convert::From::from([
                 (
-                    ::std::borrow::ToOwned::to_owned("CappedPricePosted"),
+                    ::std::borrow::ToOwned::to_owned("AggregatorUpdated"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("CappedPricePosted"),
+                            name: ::std::borrow::ToOwned::to_owned("AggregatorUpdated"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
+                                    name: ::std::borrow::ToOwned::to_owned("cTokenAddress"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Address,
                                     indexed: false,
                                 },
                                 ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "requestedPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
+                                    name: ::std::borrow::ToOwned::to_owned("source"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
                                     indexed: false,
                                 },
                                 ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "anchorPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "cappedPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
+                                    name: ::std::borrow::ToOwned::to_owned("base"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
                                     indexed: false,
                                 },
                             ],
@@ -596,50 +314,13 @@ pub mod iron_bank_price_oracle {
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("Failure"),
+                    ::std::borrow::ToOwned::to_owned("SetAdmin"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("Failure"),
+                            name: ::std::borrow::ToOwned::to_owned("SetAdmin"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("error"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("info"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("detail"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("NewAnchorAdmin"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("NewAnchorAdmin"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("oldAnchorAdmin"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("newAnchorAdmin"),
+                                    name: ::std::borrow::ToOwned::to_owned("admin"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Address,
                                     indexed: false,
                                 },
@@ -649,159 +330,14 @@ pub mod iron_bank_price_oracle {
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("NewPendingAnchor"),
+                    ::std::borrow::ToOwned::to_owned("SetGuardian"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("NewPendingAnchor"),
+                            name: ::std::borrow::ToOwned::to_owned("SetGuardian"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("anchorAdmin"),
+                                    name: ::std::borrow::ToOwned::to_owned("guardian"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("oldScaledPrice"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("newScaledPrice"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("NewPendingAnchorAdmin"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "NewPendingAnchorAdmin",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "oldPendingAnchorAdmin",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "newPendingAnchorAdmin",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("OracleFailure"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("OracleFailure"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("msgSender"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("error"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("info"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("detail"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("PricePosted"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("PricePosted"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("asset"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "previousPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "requestedPriceMantissa",
-                                    ),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("newPriceMantissa"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("SetPaused"),
-                    ::std::vec![
-                        ::ethers::core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("SetPaused"),
-                            inputs: ::std::vec![
-                                ::ethers::core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("newState"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bool,
                                     indexed: false,
                                 },
                             ],
@@ -812,7 +348,7 @@ pub mod iron_bank_price_oracle {
             ]),
             errors: ::std::collections::BTreeMap::new(),
             receive: false,
-            fallback: true,
+            fallback: false,
         }
     }
     ///The parsed JSON ABI of the contract.
@@ -858,249 +394,127 @@ pub mod iron_bank_price_oracle {
                 ),
             )
         }
-        ///Calls the contract's `_acceptAnchorAdmin` (0xccb13cbd) function
-        pub fn accept_anchor_admin(
+        ///Calls the contract's `_setAdmin` (0x3a74a767) function
+        pub fn set_admin(
             &self,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
+            admin: ::ethers::core::types::Address,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([204, 177, 60, 189], ())
+                .method_hash([58, 116, 167, 103], admin)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `_assetPrices` (0x183f3444) function
-        pub fn _asset_prices(
+        ///Calls the contract's `_setAggregators` (0x05631658) function
+        pub fn set_aggregators(
             &self,
-            p0: ::ethers::core::types::Address,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
+            c_token_addresses: ::std::vec::Vec<::ethers::core::types::Address>,
+            sources: ::std::vec::Vec<::ethers::core::types::Address>,
+            bases: ::std::vec::Vec<u8>,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([24, 63, 52, 68], p0)
+                .method_hash([5, 99, 22, 88], (c_token_addresses, sources, bases))
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `_setPaused` (0x26617c28) function
-        pub fn set_paused(
+        ///Calls the contract's `_setGuardian` (0xe38e8c0f) function
+        pub fn set_guardian(
             &self,
-            requested_state: bool,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
+            guardian: ::ethers::core::types::Address,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([38, 97, 124, 40], requested_state)
+                .method_hash([227, 142, 140, 15], guardian)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `_setPendingAnchor` (0xde9d0e85) function
-        pub fn set_pending_anchor(
-            &self,
-            asset: ::ethers::core::types::Address,
-            new_scaled_price: ::ethers::core::types::U256,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([222, 157, 14, 133], (asset, new_scaled_price))
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `_setPendingAnchorAdmin` (0x9964622c) function
-        pub fn set_pending_anchor_admin(
-            &self,
-            new_pending_anchor_admin: ::ethers::core::types::Address,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([153, 100, 98, 44], new_pending_anchor_admin)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `anchorAdmin` (0x08f31857) function
-        pub fn anchor_admin(
+        ///Calls the contract's `admin` (0xf851a440) function
+        pub fn admin(
             &self,
         ) -> ::ethers::contract::builders::ContractCall<
             M,
             ::ethers::core::types::Address,
         > {
             self.0
-                .method_hash([8, 243, 24, 87], ())
+                .method_hash([248, 81, 164, 64], ())
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `anchors` (0x692374e3) function
-        pub fn anchors(
+        ///Calls the contract's `aggregators` (0x112cdab9) function
+        pub fn aggregators(
             &self,
             p0: ::ethers::core::types::Address,
         ) -> ::ethers::contract::builders::ContractCall<
             M,
-            (::ethers::core::types::U256, ::ethers::core::types::U256),
+            (::ethers::core::types::Address, u8),
         > {
             self.0
-                .method_hash([105, 35, 116, 227], p0)
+                .method_hash([17, 44, 218, 185], p0)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `assetPrices` (0x5e9a523c) function
-        pub fn asset_prices(
-            &self,
-            asset: ::ethers::core::types::Address,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([94, 154, 82, 60], asset)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `getPrice` (0x41976e09) function
-        pub fn get_price(
-            &self,
-            asset: ::ethers::core::types::Address,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([65, 151, 110, 9], asset)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `maxSwing` (0xc5faf1d5) function
-        pub fn max_swing(
-            &self,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([197, 250, 241, 213], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `maxSwingMantissa` (0x0c9c6301) function
-        pub fn max_swing_mantissa(
-            &self,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([12, 156, 99, 1], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `oneHour` (0xc92da302) function
-        pub fn one_hour(
-            &self,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([201, 45, 163, 2], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `paused` (0x5c975abb) function
-        pub fn paused(&self) -> ::ethers::contract::builders::ContractCall<M, bool> {
-            self.0
-                .method_hash([92, 151, 90, 187], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `pendingAnchorAdmin` (0x451b1e3a) function
-        pub fn pending_anchor_admin(
+        ///Calls the contract's `ethUsdAggregator` (0x10236026) function
+        pub fn eth_usd_aggregator(
             &self,
         ) -> ::ethers::contract::builders::ContractCall<
             M,
             ::ethers::core::types::Address,
         > {
             self.0
-                .method_hash([69, 27, 30, 58], ())
+                .method_hash([16, 35, 96, 38], ())
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `pendingAnchors` (0x9e8c4d95) function
-        pub fn pending_anchors(
+        ///Calls the contract's `getUnderlyingPrice` (0xfc57d4df) function
+        pub fn get_underlying_price(
             &self,
-            p0: ::ethers::core::types::Address,
+            c_token: ::ethers::core::types::Address,
         ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
             self.0
-                .method_hash([158, 140, 77, 149], p0)
+                .method_hash([252, 87, 212, 223], c_token)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `poster` (0x80959721) function
-        pub fn poster(
+        ///Calls the contract's `guardian` (0x452a9320) function
+        pub fn guardian(
             &self,
         ) -> ::ethers::contract::builders::ContractCall<
             M,
             ::ethers::core::types::Address,
         > {
             self.0
-                .method_hash([128, 149, 151, 33], ())
+                .method_hash([69, 42, 147, 32], ())
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `setPrice` (0x00e4768b) function
-        pub fn set_price(
+        ///Calls the contract's `v1PriceOracle` (0xfe10c98d) function
+        pub fn v_1_price_oracle(
             &self,
-            asset: ::ethers::core::types::Address,
-            requested_price_mantissa: ::ethers::core::types::U256,
-        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
-            self.0
-                .method_hash([0, 228, 118, 139], (asset, requested_price_mantissa))
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `setPrices` (0x4352fa9f) function
-        pub fn set_prices(
-            &self,
-            assets: ::std::vec::Vec<::ethers::core::types::Address>,
-            requested_price_mantissas: ::std::vec::Vec<::ethers::core::types::U256>,
         ) -> ::ethers::contract::builders::ContractCall<
             M,
-            ::std::vec::Vec<::ethers::core::types::U256>,
+            ::ethers::core::types::Address,
         > {
             self.0
-                .method_hash([67, 82, 250, 159], (assets, requested_price_mantissas))
+                .method_hash([254, 16, 201, 141], ())
                 .expect("method not found (this should never happen)")
         }
-        ///Gets the contract's `CappedPricePosted` event
-        pub fn capped_price_posted_filter(
+        ///Gets the contract's `AggregatorUpdated` event
+        pub fn aggregator_updated_filter(
             &self,
         ) -> ::ethers::contract::builders::Event<
             ::std::sync::Arc<M>,
             M,
-            CappedPricePostedFilter,
+            AggregatorUpdatedFilter,
         > {
             self.0.event()
         }
-        ///Gets the contract's `Failure` event
-        pub fn failure_filter(
-            &self,
-        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, FailureFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `NewAnchorAdmin` event
-        pub fn new_anchor_admin_filter(
+        ///Gets the contract's `SetAdmin` event
+        pub fn set_admin_filter(
             &self,
         ) -> ::ethers::contract::builders::Event<
             ::std::sync::Arc<M>,
             M,
-            NewAnchorAdminFilter,
+            SetAdminFilter,
         > {
             self.0.event()
         }
-        ///Gets the contract's `NewPendingAnchor` event
-        pub fn new_pending_anchor_filter(
+        ///Gets the contract's `SetGuardian` event
+        pub fn set_guardian_filter(
             &self,
         ) -> ::ethers::contract::builders::Event<
             ::std::sync::Arc<M>,
             M,
-            NewPendingAnchorFilter,
-        > {
-            self.0.event()
-        }
-        ///Gets the contract's `NewPendingAnchorAdmin` event
-        pub fn new_pending_anchor_admin_filter(
-            &self,
-        ) -> ::ethers::contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            NewPendingAnchorAdminFilter,
-        > {
-            self.0.event()
-        }
-        ///Gets the contract's `OracleFailure` event
-        pub fn oracle_failure_filter(
-            &self,
-        ) -> ::ethers::contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            OracleFailureFilter,
-        > {
-            self.0.event()
-        }
-        ///Gets the contract's `PricePosted` event
-        pub fn price_posted_filter(
-            &self,
-        ) -> ::ethers::contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            PricePostedFilter,
-        > {
-            self.0.event()
-        }
-        ///Gets the contract's `SetPaused` event
-        pub fn set_paused_filter(
-            &self,
-        ) -> ::ethers::contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SetPausedFilter,
+            SetGuardianFilter,
         > {
             self.0.event()
         }
@@ -1132,14 +546,13 @@ pub mod iron_bank_price_oracle {
         Hash
     )]
     #[ethevent(
-        name = "CappedPricePosted",
-        abi = "CappedPricePosted(address,uint256,uint256,uint256)"
+        name = "AggregatorUpdated",
+        abi = "AggregatorUpdated(address,address,uint8)"
     )]
-    pub struct CappedPricePostedFilter {
-        pub asset: ::ethers::core::types::Address,
-        pub requested_price_mantissa: ::ethers::core::types::U256,
-        pub anchor_price_mantissa: ::ethers::core::types::U256,
-        pub capped_price_mantissa: ::ethers::core::types::U256,
+    pub struct AggregatorUpdatedFilter {
+        pub c_token_address: ::ethers::core::types::Address,
+        pub source: ::ethers::core::types::Address,
+        pub base: u8,
     }
     #[derive(
         Clone,
@@ -1151,11 +564,9 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    #[ethevent(name = "Failure", abi = "Failure(uint256,uint256,uint256)")]
-    pub struct FailureFilter {
-        pub error: ::ethers::core::types::U256,
-        pub info: ::ethers::core::types::U256,
-        pub detail: ::ethers::core::types::U256,
+    #[ethevent(name = "SetAdmin", abi = "SetAdmin(address)")]
+    pub struct SetAdminFilter {
+        pub admin: ::ethers::core::types::Address,
     }
     #[derive(
         Clone,
@@ -1167,145 +578,29 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    #[ethevent(name = "NewAnchorAdmin", abi = "NewAnchorAdmin(address,address)")]
-    pub struct NewAnchorAdminFilter {
-        pub old_anchor_admin: ::ethers::core::types::Address,
-        pub new_anchor_admin: ::ethers::core::types::Address,
-    }
-    #[derive(
-        Clone,
-        ::ethers::contract::EthEvent,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethevent(
-        name = "NewPendingAnchor",
-        abi = "NewPendingAnchor(address,address,uint256,uint256)"
-    )]
-    pub struct NewPendingAnchorFilter {
-        pub anchor_admin: ::ethers::core::types::Address,
-        pub asset: ::ethers::core::types::Address,
-        pub old_scaled_price: ::ethers::core::types::U256,
-        pub new_scaled_price: ::ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        ::ethers::contract::EthEvent,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethevent(
-        name = "NewPendingAnchorAdmin",
-        abi = "NewPendingAnchorAdmin(address,address)"
-    )]
-    pub struct NewPendingAnchorAdminFilter {
-        pub old_pending_anchor_admin: ::ethers::core::types::Address,
-        pub new_pending_anchor_admin: ::ethers::core::types::Address,
-    }
-    #[derive(
-        Clone,
-        ::ethers::contract::EthEvent,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethevent(
-        name = "OracleFailure",
-        abi = "OracleFailure(address,address,uint256,uint256,uint256)"
-    )]
-    pub struct OracleFailureFilter {
-        pub msg_sender: ::ethers::core::types::Address,
-        pub asset: ::ethers::core::types::Address,
-        pub error: ::ethers::core::types::U256,
-        pub info: ::ethers::core::types::U256,
-        pub detail: ::ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        ::ethers::contract::EthEvent,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethevent(
-        name = "PricePosted",
-        abi = "PricePosted(address,uint256,uint256,uint256)"
-    )]
-    pub struct PricePostedFilter {
-        pub asset: ::ethers::core::types::Address,
-        pub previous_price_mantissa: ::ethers::core::types::U256,
-        pub requested_price_mantissa: ::ethers::core::types::U256,
-        pub new_price_mantissa: ::ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        ::ethers::contract::EthEvent,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethevent(name = "SetPaused", abi = "SetPaused(bool)")]
-    pub struct SetPausedFilter {
-        pub new_state: bool,
+    #[ethevent(name = "SetGuardian", abi = "SetGuardian(address)")]
+    pub struct SetGuardianFilter {
+        pub guardian: ::ethers::core::types::Address,
     }
     ///Container type for all of the contract's events
     #[derive(Clone, ::ethers::contract::EthAbiType, Debug, PartialEq, Eq, Hash)]
     pub enum IronBankPriceOracleEvents {
-        CappedPricePostedFilter(CappedPricePostedFilter),
-        FailureFilter(FailureFilter),
-        NewAnchorAdminFilter(NewAnchorAdminFilter),
-        NewPendingAnchorFilter(NewPendingAnchorFilter),
-        NewPendingAnchorAdminFilter(NewPendingAnchorAdminFilter),
-        OracleFailureFilter(OracleFailureFilter),
-        PricePostedFilter(PricePostedFilter),
-        SetPausedFilter(SetPausedFilter),
+        AggregatorUpdatedFilter(AggregatorUpdatedFilter),
+        SetAdminFilter(SetAdminFilter),
+        SetGuardianFilter(SetGuardianFilter),
     }
     impl ::ethers::contract::EthLogDecode for IronBankPriceOracleEvents {
         fn decode_log(
             log: &::ethers::core::abi::RawLog,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::Error> {
-            if let Ok(decoded) = CappedPricePostedFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::CappedPricePostedFilter(decoded));
+            if let Ok(decoded) = AggregatorUpdatedFilter::decode_log(log) {
+                return Ok(IronBankPriceOracleEvents::AggregatorUpdatedFilter(decoded));
             }
-            if let Ok(decoded) = FailureFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::FailureFilter(decoded));
+            if let Ok(decoded) = SetAdminFilter::decode_log(log) {
+                return Ok(IronBankPriceOracleEvents::SetAdminFilter(decoded));
             }
-            if let Ok(decoded) = NewAnchorAdminFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::NewAnchorAdminFilter(decoded));
-            }
-            if let Ok(decoded) = NewPendingAnchorFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::NewPendingAnchorFilter(decoded));
-            }
-            if let Ok(decoded) = NewPendingAnchorAdminFilter::decode_log(log) {
-                return Ok(
-                    IronBankPriceOracleEvents::NewPendingAnchorAdminFilter(decoded),
-                );
-            }
-            if let Ok(decoded) = OracleFailureFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::OracleFailureFilter(decoded));
-            }
-            if let Ok(decoded) = PricePostedFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::PricePostedFilter(decoded));
-            }
-            if let Ok(decoded) = SetPausedFilter::decode_log(log) {
-                return Ok(IronBankPriceOracleEvents::SetPausedFilter(decoded));
+            if let Ok(decoded) = SetGuardianFilter::decode_log(log) {
+                return Ok(IronBankPriceOracleEvents::SetGuardianFilter(decoded));
             }
             Err(::ethers::core::abi::Error::InvalidData)
         }
@@ -1313,69 +608,134 @@ pub mod iron_bank_price_oracle {
     impl ::core::fmt::Display for IronBankPriceOracleEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::CappedPricePostedFilter(element) => {
+                Self::AggregatorUpdatedFilter(element) => {
                     ::core::fmt::Display::fmt(element, f)
                 }
-                Self::FailureFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::NewAnchorAdminFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::NewPendingAnchorFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::NewPendingAnchorAdminFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::OracleFailureFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PricePostedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPausedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetAdminFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetGuardianFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::core::convert::From<CappedPricePostedFilter> for IronBankPriceOracleEvents {
-        fn from(value: CappedPricePostedFilter) -> Self {
-            Self::CappedPricePostedFilter(value)
+    impl ::core::convert::From<AggregatorUpdatedFilter> for IronBankPriceOracleEvents {
+        fn from(value: AggregatorUpdatedFilter) -> Self {
+            Self::AggregatorUpdatedFilter(value)
         }
     }
-    impl ::core::convert::From<FailureFilter> for IronBankPriceOracleEvents {
-        fn from(value: FailureFilter) -> Self {
-            Self::FailureFilter(value)
+    impl ::core::convert::From<SetAdminFilter> for IronBankPriceOracleEvents {
+        fn from(value: SetAdminFilter) -> Self {
+            Self::SetAdminFilter(value)
         }
     }
-    impl ::core::convert::From<NewAnchorAdminFilter> for IronBankPriceOracleEvents {
-        fn from(value: NewAnchorAdminFilter) -> Self {
-            Self::NewAnchorAdminFilter(value)
+    impl ::core::convert::From<SetGuardianFilter> for IronBankPriceOracleEvents {
+        fn from(value: SetGuardianFilter) -> Self {
+            Self::SetGuardianFilter(value)
         }
     }
-    impl ::core::convert::From<NewPendingAnchorFilter> for IronBankPriceOracleEvents {
-        fn from(value: NewPendingAnchorFilter) -> Self {
-            Self::NewPendingAnchorFilter(value)
-        }
+    ///Container type for all input parameters for the `_setAdmin` function with signature `_setAdmin(address)` and selector `0x3a74a767`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "_setAdmin", abi = "_setAdmin(address)")]
+    pub struct SetAdminCall {
+        pub admin: ::ethers::core::types::Address,
     }
-    impl ::core::convert::From<NewPendingAnchorAdminFilter>
-    for IronBankPriceOracleEvents {
-        fn from(value: NewPendingAnchorAdminFilter) -> Self {
-            Self::NewPendingAnchorAdminFilter(value)
-        }
+    ///Container type for all input parameters for the `_setAggregators` function with signature `_setAggregators(address[],address[],uint8[])` and selector `0x05631658`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(
+        name = "_setAggregators",
+        abi = "_setAggregators(address[],address[],uint8[])"
+    )]
+    pub struct SetAggregatorsCall {
+        pub c_token_addresses: ::std::vec::Vec<::ethers::core::types::Address>,
+        pub sources: ::std::vec::Vec<::ethers::core::types::Address>,
+        pub bases: ::std::vec::Vec<u8>,
     }
-    impl ::core::convert::From<OracleFailureFilter> for IronBankPriceOracleEvents {
-        fn from(value: OracleFailureFilter) -> Self {
-            Self::OracleFailureFilter(value)
-        }
+    ///Container type for all input parameters for the `_setGuardian` function with signature `_setGuardian(address)` and selector `0xe38e8c0f`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "_setGuardian", abi = "_setGuardian(address)")]
+    pub struct SetGuardianCall {
+        pub guardian: ::ethers::core::types::Address,
     }
-    impl ::core::convert::From<PricePostedFilter> for IronBankPriceOracleEvents {
-        fn from(value: PricePostedFilter) -> Self {
-            Self::PricePostedFilter(value)
-        }
+    ///Container type for all input parameters for the `admin` function with signature `admin()` and selector `0xf851a440`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "admin", abi = "admin()")]
+    pub struct AdminCall;
+    ///Container type for all input parameters for the `aggregators` function with signature `aggregators(address)` and selector `0x112cdab9`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "aggregators", abi = "aggregators(address)")]
+    pub struct AggregatorsCall(pub ::ethers::core::types::Address);
+    ///Container type for all input parameters for the `ethUsdAggregator` function with signature `ethUsdAggregator()` and selector `0x10236026`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "ethUsdAggregator", abi = "ethUsdAggregator()")]
+    pub struct EthUsdAggregatorCall;
+    ///Container type for all input parameters for the `getUnderlyingPrice` function with signature `getUnderlyingPrice(address)` and selector `0xfc57d4df`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "getUnderlyingPrice", abi = "getUnderlyingPrice(address)")]
+    pub struct GetUnderlyingPriceCall {
+        pub c_token: ::ethers::core::types::Address,
     }
-    impl ::core::convert::From<SetPausedFilter> for IronBankPriceOracleEvents {
-        fn from(value: SetPausedFilter) -> Self {
-            Self::SetPausedFilter(value)
-        }
-    }
-    ///Container type for all input parameters for the `_acceptAnchorAdmin` function with signature `_acceptAnchorAdmin()` and selector `0xccb13cbd`
+    ///Container type for all input parameters for the `guardian` function with signature `guardian()` and selector `0x452a9320`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -1386,9 +746,9 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    #[ethcall(name = "_acceptAnchorAdmin", abi = "_acceptAnchorAdmin()")]
-    pub struct AcceptAnchorAdminCall;
-    ///Container type for all input parameters for the `_assetPrices` function with signature `_assetPrices(address)` and selector `0x183f3444`
+    #[ethcall(name = "guardian", abi = "guardian()")]
+    pub struct GuardianCall;
+    ///Container type for all input parameters for the `v1PriceOracle` function with signature `v1PriceOracle()` and selector `0xfe10c98d`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -1399,349 +759,70 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    #[ethcall(name = "_assetPrices", abi = "_assetPrices(address)")]
-    pub struct _AssetPricesCall(pub ::ethers::core::types::Address);
-    ///Container type for all input parameters for the `_setPaused` function with signature `_setPaused(bool)` and selector `0x26617c28`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "_setPaused", abi = "_setPaused(bool)")]
-    pub struct SetPausedCall {
-        pub requested_state: bool,
-    }
-    ///Container type for all input parameters for the `_setPendingAnchor` function with signature `_setPendingAnchor(address,uint256)` and selector `0xde9d0e85`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "_setPendingAnchor", abi = "_setPendingAnchor(address,uint256)")]
-    pub struct SetPendingAnchorCall {
-        pub asset: ::ethers::core::types::Address,
-        pub new_scaled_price: ::ethers::core::types::U256,
-    }
-    ///Container type for all input parameters for the `_setPendingAnchorAdmin` function with signature `_setPendingAnchorAdmin(address)` and selector `0x9964622c`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "_setPendingAnchorAdmin", abi = "_setPendingAnchorAdmin(address)")]
-    pub struct SetPendingAnchorAdminCall {
-        pub new_pending_anchor_admin: ::ethers::core::types::Address,
-    }
-    ///Container type for all input parameters for the `anchorAdmin` function with signature `anchorAdmin()` and selector `0x08f31857`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "anchorAdmin", abi = "anchorAdmin()")]
-    pub struct AnchorAdminCall;
-    ///Container type for all input parameters for the `anchors` function with signature `anchors(address)` and selector `0x692374e3`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "anchors", abi = "anchors(address)")]
-    pub struct AnchorsCall(pub ::ethers::core::types::Address);
-    ///Container type for all input parameters for the `assetPrices` function with signature `assetPrices(address)` and selector `0x5e9a523c`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "assetPrices", abi = "assetPrices(address)")]
-    pub struct AssetPricesCall {
-        pub asset: ::ethers::core::types::Address,
-    }
-    ///Container type for all input parameters for the `getPrice` function with signature `getPrice(address)` and selector `0x41976e09`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "getPrice", abi = "getPrice(address)")]
-    pub struct GetPriceCall {
-        pub asset: ::ethers::core::types::Address,
-    }
-    ///Container type for all input parameters for the `maxSwing` function with signature `maxSwing()` and selector `0xc5faf1d5`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "maxSwing", abi = "maxSwing()")]
-    pub struct MaxSwingCall;
-    ///Container type for all input parameters for the `maxSwingMantissa` function with signature `maxSwingMantissa()` and selector `0x0c9c6301`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "maxSwingMantissa", abi = "maxSwingMantissa()")]
-    pub struct MaxSwingMantissaCall;
-    ///Container type for all input parameters for the `oneHour` function with signature `oneHour()` and selector `0xc92da302`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "oneHour", abi = "oneHour()")]
-    pub struct OneHourCall;
-    ///Container type for all input parameters for the `paused` function with signature `paused()` and selector `0x5c975abb`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "paused", abi = "paused()")]
-    pub struct PausedCall;
-    ///Container type for all input parameters for the `pendingAnchorAdmin` function with signature `pendingAnchorAdmin()` and selector `0x451b1e3a`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "pendingAnchorAdmin", abi = "pendingAnchorAdmin()")]
-    pub struct PendingAnchorAdminCall;
-    ///Container type for all input parameters for the `pendingAnchors` function with signature `pendingAnchors(address)` and selector `0x9e8c4d95`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "pendingAnchors", abi = "pendingAnchors(address)")]
-    pub struct PendingAnchorsCall(pub ::ethers::core::types::Address);
-    ///Container type for all input parameters for the `poster` function with signature `poster()` and selector `0x80959721`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "poster", abi = "poster()")]
-    pub struct PosterCall;
-    ///Container type for all input parameters for the `setPrice` function with signature `setPrice(address,uint256)` and selector `0x00e4768b`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "setPrice", abi = "setPrice(address,uint256)")]
-    pub struct SetPriceCall {
-        pub asset: ::ethers::core::types::Address,
-        pub requested_price_mantissa: ::ethers::core::types::U256,
-    }
-    ///Container type for all input parameters for the `setPrices` function with signature `setPrices(address[],uint256[])` and selector `0x4352fa9f`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthCall,
-        ::ethers::contract::EthDisplay,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    #[ethcall(name = "setPrices", abi = "setPrices(address[],uint256[])")]
-    pub struct SetPricesCall {
-        pub assets: ::std::vec::Vec<::ethers::core::types::Address>,
-        pub requested_price_mantissas: ::std::vec::Vec<::ethers::core::types::U256>,
-    }
+    #[ethcall(name = "v1PriceOracle", abi = "v1PriceOracle()")]
+    pub struct V1PriceOracleCall;
     ///Container type for all of the contract's call
     #[derive(Clone, ::ethers::contract::EthAbiType, Debug, PartialEq, Eq, Hash)]
     pub enum IronBankPriceOracleCalls {
-        AcceptAnchorAdmin(AcceptAnchorAdminCall),
-        _AssetPrices(_AssetPricesCall),
-        SetPaused(SetPausedCall),
-        SetPendingAnchor(SetPendingAnchorCall),
-        SetPendingAnchorAdmin(SetPendingAnchorAdminCall),
-        AnchorAdmin(AnchorAdminCall),
-        Anchors(AnchorsCall),
-        AssetPrices(AssetPricesCall),
-        GetPrice(GetPriceCall),
-        MaxSwing(MaxSwingCall),
-        MaxSwingMantissa(MaxSwingMantissaCall),
-        OneHour(OneHourCall),
-        Paused(PausedCall),
-        PendingAnchorAdmin(PendingAnchorAdminCall),
-        PendingAnchors(PendingAnchorsCall),
-        Poster(PosterCall),
-        SetPrice(SetPriceCall),
-        SetPrices(SetPricesCall),
+        SetAdmin(SetAdminCall),
+        SetAggregators(SetAggregatorsCall),
+        SetGuardian(SetGuardianCall),
+        Admin(AdminCall),
+        Aggregators(AggregatorsCall),
+        EthUsdAggregator(EthUsdAggregatorCall),
+        GetUnderlyingPrice(GetUnderlyingPriceCall),
+        Guardian(GuardianCall),
+        V1PriceOracle(V1PriceOracleCall),
     }
     impl ::ethers::core::abi::AbiDecode for IronBankPriceOracleCalls {
         fn decode(
             data: impl AsRef<[u8]>,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <AcceptAnchorAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <SetAdminCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::AcceptAnchorAdmin(decoded));
+                return Ok(Self::SetAdmin(decoded));
             }
-            if let Ok(decoded) = <_AssetPricesCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <SetAggregatorsCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::_AssetPrices(decoded));
+                return Ok(Self::SetAggregators(decoded));
             }
-            if let Ok(decoded) = <SetPausedCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <SetGuardianCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::SetPaused(decoded));
+                return Ok(Self::SetGuardian(decoded));
             }
-            if let Ok(decoded) = <SetPendingAnchorCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <AdminCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::SetPendingAnchor(decoded));
+                return Ok(Self::Admin(decoded));
             }
-            if let Ok(decoded) = <SetPendingAnchorAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <AggregatorsCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::SetPendingAnchorAdmin(decoded));
+                return Ok(Self::Aggregators(decoded));
             }
-            if let Ok(decoded) = <AnchorAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <EthUsdAggregatorCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::AnchorAdmin(decoded));
+                return Ok(Self::EthUsdAggregator(decoded));
             }
-            if let Ok(decoded) = <AnchorsCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <GetUnderlyingPriceCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::Anchors(decoded));
+                return Ok(Self::GetUnderlyingPrice(decoded));
             }
-            if let Ok(decoded) = <AssetPricesCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <GuardianCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::AssetPrices(decoded));
+                return Ok(Self::Guardian(decoded));
             }
-            if let Ok(decoded) = <GetPriceCall as ::ethers::core::abi::AbiDecode>::decode(
+            if let Ok(decoded) = <V1PriceOracleCall as ::ethers::core::abi::AbiDecode>::decode(
                 data,
             ) {
-                return Ok(Self::GetPrice(decoded));
-            }
-            if let Ok(decoded) = <MaxSwingCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::MaxSwing(decoded));
-            }
-            if let Ok(decoded) = <MaxSwingMantissaCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::MaxSwingMantissa(decoded));
-            }
-            if let Ok(decoded) = <OneHourCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::OneHour(decoded));
-            }
-            if let Ok(decoded) = <PausedCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::Paused(decoded));
-            }
-            if let Ok(decoded) = <PendingAnchorAdminCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::PendingAnchorAdmin(decoded));
-            }
-            if let Ok(decoded) = <PendingAnchorsCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::PendingAnchors(decoded));
-            }
-            if let Ok(decoded) = <PosterCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::Poster(decoded));
-            }
-            if let Ok(decoded) = <SetPriceCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::SetPrice(decoded));
-            }
-            if let Ok(decoded) = <SetPricesCall as ::ethers::core::abi::AbiDecode>::decode(
-                data,
-            ) {
-                return Ok(Self::SetPrices(decoded));
+                return Ok(Self::V1PriceOracle(decoded));
             }
             Err(::ethers::core::abi::Error::InvalidData.into())
         }
@@ -1749,50 +830,29 @@ pub mod iron_bank_price_oracle {
     impl ::ethers::core::abi::AbiEncode for IronBankPriceOracleCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::AcceptAnchorAdmin(element) => {
+                Self::SetAdmin(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::_AssetPrices(element) => {
+                Self::SetAggregators(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::SetPaused(element) => {
+                Self::SetGuardian(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::SetPendingAnchor(element) => {
+                Self::Admin(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Aggregators(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::SetPendingAnchorAdmin(element) => {
+                Self::EthUsdAggregator(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::AnchorAdmin(element) => {
+                Self::GetUnderlyingPrice(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::Anchors(element) => ::ethers::core::abi::AbiEncode::encode(element),
-                Self::AssetPrices(element) => {
+                Self::Guardian(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
-                Self::GetPrice(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::MaxSwing(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::MaxSwingMantissa(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::OneHour(element) => ::ethers::core::abi::AbiEncode::encode(element),
-                Self::Paused(element) => ::ethers::core::abi::AbiEncode::encode(element),
-                Self::PendingAnchorAdmin(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::PendingAnchors(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::Poster(element) => ::ethers::core::abi::AbiEncode::encode(element),
-                Self::SetPrice(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::SetPrices(element) => {
+                Self::V1PriceOracle(element) => {
                     ::ethers::core::abi::AbiEncode::encode(element)
                 }
             }
@@ -1801,122 +861,66 @@ pub mod iron_bank_price_oracle {
     impl ::core::fmt::Display for IronBankPriceOracleCalls {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::AcceptAnchorAdmin(element) => ::core::fmt::Display::fmt(element, f),
-                Self::_AssetPrices(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPaused(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPendingAnchor(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPendingAnchorAdmin(element) => {
+                Self::SetAdmin(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetAggregators(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetGuardian(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Admin(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Aggregators(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EthUsdAggregator(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetUnderlyingPrice(element) => {
                     ::core::fmt::Display::fmt(element, f)
                 }
-                Self::AnchorAdmin(element) => ::core::fmt::Display::fmt(element, f),
-                Self::Anchors(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AssetPrices(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetPrice(element) => ::core::fmt::Display::fmt(element, f),
-                Self::MaxSwing(element) => ::core::fmt::Display::fmt(element, f),
-                Self::MaxSwingMantissa(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OneHour(element) => ::core::fmt::Display::fmt(element, f),
-                Self::Paused(element) => ::core::fmt::Display::fmt(element, f),
-                Self::PendingAnchorAdmin(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PendingAnchors(element) => ::core::fmt::Display::fmt(element, f),
-                Self::Poster(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPrice(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPrices(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Guardian(element) => ::core::fmt::Display::fmt(element, f),
+                Self::V1PriceOracle(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::core::convert::From<AcceptAnchorAdminCall> for IronBankPriceOracleCalls {
-        fn from(value: AcceptAnchorAdminCall) -> Self {
-            Self::AcceptAnchorAdmin(value)
+    impl ::core::convert::From<SetAdminCall> for IronBankPriceOracleCalls {
+        fn from(value: SetAdminCall) -> Self {
+            Self::SetAdmin(value)
         }
     }
-    impl ::core::convert::From<_AssetPricesCall> for IronBankPriceOracleCalls {
-        fn from(value: _AssetPricesCall) -> Self {
-            Self::_AssetPrices(value)
+    impl ::core::convert::From<SetAggregatorsCall> for IronBankPriceOracleCalls {
+        fn from(value: SetAggregatorsCall) -> Self {
+            Self::SetAggregators(value)
         }
     }
-    impl ::core::convert::From<SetPausedCall> for IronBankPriceOracleCalls {
-        fn from(value: SetPausedCall) -> Self {
-            Self::SetPaused(value)
+    impl ::core::convert::From<SetGuardianCall> for IronBankPriceOracleCalls {
+        fn from(value: SetGuardianCall) -> Self {
+            Self::SetGuardian(value)
         }
     }
-    impl ::core::convert::From<SetPendingAnchorCall> for IronBankPriceOracleCalls {
-        fn from(value: SetPendingAnchorCall) -> Self {
-            Self::SetPendingAnchor(value)
+    impl ::core::convert::From<AdminCall> for IronBankPriceOracleCalls {
+        fn from(value: AdminCall) -> Self {
+            Self::Admin(value)
         }
     }
-    impl ::core::convert::From<SetPendingAnchorAdminCall> for IronBankPriceOracleCalls {
-        fn from(value: SetPendingAnchorAdminCall) -> Self {
-            Self::SetPendingAnchorAdmin(value)
+    impl ::core::convert::From<AggregatorsCall> for IronBankPriceOracleCalls {
+        fn from(value: AggregatorsCall) -> Self {
+            Self::Aggregators(value)
         }
     }
-    impl ::core::convert::From<AnchorAdminCall> for IronBankPriceOracleCalls {
-        fn from(value: AnchorAdminCall) -> Self {
-            Self::AnchorAdmin(value)
+    impl ::core::convert::From<EthUsdAggregatorCall> for IronBankPriceOracleCalls {
+        fn from(value: EthUsdAggregatorCall) -> Self {
+            Self::EthUsdAggregator(value)
         }
     }
-    impl ::core::convert::From<AnchorsCall> for IronBankPriceOracleCalls {
-        fn from(value: AnchorsCall) -> Self {
-            Self::Anchors(value)
+    impl ::core::convert::From<GetUnderlyingPriceCall> for IronBankPriceOracleCalls {
+        fn from(value: GetUnderlyingPriceCall) -> Self {
+            Self::GetUnderlyingPrice(value)
         }
     }
-    impl ::core::convert::From<AssetPricesCall> for IronBankPriceOracleCalls {
-        fn from(value: AssetPricesCall) -> Self {
-            Self::AssetPrices(value)
+    impl ::core::convert::From<GuardianCall> for IronBankPriceOracleCalls {
+        fn from(value: GuardianCall) -> Self {
+            Self::Guardian(value)
         }
     }
-    impl ::core::convert::From<GetPriceCall> for IronBankPriceOracleCalls {
-        fn from(value: GetPriceCall) -> Self {
-            Self::GetPrice(value)
+    impl ::core::convert::From<V1PriceOracleCall> for IronBankPriceOracleCalls {
+        fn from(value: V1PriceOracleCall) -> Self {
+            Self::V1PriceOracle(value)
         }
     }
-    impl ::core::convert::From<MaxSwingCall> for IronBankPriceOracleCalls {
-        fn from(value: MaxSwingCall) -> Self {
-            Self::MaxSwing(value)
-        }
-    }
-    impl ::core::convert::From<MaxSwingMantissaCall> for IronBankPriceOracleCalls {
-        fn from(value: MaxSwingMantissaCall) -> Self {
-            Self::MaxSwingMantissa(value)
-        }
-    }
-    impl ::core::convert::From<OneHourCall> for IronBankPriceOracleCalls {
-        fn from(value: OneHourCall) -> Self {
-            Self::OneHour(value)
-        }
-    }
-    impl ::core::convert::From<PausedCall> for IronBankPriceOracleCalls {
-        fn from(value: PausedCall) -> Self {
-            Self::Paused(value)
-        }
-    }
-    impl ::core::convert::From<PendingAnchorAdminCall> for IronBankPriceOracleCalls {
-        fn from(value: PendingAnchorAdminCall) -> Self {
-            Self::PendingAnchorAdmin(value)
-        }
-    }
-    impl ::core::convert::From<PendingAnchorsCall> for IronBankPriceOracleCalls {
-        fn from(value: PendingAnchorsCall) -> Self {
-            Self::PendingAnchors(value)
-        }
-    }
-    impl ::core::convert::From<PosterCall> for IronBankPriceOracleCalls {
-        fn from(value: PosterCall) -> Self {
-            Self::Poster(value)
-        }
-    }
-    impl ::core::convert::From<SetPriceCall> for IronBankPriceOracleCalls {
-        fn from(value: SetPriceCall) -> Self {
-            Self::SetPrice(value)
-        }
-    }
-    impl ::core::convert::From<SetPricesCall> for IronBankPriceOracleCalls {
-        fn from(value: SetPricesCall) -> Self {
-            Self::SetPrices(value)
-        }
-    }
-    ///Container type for all return fields from the `_acceptAnchorAdmin` function with signature `_acceptAnchorAdmin()` and selector `0xccb13cbd`
+    ///Container type for all return fields from the `admin` function with signature `admin()` and selector `0xf851a440`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1927,8 +931,8 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct AcceptAnchorAdminReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `_assetPrices` function with signature `_assetPrices(address)` and selector `0x183f3444`
+    pub struct AdminReturn(pub ::ethers::core::types::Address);
+    ///Container type for all return fields from the `aggregators` function with signature `aggregators(address)` and selector `0x112cdab9`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1939,10 +943,11 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct _AssetPricesReturn {
-        pub mantissa: ::ethers::core::types::U256,
+    pub struct AggregatorsReturn {
+        pub source: ::ethers::core::types::Address,
+        pub base: u8,
     }
-    ///Container type for all return fields from the `_setPaused` function with signature `_setPaused(bool)` and selector `0x26617c28`
+    ///Container type for all return fields from the `ethUsdAggregator` function with signature `ethUsdAggregator()` and selector `0x10236026`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1953,8 +958,8 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct SetPausedReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `_setPendingAnchor` function with signature `_setPendingAnchor(address,uint256)` and selector `0xde9d0e85`
+    pub struct EthUsdAggregatorReturn(pub ::ethers::core::types::Address);
+    ///Container type for all return fields from the `getUnderlyingPrice` function with signature `getUnderlyingPrice(address)` and selector `0xfc57d4df`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1965,8 +970,8 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct SetPendingAnchorReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `_setPendingAnchorAdmin` function with signature `_setPendingAnchorAdmin(address)` and selector `0x9964622c`
+    pub struct GetUnderlyingPriceReturn(pub ::ethers::core::types::U256);
+    ///Container type for all return fields from the `guardian` function with signature `guardian()` and selector `0x452a9320`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1977,8 +982,8 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct SetPendingAnchorAdminReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `anchorAdmin` function with signature `anchorAdmin()` and selector `0x08f31857`
+    pub struct GuardianReturn(pub ::ethers::core::types::Address);
+    ///Container type for all return fields from the `v1PriceOracle` function with signature `v1PriceOracle()` and selector `0xfe10c98d`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
@@ -1989,154 +994,5 @@ pub mod iron_bank_price_oracle {
         Eq,
         Hash
     )]
-    pub struct AnchorAdminReturn(pub ::ethers::core::types::Address);
-    ///Container type for all return fields from the `anchors` function with signature `anchors(address)` and selector `0x692374e3`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct AnchorsReturn {
-        pub period: ::ethers::core::types::U256,
-        pub price_mantissa: ::ethers::core::types::U256,
-    }
-    ///Container type for all return fields from the `assetPrices` function with signature `assetPrices(address)` and selector `0x5e9a523c`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct AssetPricesReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `getPrice` function with signature `getPrice(address)` and selector `0x41976e09`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct GetPriceReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `maxSwing` function with signature `maxSwing()` and selector `0xc5faf1d5`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct MaxSwingReturn {
-        pub mantissa: ::ethers::core::types::U256,
-    }
-    ///Container type for all return fields from the `maxSwingMantissa` function with signature `maxSwingMantissa()` and selector `0x0c9c6301`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct MaxSwingMantissaReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `oneHour` function with signature `oneHour()` and selector `0xc92da302`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct OneHourReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `paused` function with signature `paused()` and selector `0x5c975abb`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct PausedReturn(pub bool);
-    ///Container type for all return fields from the `pendingAnchorAdmin` function with signature `pendingAnchorAdmin()` and selector `0x451b1e3a`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct PendingAnchorAdminReturn(pub ::ethers::core::types::Address);
-    ///Container type for all return fields from the `pendingAnchors` function with signature `pendingAnchors(address)` and selector `0x9e8c4d95`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct PendingAnchorsReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `poster` function with signature `poster()` and selector `0x80959721`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct PosterReturn(pub ::ethers::core::types::Address);
-    ///Container type for all return fields from the `setPrice` function with signature `setPrice(address,uint256)` and selector `0x00e4768b`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct SetPriceReturn(pub ::ethers::core::types::U256);
-    ///Container type for all return fields from the `setPrices` function with signature `setPrices(address[],uint256[])` and selector `0x4352fa9f`
-    #[derive(
-        Clone,
-        ::ethers::contract::EthAbiType,
-        ::ethers::contract::EthAbiCodec,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct SetPricesReturn(pub ::std::vec::Vec<::ethers::core::types::U256>);
+    pub struct V1PriceOracleReturn(pub ::ethers::core::types::Address);
 }

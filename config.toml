@@ -2,6 +2,7 @@ chain = 1
 protocol = "ironbank"
 comptroller_address = "0xE0B57FEEd45e7D908f2d0DaCd26F113Cf26715BF"
 # provider_endpoint = "wss://go.getblock.io/45f0fadb3c6a43a8a0a4d0c858fb24e9"
+# provider_endpoint = "https://go.getblock.io/5cbdc5555fd7440ead6efc7ea633988d"
 provider_endpoint = "https://optimism-mainnet.infura.io/v3/4824addf02ec4a6c8618043ea418e6df"
 
 [price_oracle]

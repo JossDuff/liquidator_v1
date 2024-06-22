@@ -19,12 +19,12 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all ctokens")?;
 
-    println!(
-        "get {} ctoken info: {}ms",
-        all_ctoken_info.len(),
-        (Instant::now() - last_check).as_millis()
-    );
-    let last_check = Instant::now();
+    // println!(
+    //     "get {} ctoken info: {}ms",
+    //     all_ctoken_info.len(),
+    //     (Instant::now() - last_check).as_millis()
+    // );
+    // let last_check = Instant::now();
 
     // println!("number of ctokens: {}", all_ctoken_info.len());
 
@@ -40,11 +40,11 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get prices for underlying tokens")?;
 
-    println!(
-        "get prices: {}ms",
-        (Instant::now() - last_check).as_millis()
-    );
-    let last_check = Instant::now();
+    // println!(
+    //     "get prices: {}ms",
+    //     (Instant::now() - last_check).as_millis()
+    // );
+    // let last_check = Instant::now();
 
     let underlying_prices_with_ctoken: HashMap<Address, ScaledNum> =
         underlying_prices_with_ctoken.into_iter().collect();
@@ -68,33 +68,35 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all accounts")?;
 
-    println!(
-        "get all {} accounts: {}ms",
-        all_accounts.len(),
-        (Instant::now() - last_check).as_millis()
-    );
-    let last_check = Instant::now();
+    // println!(
+    //     "get all {} accounts: {}ms",
+    //     all_accounts.len(),
+    //     (Instant::now() - last_check).as_millis()
+    // );
+    // let last_check = Instant::now();
 
     let num_of_accounts = all_accounts.len();
 
     all_accounts
         .par_iter()
-        .for_each(|(_account, account_positions)| {
+        .for_each(|(account, account_positions)| {
             if can_i_liquidate(account_positions, &ctoken_info_priced) {
                 // println!("I can liquidate account {:?}", account);
+            } else {
+                println!("can't liquidate {:?}", account);
             }
         });
 
-    println!(
-        "process {} accounts for liquidation: {}ms",
-        num_of_accounts,
-        (Instant::now() - last_check).as_millis()
-    );
+    // println!(
+    //     "process {} accounts for liquidation: {}ms",
+    //     num_of_accounts,
+    //     (Instant::now() - last_check).as_millis()
+    // );
 
-    println!(
-        "total execution time: {}ms\n",
-        (Instant::now() - start_execution).as_millis()
-    );
+    // println!(
+    //     "total execution time: {}ms\n",
+    //     (Instant::now() - start_execution).as_millis()
+    // );
 
     Ok(())
 }
@@ -132,8 +134,8 @@ pub fn can_i_liquidate(
         };
     }
     // if borrow_balance > supply_balance {
-    //     println!("borrow_balance: {borrow_balance}");
-    //     println!("supply balance: {supply_balance}");
+    println!("borrow_balance: {borrow_balance}");
+    println!("supply balance: {supply_balance}");
     // }
 
     borrow_balance > supply_balance

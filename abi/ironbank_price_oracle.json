@@ -3,7 +3,17 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_poster",
+                "name": "admin_",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "v1PriceOracle_",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "ethUsdAggregator_",
                 "type": "address"
             }
         ],
@@ -17,54 +27,23 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "asset",
+                "name": "cTokenAddress",
                 "type": "address"
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
-                "name": "requestedPriceMantissa",
-                "type": "uint256"
+                "internalType": "address",
+                "name": "source",
+                "type": "address"
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
-                "name": "anchorPriceMantissa",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "cappedPriceMantissa",
-                "type": "uint256"
+                "internalType": "enum PriceOracleProxyUSD.AggregatorBase",
+                "name": "base",
+                "type": "uint8"
             }
         ],
-        "name": "CappedPricePosted",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "error",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "info",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "detail",
-                "type": "uint256"
-            }
-        ],
-        "name": "Failure",
+        "name": "AggregatorUpdated",
         "type": "event"
     },
     {
@@ -73,17 +52,11 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "oldAnchorAdmin",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "newAnchorAdmin",
+                "name": "admin",
                 "type": "address"
             }
         ],
-        "name": "NewAnchorAdmin",
+        "name": "SetAdmin",
         "type": "event"
     },
     {
@@ -92,456 +65,24 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "anchorAdmin",
+                "name": "guardian",
                 "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "oldScaledPrice",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newScaledPrice",
-                "type": "uint256"
             }
         ],
-        "name": "NewPendingAnchor",
+        "name": "SetGuardian",
         "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "oldPendingAnchorAdmin",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "newPendingAnchorAdmin",
-                "type": "address"
-            }
-        ],
-        "name": "NewPendingAnchorAdmin",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "msgSender",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "error",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "info",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "detail",
-                "type": "uint256"
-            }
-        ],
-        "name": "OracleFailure",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "previousPriceMantissa",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "requestedPriceMantissa",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newPriceMantissa",
-                "type": "uint256"
-            }
-        ],
-        "name": "PricePosted",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "bool",
-                "name": "newState",
-                "type": "bool"
-            }
-        ],
-        "name": "SetPaused",
-        "type": "event"
-    },
-    {
-        "payable": true,
-        "stateMutability": "payable",
-        "type": "fallback"
-    },
-    {
-        "constant": false,
-        "inputs": [],
-        "name": "_acceptAnchorAdmin",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "_assetPrices",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "mantissa",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "internalType": "bool",
-                "name": "requestedState",
-                "type": "bool"
-            }
-        ],
-        "name": "_setPaused",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
     },
     {
         "constant": false,
         "inputs": [
             {
                 "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "newScaledPrice",
-                "type": "uint256"
-            }
-        ],
-        "name": "_setPendingAnchor",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "newPendingAnchorAdmin",
+                "name": "_admin",
                 "type": "address"
             }
         ],
-        "name": "_setPendingAnchorAdmin",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "anchorAdmin",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "anchors",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "period",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "priceMantissa",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            }
-        ],
-        "name": "assetPrices",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            }
-        ],
-        "name": "getPrice",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "maxSwing",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "mantissa",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "maxSwingMantissa",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "oneHour",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "paused",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "pendingAnchorAdmin",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "pendingAnchors",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "poster",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "asset",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "requestedPriceMantissa",
-                "type": "uint256"
-            }
-        ],
-        "name": "setPrice",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "name": "_setAdmin",
+        "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
@@ -551,25 +92,146 @@
         "inputs": [
             {
                 "internalType": "address[]",
-                "name": "assets",
+                "name": "cTokenAddresses",
                 "type": "address[]"
             },
             {
-                "internalType": "uint256[]",
-                "name": "requestedPriceMantissas",
-                "type": "uint256[]"
+                "internalType": "address[]",
+                "name": "sources",
+                "type": "address[]"
+            },
+            {
+                "internalType": "enum PriceOracleProxyUSD.AggregatorBase[]",
+                "name": "bases",
+                "type": "uint8[]"
             }
         ],
-        "name": "setPrices",
+        "name": "_setAggregators",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_guardian",
+                "type": "address"
+            }
+        ],
+        "name": "_setGuardian",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "admin",
         "outputs": [
             {
-                "internalType": "uint256[]",
+                "internalType": "address",
                 "name": "",
-                "type": "uint256[]"
+                "type": "address"
             }
         ],
         "payable": false,
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "aggregators",
+        "outputs": [
+            {
+                "internalType": "contract AggregatorV3Interface",
+                "name": "source",
+                "type": "address"
+            },
+            {
+                "internalType": "enum PriceOracleProxyUSD.AggregatorBase",
+                "name": "base",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "ethUsdAggregator",
+        "outputs": [
+            {
+                "internalType": "contract AggregatorV3Interface",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "contract CToken",
+                "name": "cToken",
+                "type": "address"
+            }
+        ],
+        "name": "getUnderlyingPrice",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "guardian",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "v1PriceOracle",
+        "outputs": [
+            {
+                "internalType": "contract V1PriceOracleInterface",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
         "type": "function"
     }
 ]
