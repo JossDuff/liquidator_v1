@@ -4,34 +4,47 @@ use ethers::types::{Address, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-const GRAPHQL_ENDPOINT: &str = "https://indexer.bigdevenergy.link/e11ed78/v1/graphql";
+const GRAPHQL_ENDPOINT: &str = "https://indexer.bigdevenergy.link/4a76f24/v1/graphql";
 
-// block 105290653 is after op's bedrock upgrade
-const QUERY: &str = r#"
-query MyQuery {
-  Liquidation(
-    order_by: {blockNumber: asc}
-    where: {blockNumber: {_gt: 105290653}}
-  ) {
-    blockNumber
-    borrowerAddress
-    cTokenCollateralAddress
-    chainID
-    comptrollerAddress
-    liquidatorAddress
-    repayAmount
-    seizeTokens
-    sourceAddress
-  }
-}
-"#;
+const SONNE_PRICE_ORACLE_DEPLOYMENT_BLOCK: &str = "32647507";
+const OP_BEDROCK_UPGRADE: &str = "105290653";
 
-pub async fn fetch_liquidation_events() -> Result<Vec<LiquidationEvent>> {
+pub async fn fetch_liquidation_events(
+    comptroller_addr_string: String,
+) -> Result<Vec<LiquidationEvent>> {
     let client = reqwest::Client::new();
+
+    // block 105290653 is after op's bedrock upgrade
+    // the address we have for sonne's price oracle was deployed at block 32647506
+    // let comptroller_addr: &str = &comptroller_addr();
+    let query = format!(
+        r#"
+      query MyQuery {{
+        Liquidation(
+          where: {{comptrollerAddress: {{_eq: "{}"}}, blockNumber: {{_gt: {}}}}}
+          order_by: {{blockNumber: asc}}
+          limit: 30
+        ) {{
+          blockNumber
+          borrowerAddress
+          cTokenCollateralAddress
+          chainID
+          comptrollerAddress
+          liquidatorAddress
+          repayAmount
+          seizeTokens
+          sourceAddress
+        }}
+      }}
+    "#,
+        comptroller_addr_string, OP_BEDROCK_UPGRADE
+    );
+
+    // println!("{query}");
 
     let response = client
         .post(GRAPHQL_ENDPOINT)
-        .json(&serde_json::json!({"query": QUERY}))
+        .json(&serde_json::json!({"query": query}))
         .send()
         .await
         .context("send query for liquidation events")?;

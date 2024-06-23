@@ -4,8 +4,6 @@ use super::*;
 use anyhow::{Context, Result};
 use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
 
-const PRICE_ORACLE_ADDR: &str = "0x2424C30E589Caea191C06F41d1f5b90348dbeD7d";
-
 pub struct MockPriceOracle {
     prices: HashMap<Address, ScaledNum>,
 }
@@ -13,13 +11,19 @@ pub struct MockPriceOracle {
 impl MockPriceOracle {
     pub async fn new(
         provider: Arc<Provider<Http>>,
+        price_oracle_addr: Address,
         // ctoken address, underlying decimals
         ctokens_to_price: Vec<(Address, u8)>,
         liquidation_block: u64,
     ) -> Result<Self> {
-        let prices = get_historic_prices(provider, ctokens_to_price, liquidation_block)
-            .await
-            .context("get historic prices")?;
+        let prices = get_historic_prices(
+            provider,
+            price_oracle_addr,
+            ctokens_to_price,
+            liquidation_block,
+        )
+        .await
+        .context("get historic prices")?;
 
         // println!("prices: {:?}", prices);
 
@@ -51,35 +55,30 @@ impl PriceOracle for MockPriceOracle {
 // returns (ctoken address, underlying price)
 async fn get_historic_prices(
     provider: Arc<Provider<Http>>,
+    price_oracle_addr: Address,
     // ctoken address, underlying decimals
     ctokens_to_price: Vec<(Address, u8)>,
     liquidation_block: u64,
 ) -> Result<HashMap<Address, ScaledNum>> {
-    let iron_bank_price_oracle_addr = Address::from_str(PRICE_ORACLE_ADDR).unwrap();
-    let iron_bank_price_oracle_instance =
-        IronBankPriceOracle::new(iron_bank_price_oracle_addr, provider);
+    let price_oracle_instance = IronBankPriceOracle::new(price_oracle_addr, provider);
 
     let mut prices: HashMap<Address, ScaledNum> = HashMap::new();
     for (ctoken_addr, underlying_decimals) in ctokens_to_price {
         print!("getting price of underlying of ctoken {ctoken_addr:?} : ");
         // IronBank price oracle needs the underlying address
-        let underlying_price = iron_bank_price_oracle_instance
+        let underlying_price = price_oracle_instance
             .get_underlying_price(ctoken_addr)
             .block(liquidation_block)
             .call()
             .await
             .context("get price")?;
-
-        println!("returned {underlying_price}");
+        // println!("returned {underlying_price}");
         std::thread::sleep(Duration::from_millis(500));
 
-        // is actually scaled by 18 - underlying decimals
-        // let price = ScaledNum::new(underlying_price, (18 - underlying_decimals));
-
-        // maybe it's not???
+        // is actually scaled by 36 - underlying decimals
         let price = ScaledNum::new(underlying_price, 36 - underlying_decimals);
 
-        println!("scaled price: {price}");
+        println!("{price}");
         prices.insert(ctoken_addr, price);
     }
 

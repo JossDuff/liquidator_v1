@@ -4,7 +4,9 @@ mod mock_price_oracle;
 mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use contract_bindings::comptroller_bindings::Comptroller;
+use contract_bindings::{
+    comptroller_bindings::Comptroller, price_oracle_ironbank::IronBankPriceOracle,
+};
 use ethers::{
     providers::{Http, Provider},
     types::{Address, U256},
@@ -13,16 +15,16 @@ use liquidation_events::fetch_liquidation_events;
 use mock_data_provider::MockDataProvider;
 use mock_price_oracle::MockPriceOracle;
 
-use liquidator::types::scaled_num::ScaledNum;
 use liquidator::{
     config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
     price_oracle::PriceOracle, types::State,
 };
+use liquidator::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let cfg = tokio::fs::read_to_string("config.toml")
+    let cfg = tokio::fs::read_to_string("integration-test-config.toml")
         .await
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
@@ -34,7 +36,7 @@ async fn main() -> Result<()> {
         Provider::<Http>::try_from(cfg.provider_endpoint).context("initialize provider")?,
     );
 
-    let liquidation_events = fetch_liquidation_events()
+    let liquidation_events = fetch_liquidation_events(cfg.comptroller_address_string)
         .await
         .context("get liquidation events")?;
 
@@ -81,7 +83,13 @@ async fn main() -> Result<()> {
         println!("{} ctokens to price", ctokens_to_price.len());
 
         let mock_price_oracle = Arc::new(
-            MockPriceOracle::new(provider.clone(), ctokens_to_price, liquidation_block).await?,
+            MockPriceOracle::new(
+                provider.clone(),
+                price_oracle_addr,
+                ctokens_to_price,
+                liquidation_block,
+            )
+            .await?,
         );
 
         // println!("mock price oracle initialized");

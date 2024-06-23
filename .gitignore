@@ -4,3 +4,4 @@ todo.md
 .vscode
 config.toml
 refactor.md
+integration-test-config.toml
