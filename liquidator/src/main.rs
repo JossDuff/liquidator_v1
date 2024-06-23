@@ -26,9 +26,6 @@ async fn main() -> Result<()> {
         Provider::<Http>::try_from(cfg.provider_endpoint).context("initialize provider")?,
     );
 
-    let price_oracle = price_oracle_from_config(cfg.price_oracle, provider.clone())
-        .context("Price oracle from config")?;
-
     let data_provider = data_provider_from_config(cfg.data_provider, provider.clone())
         .await
         .context("Data provider from config")?;
@@ -37,6 +34,19 @@ async fn main() -> Result<()> {
         Arc::new(liquidator_from_config(cfg.liquidator).context("Liquidator from config")?);
 
     let troll_instance = Arc::new(Comptroller::new(cfg.comptroller_address, provider.clone()));
+
+    let initial_price_oracle_addr = troll_instance
+        .oracle()
+        .call()
+        .await
+        .context("get initial price oracle impl from comptroller")?;
+
+    let price_oracle = price_oracle_from_config(
+        cfg.price_oracle,
+        initial_price_oracle_addr,
+        provider.clone(),
+    )
+    .context("Price oracle from config")?;
 
     let state = State::new(
         provider,

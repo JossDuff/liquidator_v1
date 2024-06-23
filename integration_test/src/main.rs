@@ -16,8 +16,12 @@ use mock_data_provider::MockDataProvider;
 use mock_price_oracle::MockPriceOracle;
 
 use liquidator::{
-    config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
-    price_oracle::PriceOracle, types::State,
+    config::Config,
+    data_provider::DataProvider,
+    execution::run_execution,
+    liquidator::Liquidator,
+    price_oracle::{self, PriceOracle},
+    types::State,
 };
 use liquidator::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 use std::{collections::HashMap, str::FromStr, sync::Arc};
@@ -36,7 +40,10 @@ async fn main() -> Result<()> {
         Provider::<Http>::try_from(cfg.provider_endpoint).context("initialize provider")?,
     );
 
-    let liquidation_events = fetch_liquidation_events(cfg.comptroller_address_string)
+    let lowercase_comptroller_address =
+        format!("{:?}", cfg.comptroller_address).to_ascii_lowercase();
+
+    let liquidation_events = fetch_liquidation_events(lowercase_comptroller_address)
         .await
         .context("get liquidation events")?;
 
@@ -66,6 +73,13 @@ async fn main() -> Result<()> {
             liquidation_event.unitroller,
             provider.clone(),
         ));
+
+        let price_oracle_addr = troll_instance
+            .oracle()
+            .block(liquidation_block)
+            .call()
+            .await
+            .context("get price oracle implementation at time of liquidation")?;
 
         let mock_data_provider = Arc::new(
             MockDataProvider::new(

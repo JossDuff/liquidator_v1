@@ -24,6 +24,7 @@ pub trait PriceOracle {
 
 pub fn price_oracle_from_config(
     config: PriceOracleConfig,
+    initial_price_oracle_address: Address,
     provider: Arc<Provider<Http>>,
 ) -> Result<Arc<dyn PriceOracle>> {
     let price_oracle = match config {
@@ -37,9 +38,9 @@ pub fn price_oracle_from_config(
         //     endpoint,
         //     api_key,
         // },
-        PriceOracleConfig::Ironbank { address } => {
-            let address = Address::from_str(&address).unwrap();
-            IronBank::new(address, provider.clone()).context("new iron bank price oracle")?
+        PriceOracleConfig::Ironbank => {
+            IronBank::new(initial_price_oracle_address, provider.clone())
+                .context("new iron bank price oracle")?
         }
     };
 
