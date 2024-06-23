@@ -13,6 +13,8 @@ pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
     let last_check = Instant::now();
 
+    // TODO: also check for new price oracle impl
+
     let all_ctoken_info = state
         .data_provider
         .get_ctoken_info()

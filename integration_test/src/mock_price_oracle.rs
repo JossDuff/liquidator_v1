@@ -61,6 +61,7 @@ async fn get_historic_prices(
     liquidation_block: u64,
 ) -> Result<HashMap<Address, ScaledNum>> {
     let price_oracle_instance = IronBankPriceOracle::new(price_oracle_addr, provider);
+    println!("Using price oracle at address {:?}", price_oracle_addr);
 
     let mut prices: HashMap<Address, ScaledNum> = HashMap::new();
     for (ctoken_addr, underlying_decimals) in ctokens_to_price {

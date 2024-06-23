@@ -116,18 +116,23 @@ async fn get_historic_account_assets_and_ctoken_info(
         let exchange_rate_call = ctoken_instance.exchange_rate_current();
         let ctoken_decimals_call = ctoken_instance.decimals();
 
-        let underlying_addr = underlying_addr_call.call().await.unwrap();
+        let underlying_addr = underlying_addr_call.block(block_num).call().await.unwrap();
         // sleep because I use free provider
         std::thread::sleep(Duration::from_millis(500));
-        let borrow_balance = borrow_balance_call.call().await.unwrap();
+        let borrow_balance = borrow_balance_call.block(block_num).call().await.unwrap();
         std::thread::sleep(Duration::from_millis(500));
-        let supplied_balance = supplied_balance_call.call().await.unwrap();
+        let supplied_balance = supplied_balance_call.block(block_num).call().await.unwrap();
         std::thread::sleep(Duration::from_millis(500));
-        let (_, collateral_factor, _) = collateral_factor_call.call().await.unwrap();
+        let (_, collateral_factor, _) = collateral_factor_call
+            .block(block_num)
+            .call()
+            .await
+            .unwrap();
         std::thread::sleep(Duration::from_millis(500));
-        let exchange_rate = exchange_rate_call.call().await.unwrap();
+        let exchange_rate = exchange_rate_call.block(block_num).call().await.unwrap();
         std::thread::sleep(Duration::from_millis(500));
         let ctoken_decimals: u8 = ctoken_decimals_call
+            .block(block_num)
             .call()
             .await
             .unwrap()
