@@ -39,7 +39,8 @@ impl MockDataProvider {
 }
 
 impl MockDataProvider {
-    pub fn get_ctokens_to_price(&self) -> Vec<Address> {
+    // returns (ctoken addr, underlying decimals)
+    pub fn get_ctokens_to_price(&self) -> Vec<(Address, u8)> {
         self.liquidated_account
             .1
             .iter()
@@ -52,7 +53,17 @@ impl MockDataProvider {
                         ctoken_balance > U256::zero()
                     }
                 } {
-                    Some(position.ctoken_addr)
+                    let underlying_decimals = self
+                        .ctoken_info
+                        .iter()
+                        .find(|ctoken_info| ctoken_info.ctoken_addr == position.ctoken_addr)
+                        .context(format!(
+                            "find ctoken info of ctoken {}",
+                            position.ctoken_addr
+                        ))
+                        .unwrap()
+                        .underlying_decimals;
+                    Some((position.ctoken_addr, underlying_decimals))
                 } else {
                     None
                 }
@@ -88,10 +99,11 @@ async fn get_historic_account_assets_and_ctoken_info(
         .block(block_num)
         .call()
         .await?;
-    println!(
-        "markets entered of {:?}:\n{:?}",
-        liquidated_account, markets_entered
-    );
+
+    // println!(
+    //     "markets entered of {:?}:\n{:?}",
+    //     liquidated_account, markets_entered
+    // );
 
     for ctoken_addr in &markets_entered {
         let ctoken_instance = Ctoken::new(*ctoken_addr, provider.clone());
@@ -106,22 +118,22 @@ async fn get_historic_account_assets_and_ctoken_info(
 
         let underlying_addr = underlying_addr_call.call().await.unwrap();
         // sleep because I use free provider
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
         let borrow_balance = borrow_balance_call.call().await.unwrap();
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
         let supplied_balance = supplied_balance_call.call().await.unwrap();
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
         let (_, collateral_factor, _) = collateral_factor_call.call().await.unwrap();
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
         let exchange_rate = exchange_rate_call.call().await.unwrap();
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
         let ctoken_decimals: u8 = ctoken_decimals_call
             .call()
             .await
             .unwrap()
             .try_into()
             .unwrap();
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_millis(500));
 
         // let mut multicall = Multicall::new(provider.clone(), None)
         //     .await
@@ -176,22 +188,27 @@ async fn get_historic_account_assets_and_ctoken_info(
             // TODO
             protocol_seize_share_mant: ScaledNum::zero(),
         });
-        println!("ctoken_addr: {ctoken_addr:?}");
-        println!("underlying_addr: {underlying_addr:?}");
-        println!("borrow_balance: {borrow_balance:?}");
-        println!("supplied_balance: {supplied_balance:?}");
-        println!("collateral_factor: {collateral_factor:?}");
-        println!("exchange_rate: {exchange_rate:?}");
+        // println!("ctoken_addr: {ctoken_addr:?}");
+        // println!("underlying_addr: {underlying_addr:?}");
+        // println!("borrow_balance: {borrow_balance:?}");
+        // println!("supplied_balance: {supplied_balance:?}");
+        // println!("collateral_factor: {collateral_factor:?}");
+        // println!("exchange_rate: {exchange_rate:?}");
 
+        println!("borrow balance of {:?}: {:?}", ctoken_addr, borrow_balance);
         if borrow_balance > U256::zero() {
             account_positions.push(AccountPosition {
                 ctoken_addr: *ctoken_addr,
                 position: CollateralOrBorrow::Borrow {
                     underlying_balance: borrow_balance,
                 },
-            })
+            });
         }
 
+        println!(
+            "supply balance of {:?}: {:?}",
+            ctoken_addr, supplied_balance
+        );
         if supplied_balance > U256::zero() {
             account_positions.push(AccountPosition {
                 ctoken_addr: *ctoken_addr,

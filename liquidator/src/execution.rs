@@ -81,9 +81,9 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .par_iter()
         .for_each(|(account, account_positions)| {
             if can_i_liquidate(account_positions, &ctoken_info_priced) {
-                // println!("I can liquidate account {:?}", account);
+                println!("CAN liquidate {:?}", account);
             } else {
-                println!("can't liquidate {:?}", account);
+                println!("CANNOT liquidate {:?}", account);
             }
         });
 

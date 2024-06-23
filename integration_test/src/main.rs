@@ -41,11 +41,21 @@ async fn main() -> Result<()> {
     println!("found {} liquidation events", liquidation_events.len());
 
     for (liquidation_event_index, liquidation_event) in liquidation_events.iter().enumerate() {
-        println!("\nliquidation event {liquidation_event_index}");
-        println!("liquidation of {:?}", liquidation_event.params.borrower);
+        println!(
+            "\nliquidation event {liquidation_event_index} at block {}",
+            liquidation_event.block_number
+        );
+        println!(
+            "liquidation of {:?}\nrepaid {:?} of borrowed token {:?}\nseized {:?} of collateral token {:?}",
+            liquidation_event.params.borrower,
+            liquidation_event.params.repay_amount,
+            liquidation_event.src_address,
+            liquidation_event.params.seize_tokens,
+            liquidation_event.params.ctoken_collateral,
+        );
 
         let liquidation_block = liquidation_event.block_number;
-        let block_before_liquidation = liquidation_event.block_number - 2;
+        let block_before_liquidation = liquidation_event.block_number - 1;
         let liquidated_account = liquidation_event.params.borrower;
 
         let troll_instance = Arc::new(Comptroller::new(
