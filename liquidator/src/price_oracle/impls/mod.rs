@@ -1,2 +1,2 @@
 pub mod coingecko;
-pub mod ironbank;
+pub mod compish;

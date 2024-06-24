@@ -53,9 +53,11 @@ pub async fn run_execution(state: &State) -> Result<()> {
 
     let mut ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = HashMap::new();
     for ctoken_info in all_ctoken_info {
+        // TODO: this price is wrong when using compish price oracle.  It still needs to be scaled by 36-underlying decimals
         let underlying_price = underlying_prices_with_ctoken
             .get(&ctoken_info.ctoken_addr)
             .unwrap();
+
         let new_ctoken_info_priced = CtokenInfoPriced {
             info: ctoken_info,
             underlying_price: *underlying_price,

@@ -1,7 +1,7 @@
 use crate::{price_oracle::PriceOracle, types::scaled_num::ScaledNum};
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
+use contract_bindings::price_oracle_compish::CompishPriceOracle;
 use ethers::{
     providers::{Http, Provider},
     types::Address,
@@ -13,28 +13,28 @@ use tokio::{
 };
 
 #[derive(Clone)]
-// TODO: should this hold an instance of ironbankPriceOracle instead of provider and address?
-pub struct IronBank {
+// TODO: should this hold an instance of CompishPriceOracle instead of provider and address?
+pub struct Compish {
     pub address: Address,
     pub provider: Arc<Provider<Http>>,
     pub prices: Arc<Mutex<Vec<(Address, ScaledNum)>>>,
 }
 
-impl IronBank {
+impl Compish {
     pub fn new(address: Address, provider: Arc<Provider<Http>>) -> Result<Self> {
-        let ironbank = IronBank {
+        let compish_price_oracle = Compish {
             address,
             provider,
             prices: Arc::new(Mutex::new(vec![])),
         };
 
-        let cloned_bank = ironbank.clone();
+        let cloned_bank = compish_price_oracle.clone();
 
         tokio::spawn(async move {
             cloned_bank.update_prices().await;
         });
 
-        Ok(ironbank)
+        Ok(compish_price_oracle)
     }
 
     async fn update_prices(&self) {
@@ -60,23 +60,22 @@ impl IronBank {
     }
 
     async fn fetch_prices(&self, addresses: Vec<Address>) -> Result<Vec<(Address, ScaledNum)>> {
-        let ironbank_price_oracle = IronBankPriceOracle::new(self.address, self.provider.clone());
+        let compish_price_oracle = CompishPriceOracle::new(self.address, self.provider.clone());
 
         let mut price_tasks = vec![];
         // TODO: make this concurrent
         for ctoken_address in addresses {
-            let ironbank_instance = ironbank_price_oracle.clone();
+            let compish_price_oracle_instance = compish_price_oracle.clone();
             let task = async move {
-                // returns price scaled by 1e18
-                // TODO: this won't work because ironbank returns prices relative to eth
-                let price = ironbank_instance
+                let price = compish_price_oracle_instance
                     .get_underlying_price(ctoken_address)
                     .call()
                     .await
                     .context(format!("get price of ctoken {ctoken_address:?}"))
                     .unwrap();
 
-                (ctoken_address, ScaledNum::new(price, 18))
+                // needs to be scaled by 36 - underlying decimals later
+                (ctoken_address, ScaledNum::new(price, 0))
             };
             // println!("price of underlying of ctoken {ctoken_address:?}: {price}");
             price_tasks.push(task);
@@ -90,13 +89,12 @@ impl IronBank {
 }
 
 #[async_trait]
-impl PriceOracle for IronBank {
-    // TODO: This implementation (ironbank price oracle) takes an array of ctokens and returns the price of underlying
+impl PriceOracle for Compish {
     async fn get_prices(
         &self,
         // ctoken address
         addresses: Vec<Address>,
-        // returns ctoken & underlying price
+        // returns ctoken & underlying price (to be scaled by 1e36-underlying decimals)
     ) -> Result<Vec<(Address, ScaledNum)>> {
         let mutex = self.prices.lock().await;
         let mut prices = mutex.clone();

@@ -5,7 +5,7 @@ mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::{
-    comptroller_bindings::Comptroller, price_oracle_ironbank::IronBankPriceOracle,
+    comptroller_bindings::Comptroller, price_oracle_compish::CompishPriceOracle,
 };
 use ethers::{
     providers::{Http, Provider},

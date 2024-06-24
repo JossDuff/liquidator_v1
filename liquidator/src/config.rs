@@ -27,7 +27,7 @@ pub enum PriceOracleConfig {
     //     endpoint: String,
     //     api_key: String,
     // },
-    Ironbank,
+    Compish,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
