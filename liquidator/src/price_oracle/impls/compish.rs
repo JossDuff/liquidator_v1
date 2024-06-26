@@ -22,6 +22,7 @@ pub struct Compish {
 
 impl Compish {
     pub fn new(address: Address, provider: Arc<Provider<Http>>) -> Result<Self> {
+        println!("initializing compish price oracle");
         let compish_price_oracle = Compish {
             address,
             provider,

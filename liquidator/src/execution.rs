@@ -1,11 +1,20 @@
-use std::{collections::HashMap, time::Instant};
+use std::{
+    any::{Any, TypeId},
+    collections::HashMap,
+    time::Instant,
+};
 
-use crate::types::{
-    scaled_num::ScaledNum, AccountPosition, CollateralOrBorrow, CtokenInfoPriced, LiquidationArgs,
-    State,
+use crate::{
+    config::PriceOracleConfig,
+    price_oracle,
+    types::{
+        scaled_num::ScaledNum, AccountPosition, CollateralOrBorrow, CtokenInfoPriced,
+        LiquidationArgs, State,
+    },
 };
 use anyhow::{Context, Result};
 
+use contract_bindings::price_oracle_compish::CompishPriceOracle;
 use ethers::types::Address;
 use rayon::prelude::*;
 
@@ -21,14 +30,12 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all ctokens")?;
 
-    // println!(
-    //     "get {} ctoken info: {}ms",
-    //     all_ctoken_info.len(),
-    //     (Instant::now() - last_check).as_millis()
-    // );
-    // let last_check = Instant::now();
-
-    // println!("number of ctokens: {}", all_ctoken_info.len());
+    println!(
+        "get {} ctoken info: {}ms",
+        all_ctoken_info.len(),
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
 
     // sending ctokens here because sonne price oracle prices underlying from ctoken address
     let ctokens_to_price = all_ctoken_info
@@ -42,21 +49,28 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get prices for underlying tokens")?;
 
-    // println!(
-    //     "get prices: {}ms",
-    //     (Instant::now() - last_check).as_millis()
-    // );
-    // let last_check = Instant::now();
+    println!(
+        "get prices: {}ms",
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
 
     let underlying_prices_with_ctoken: HashMap<Address, ScaledNum> =
         underlying_prices_with_ctoken.into_iter().collect();
 
     let mut ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = HashMap::new();
     for ctoken_info in all_ctoken_info {
-        // TODO: this price is wrong when using compish price oracle.  It still needs to be scaled by 36-underlying decimals
         let underlying_price = underlying_prices_with_ctoken
             .get(&ctoken_info.ctoken_addr)
             .unwrap();
+
+        // this price is wrong when using compish price oracle.  It still needs to be scaled by 36-underlying decimals
+        let underlying_price = if PriceOracleConfig::Compish == state.cfg.price_oracle {
+            let scale = 36 - ctoken_info.underlying_decimals;
+            &ScaledNum::new(underlying_price.num, scale)
+        } else {
+            underlying_price
+        };
 
         let new_ctoken_info_priced = CtokenInfoPriced {
             info: ctoken_info,
@@ -72,12 +86,12 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .await
         .context("get all accounts")?;
 
-    // println!(
-    //     "get all {} accounts: {}ms",
-    //     all_accounts.len(),
-    //     (Instant::now() - last_check).as_millis()
-    // );
-    // let last_check = Instant::now();
+    println!(
+        "get all {} accounts: {}ms",
+        all_accounts.len(),
+        (Instant::now() - last_check).as_millis()
+    );
+    let last_check = Instant::now();
 
     let num_of_accounts = all_accounts.len();
 
@@ -85,22 +99,22 @@ pub async fn run_execution(state: &State) -> Result<()> {
         .par_iter()
         .for_each(|(account, account_positions)| {
             if can_i_liquidate(account_positions, &ctoken_info_priced) {
-                println!("CAN liquidate {:?}", account);
+                // println!("CAN liquidate {:?}\n\n", account);
             } else {
-                println!("CANNOT liquidate {:?}", account);
+                // println!("CANNOT liquidate {:?}", account);
             }
         });
 
-    // println!(
-    //     "process {} accounts for liquidation: {}ms",
-    //     num_of_accounts,
-    //     (Instant::now() - last_check).as_millis()
-    // );
+    println!(
+        "process {} accounts for liquidation: {}ms",
+        num_of_accounts,
+        (Instant::now() - last_check).as_millis()
+    );
 
-    // println!(
-    //     "total execution time: {}ms\n",
-    //     (Instant::now() - start_execution).as_millis()
-    // );
+    println!(
+        "total execution time: {}ms\n",
+        (Instant::now() - start_execution).as_millis()
+    );
 
     Ok(())
 }
@@ -138,8 +152,8 @@ pub fn can_i_liquidate(
         };
     }
     // if borrow_balance > supply_balance {
-    println!("borrow_balance: {borrow_balance}");
-    println!("supply balance: {supply_balance}");
+    //     println!("borrow_balance: {borrow_balance}");
+    //     println!("supply balance: {supply_balance}");
     // }
 
     borrow_balance > supply_balance

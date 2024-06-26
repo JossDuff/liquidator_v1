@@ -27,6 +27,7 @@ pub struct Envio {
 
 impl Envio {
     pub async fn new(endpoint: String, provider: Arc<Provider<Http>>) -> Result<Self> {
+        println!("initializing Envio data provider");
         let initial_ctoken_info = fetch_ctoken_info(&endpoint, provider.clone())
             .await
             .context("get initial ctoken info")?;
