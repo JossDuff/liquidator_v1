@@ -37,11 +37,11 @@ fn main() {
 }
 
 fn parse_line(line: &str) -> (String, u64) {
-    let initial_split = line.split(":").collect::<Vec<&str>>();
-    let mark: &str = *initial_split.first().unwrap();
-    let time: &str = *initial_split.last().unwrap();
+    let initial_split = line.split(':').collect::<Vec<&str>>();
+    let mark: &str = initial_split.first().unwrap();
+    let time: &str = initial_split.last().unwrap();
     let time: u64 = time[..time.len() - 2]
-        .replace(" ", "")
+        .replace(' ', "")
         .parse::<u64>()
         .unwrap();
 
@@ -53,7 +53,7 @@ fn group_by_mark(pairs: Vec<(String, u64)>) -> HashMap<String, Vec<u64>> {
 
     // Grouping u64 values under their corresponding String keys
     for (key, value) in pairs {
-        map.entry(key).or_insert_with(Vec::new).push(value);
+        map.entry(key).or_default().push(value);
     }
 
     map

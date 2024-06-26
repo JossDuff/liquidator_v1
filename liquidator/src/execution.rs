@@ -1,12 +1,7 @@
-use std::{
-    any::{Any, TypeId},
-    collections::HashMap,
-    time::Instant,
-};
+use std::{collections::HashMap, time::Instant};
 
 use crate::{
     config::PriceOracleConfig,
-    price_oracle,
     types::{
         scaled_num::ScaledNum, AccountPosition, CollateralOrBorrow, CtokenInfoPriced,
         LiquidationArgs, State,
@@ -14,15 +9,12 @@ use crate::{
 };
 use anyhow::{Context, Result};
 
-use contract_bindings::price_oracle_compish::CompishPriceOracle;
 use ethers::types::Address;
 use rayon::prelude::*;
 
 pub async fn run_execution(state: &State) -> Result<()> {
     let start_execution = Instant::now();
     let last_check = Instant::now();
-
-    // TODO: also check for new price oracle impl
 
     let all_ctoken_info = state
         .data_provider
@@ -230,96 +222,86 @@ mod tests {
 
     use super::*;
 
-    // TODO: fix these god awful tests.
-    // I don't have it in me to bless this mess
     #[test]
     fn test_cannot_liquidate() {
         let ctoken_addr = Address::random();
+        let ctoken_addr_2 = Address::random();
 
-        let account_positions = vec![AccountPosition {
-            ctoken_addr,
-            position: CollateralOrBorrow::Collateral {
-                ctoken_balance: 10.into(),
-            },
-        }];
-        let ctoken_info_priced = vec![CtokenInfoPriced {
-            info: CtokenInfo {
-                underlying_addr: Address::random(),
-                underlying_decimals: 18,
-                ctoken_addr,
-                ctoken_decimals: 18,
-                exchange_rate: ScaledNum::new(1, 0),
-                collateral_factor_mant: ScaledNum::new(1, 1),
-                protocol_seize_share_mant: ScaledNum::zero(),
-            },
-            underlying_price: ScaledNum::new(1, 0),
-        }];
+        let account_positions = vec![mock_position(ctoken_addr, 10)];
+        let ctoken_info_priced = vec![mock_ctoken_info(ctoken_addr, 1, 1)];
         let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
             .into_iter()
             .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
             .collect();
-
         assert!(!can_i_liquidate(&account_positions, &ctoken_info_priced));
 
-        let account_positions = vec![
-            AccountPosition {
-                ctoken_addr,
-                position: CollateralOrBorrow::Collateral {
-                    ctoken_balance: 10.into(),
-                },
-            },
-            AccountPosition {
-                ctoken_addr,
-                position: CollateralOrBorrow::Borrow {
-                    underlying_balance: 1.into(),
-                },
-            },
-        ];
-        let ctoken_info_priced = vec![CtokenInfoPriced {
-            info: CtokenInfo {
-                underlying_addr: Address::random(),
-                underlying_decimals: 18,
-                ctoken_addr,
-                ctoken_decimals: 18,
-                exchange_rate: ScaledNum::new(1, 0),
-                collateral_factor_mant: ScaledNum::new(1, 1),
-                protocol_seize_share_mant: ScaledNum::zero(),
-            },
-            underlying_price: ScaledNum::new(1, 0),
-        }];
-        let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
-            .into_iter()
-            .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
-            .collect();
-
-        assert!(!can_i_liquidate(&account_positions, &ctoken_info_priced));
-
-        let ctoken_2_addr = Address::random();
         let account_positions = vec![
             mock_position(ctoken_addr, 10),
-            mock_position(ctoken_2_addr, -5),
+            mock_position(ctoken_addr, -1),
         ];
         let ctoken_info_priced = vec![mock_ctoken_info(ctoken_addr, 1, 1)];
         let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
             .into_iter()
             .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
             .collect();
+        assert!(!can_i_liquidate(&account_positions, &ctoken_info_priced));
 
+        let account_positions = vec![
+            mock_position(ctoken_addr, 10),
+            mock_position(ctoken_addr_2, -5),
+        ];
+        let ctoken_info_priced = vec![
+            mock_ctoken_info(ctoken_addr, 1, 1),
+            mock_ctoken_info(ctoken_addr_2, 1, 1),
+        ];
+        let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
+            .into_iter()
+            .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
+            .collect();
+        assert!(!can_i_liquidate(&account_positions, &ctoken_info_priced));
+
+        let account_positions = vec![
+            mock_position(ctoken_addr, 10),
+            mock_position(ctoken_addr_2, -5),
+        ];
+        let ctoken_info_priced = vec![
+            mock_ctoken_info(ctoken_addr, 1, 1),
+            mock_ctoken_info(ctoken_addr_2, 1, 1),
+        ];
+        let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
+            .into_iter()
+            .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
+            .collect();
         assert!(!can_i_liquidate(&account_positions, &ctoken_info_priced));
     }
 
+    // TODO
     #[test]
     fn test_can_liquidate() {
-        // let account_tokens = vec![TokenBalance::new(
-        //     Address::random(),
-        //     Address::random(),
-        //     CollateralOrBorrow::Borrow {
-        //         underlying_balance: 1.0,
-        //     },
-        //     0.1,
-        //     Some(10.0),
-        // )];
-        // assert!(can_i_liquidate(&account_tokens));
+        let ctoken_addr = Address::random();
+        let ctoken_addr_2 = Address::random();
+
+        let account_positions = vec![mock_position(ctoken_addr, -1)];
+        let ctoken_info_priced = vec![mock_ctoken_info(ctoken_addr, 1, 1)];
+        let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
+            .into_iter()
+            .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
+            .collect();
+        assert!(can_i_liquidate(&account_positions, &ctoken_info_priced));
+
+        let account_positions = vec![
+            mock_position(ctoken_addr, 10),
+            mock_position(ctoken_addr_2, -11),
+        ];
+        let ctoken_info_priced = vec![
+            mock_ctoken_info(ctoken_addr, 1, 1),
+            mock_ctoken_info(ctoken_addr_2, 1, 1),
+        ];
+        let ctoken_info_priced: HashMap<Address, CtokenInfoPriced> = ctoken_info_priced
+            .into_iter()
+            .map(|ctoken_info_priced| (ctoken_info_priced.info.ctoken_addr, ctoken_info_priced))
+            .collect();
+        assert!(can_i_liquidate(&account_positions, &ctoken_info_priced));
     }
 
     fn mock_ctoken_info(

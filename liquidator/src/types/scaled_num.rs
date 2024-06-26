@@ -77,36 +77,36 @@ impl Eq for ScaledNum {}
 // TODO: what's clippy on about here?
 impl PartialOrd for ScaledNum {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self == other {
-            Some(Ordering::Equal)
-        } else if self.scale > other.scale {
-            // case where self has the larger scale, get into units of self
-            if other.num * U256::exp10((self.scale - other.scale).into()) < self.num {
-                Some(Ordering::Greater)
-            } else {
-                Some(Ordering::Less)
-            }
-        } else if self.scale < other.scale {
-            // case where other has the larger scale, get into units of other
-            if self.num * U256::exp10((other.scale - self.scale).into()) > other.num {
-                Some(Ordering::Greater)
-            } else {
-                Some(Ordering::Less)
-            }
-        } else {
-            // same scale, compare nums
-            if self.num > other.num {
-                Some(Ordering::Greater)
-            } else {
-                Some(Ordering::Less)
-            }
-        }
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for ScaledNum {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        if self == other {
+            Ordering::Equal
+        } else if self.scale > other.scale {
+            // case where self has the larger scale, get into units of self
+            if other.num * U256::exp10((self.scale - other.scale).into()) < self.num {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        } else if self.scale < other.scale {
+            // case where other has the larger scale, get into units of other
+            if self.num * U256::exp10((other.scale - self.scale).into()) > other.num {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        } else {
+            // same scale, compare nums
+            if self.num > other.num {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        }
     }
 }
 

@@ -4,9 +4,7 @@ mod mock_price_oracle;
 mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use contract_bindings::{
-    comptroller_bindings::Comptroller, price_oracle_compish::CompishPriceOracle,
-};
+use contract_bindings::comptroller_bindings::Comptroller;
 use ethers::{
     providers::{Http, Provider},
     types::{Address, U256},
@@ -15,16 +13,12 @@ use liquidation_events::fetch_liquidation_events;
 use mock_data_provider::MockDataProvider;
 use mock_price_oracle::MockPriceOracle;
 
+use liquidator::types::scaled_num::ScaledNum;
 use liquidator::{
-    config::Config,
-    data_provider::DataProvider,
-    execution::run_execution,
-    liquidator::Liquidator,
-    price_oracle::{self, PriceOracle},
-    types::State,
+    config::Config, data_provider::DataProvider, execution::run_execution, liquidator::Liquidator,
+    price_oracle::PriceOracle, types::State,
 };
-use liquidator::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
-use std::{collections::HashMap, str::FromStr, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 #[tokio::main]
 async fn main() -> Result<()> {

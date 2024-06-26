@@ -1,13 +1,11 @@
 use crate::types::LiquidationEvent;
 use anyhow::{Context, Result};
-use ethers::types::{Address, U256};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 const GRAPHQL_ENDPOINT: &str = "https://indexer.bigdevenergy.link/a928961/v1/graphql";
 
 const SONNE_PRICE_ORACLE_DEPLOYMENT_BLOCK: &str = "32647507";
-const OP_BEDROCK_UPGRADE: &str = "105290653";
+const _OP_BEDROCK_UPGRADE: &str = "105290653";
 
 pub async fn fetch_liquidation_events(
     comptroller_addr_string: String,

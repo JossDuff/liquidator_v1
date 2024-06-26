@@ -1,9 +1,8 @@
-use std::{borrow::Borrow, time::Duration};
+use std::{time::Duration};
 
 use contract_bindings::{
     comptroller_bindings::Comptroller, ctoken_bindings::Ctoken, erc20_bindings::Erc20,
 };
-use ethers::contract::Multicall;
 
 use liquidator::types::{Account, AccountPosition, CollateralOrBorrow, CtokenInfo};
 

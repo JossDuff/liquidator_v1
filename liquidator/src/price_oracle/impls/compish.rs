@@ -106,7 +106,7 @@ impl PriceOracle for Compish {
             .iter()
             .filter_map(|a| {
                 if !priced_addrs.contains(&a) {
-                    Some(a.clone())
+                    Some(*a)
                 } else {
                     None
                 }
@@ -122,7 +122,7 @@ impl PriceOracle for Compish {
             prices.extend(newly_priced_addrs);
 
             let mut mutex = self.prices.lock().await;
-            *mutex = prices.clone();
+            mutex.clone_from(&prices);
         }
 
         Ok(prices)
