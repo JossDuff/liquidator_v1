@@ -18,7 +18,7 @@ fn default_min_profit_per_liquidation() -> usize {
     0
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(tag = "kind")]
 #[serde(rename_all = "lowercase")]
 pub enum PriceOracleConfig {
@@ -27,7 +27,7 @@ pub enum PriceOracleConfig {
     //     endpoint: String,
     //     api_key: String,
     // },
-    Ironbank,
+    Compish,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

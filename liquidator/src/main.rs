@@ -18,6 +18,7 @@ async fn main() -> Result<()> {
         .await
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
+    let cfg_clone = cfg.clone();
 
     let provider: Arc<Provider<Http>> = Arc::new(
         // Provider::<Ws>::connect(cfg.provider_endpoint)
@@ -49,6 +50,7 @@ async fn main() -> Result<()> {
     .context("Price oracle from config")?;
 
     let state = State::new(
+        cfg_clone,
         provider,
         troll_instance,
         price_oracle,

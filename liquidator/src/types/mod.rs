@@ -7,11 +7,14 @@ use ethers::{
 use std::sync::Arc;
 pub mod scaled_num;
 
-use crate::{data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle};
+use crate::{
+    config::Config, data_provider::DataProvider, liquidator::Liquidator, price_oracle::PriceOracle,
+};
 
 use self::scaled_num::ScaledNum;
 
 pub struct State {
+    pub cfg: Config,
     pub provider: Arc<Provider<Http>>,
     pub troll_instance: Arc<Comptroller<Provider<Http>>>,
     pub price_oracle: Arc<dyn PriceOracle>,
@@ -22,6 +25,7 @@ pub struct State {
 
 impl State {
     pub fn new(
+        cfg: Config,
         provider: Arc<Provider<Http>>,
         troll_instance: Arc<Comptroller<Provider<Http>>>,
         price_oracle: Arc<dyn PriceOracle>,
@@ -30,6 +34,7 @@ impl State {
         config_min_profit_per_liquidation: ScaledNum,
     ) -> Self {
         Self {
+            cfg,
             provider,
             troll_instance,
             price_oracle,

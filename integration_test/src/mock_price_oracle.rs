@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use super::*;
 use anyhow::{Context, Result};
-use contract_bindings::price_oracle_ironbank::IronBankPriceOracle;
+use contract_bindings::price_oracle_compish::CompishPriceOracle;
 
 pub struct MockPriceOracle {
     prices: HashMap<Address, ScaledNum>,
@@ -60,13 +60,12 @@ async fn get_historic_prices(
     ctokens_to_price: Vec<(Address, u8)>,
     liquidation_block: u64,
 ) -> Result<HashMap<Address, ScaledNum>> {
-    let price_oracle_instance = IronBankPriceOracle::new(price_oracle_addr, provider);
+    let price_oracle_instance = CompishPriceOracle::new(price_oracle_addr, provider);
     println!("Using price oracle at address {:?}", price_oracle_addr);
 
     let mut prices: HashMap<Address, ScaledNum> = HashMap::new();
     for (ctoken_addr, underlying_decimals) in ctokens_to_price {
         print!("getting price of underlying of ctoken {ctoken_addr:?} : ");
-        // IronBank price oracle needs the underlying address
         let underlying_price = price_oracle_instance
             .get_underlying_price(ctoken_addr)
             .block(liquidation_block)

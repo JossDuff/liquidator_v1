@@ -10,7 +10,7 @@ use ethers::{
 
 use crate::{config::PriceOracleConfig, types::scaled_num::ScaledNum};
 
-use self::impls::ironbank::IronBank;
+use self::impls::compish::Compish;
 
 // use self::impls::coingecko::CoinGecko;
 mod impls;
@@ -38,10 +38,8 @@ pub fn price_oracle_from_config(
         //     endpoint,
         //     api_key,
         // },
-        PriceOracleConfig::Ironbank => {
-            IronBank::new(initial_price_oracle_address, provider.clone())
-                .context("new iron bank price oracle")?
-        }
+        PriceOracleConfig::Compish => Compish::new(initial_price_oracle_address, provider.clone())
+            .context("new compoundish bank price oracle")?,
     };
 
     Ok(Arc::new(price_oracle))

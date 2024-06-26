@@ -5,7 +5,7 @@ mod types;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use contract_bindings::{
-    comptroller_bindings::Comptroller, price_oracle_ironbank::IronBankPriceOracle,
+    comptroller_bindings::Comptroller, price_oracle_compish::CompishPriceOracle,
 };
 use ethers::{
     providers::{Http, Provider},
@@ -32,6 +32,7 @@ async fn main() -> Result<()> {
         .await
         .context("read config file")?;
     let cfg: Config = toml::de::from_str(&cfg).context("parse config")?;
+    let cfg_clone = cfg.clone();
 
     let provider: Arc<Provider<Http>> = Arc::new(
         // Provider::<Ws>::connect(cfg.provider_endpoint)
@@ -111,7 +112,9 @@ async fn main() -> Result<()> {
         let mock_min_profit_per_liquidation = ScaledNum::zero();
         let mock_liquidator = Arc::new(Liquidator {});
 
+        let cfg_clone = cfg_clone.clone();
         let state = State::new(
+            cfg_clone,
             provider.clone(),
             troll_instance.clone(),
             mock_price_oracle,
